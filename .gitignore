@@ -1,5 +1,7 @@
 dist
 .pytest_cache
 __pycache__
-
 bluecurrent_api.egg-info
+
+notes
+packagemanager

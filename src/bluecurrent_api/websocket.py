@@ -1,19 +1,12 @@
 import asyncio
 import json
 import websockets
-from websockets.exceptions import ConnectionClosed
 import ssl
-
+from asyncio.exceptions import TimeoutError
+from websockets.exceptions import ConnectionClosed
 from .errors import WebsocketError
 
-URL = "ws://172.21.27.21:8765"
-# URL = "ws://172.21.26.216:8765"
-# URL = "wss://130.61.188.91/appsocket/2.0"
-# URL = "wss://motown-dev2.bluecurrent.nl/appsocket"
-
-
 default_objects = ["STATUS", "CHARGE_POINTS", "GRID_STATUS"]
-
 
 class Websocket:
     _connection = None
@@ -24,8 +17,8 @@ class Websocket:
     def __init__(self):
         pass
 
-    async def validate_token(self, token):
-        await self.connect(token)
+    async def validate_token(self, token, url):
+        await self.connect(token, url)
         await self.send_request({"command": "VALIDATE_TOKEN"})
         res = await self._recv()
         await self.disconnect()
@@ -36,18 +29,22 @@ class Websocket:
         self.on_data = on_data
 
     # connect to api
-    async def connect(self, token, url=URL):
+    async def connect(self, token, url):
         self.token = token
         try:
             if url[:3] == 'wss':
-                ssl_context = ssl.create_default_context()
-                ssl_context.check_hostname = False
-                ssl_context.verify_mode = ssl.CERT_NONE
-                self._connection = await websockets.connect(url, ssl=ssl_context)
+                self._connection = await websockets.connect(url, ssl=self.get_ssl())
             else:
                 self._connection = await websockets.connect(url)
-        except (ConnectionRefusedError, OSError):
-            raise WebsocketError("cannot connect to the websocket")
+        except (ConnectionRefusedError, TimeoutError) as err:
+            print(err)
+            raise WebsocketError("cannot connect to the websocket", err)
+
+    def get_ssl():
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+        return ssl_context
 
     async def send_request(self, request, receiver=None):
 
@@ -64,7 +61,13 @@ class Websocket:
     async def loop(self):
         while True:
             
-            message = await self._recv()
+            message: dict = await self._recv()
+
+            # loop still has to work so the error needs to be handled inside on_data
+            # if "error" in message:
+            #     raise WebsocketError(message["error"])
+
+            message
 
             # TODO
             # check if auth ok ! raise invalidToken

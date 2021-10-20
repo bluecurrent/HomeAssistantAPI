@@ -1,15 +1,19 @@
 from .websocket import Websocket
 
+URL = "ws://172.17.25.92:8765"
+# URL = "wss://130.61.188.91/appsocket/2.0"
+# URL = "wss://motown-dev2.bluecurrent.nl/appsocket"
+
 class Client:
     def __init__(self):
         self.websocket = Websocket()
         pass
 
-    async def validate_token(self, token):
-        return await self.websocket.validate_token(token)
+    async def validate_token(self, token, url=URL):
+        return await self.websocket.validate_token(token, url)
 
-    async def connect(self, token):
-        await self.websocket.connect(token)
+    async def connect(self, token, url=URL):
+        await self.websocket.connect(token, url)
 
     async def start_loop(self):
         await self.websocket.loop()
