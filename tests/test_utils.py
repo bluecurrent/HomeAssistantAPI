@@ -9,6 +9,12 @@ def test_calculate_total_from_phases():
     total = calculate_usage_from_phases((10, None, 20))
     assert total == 15
 
+    total = calculate_usage_from_phases((10, 6, 10))
+    assert total == 9
+
+    total = calculate_usage_from_phases((10, 8, 1))
+    assert total == 6
+
     total = calculate_usage_from_phases((10, 0, 20))
     assert total == 15
 

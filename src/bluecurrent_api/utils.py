@@ -1,9 +1,9 @@
 def calculate_usage_from_phases(phases):
     phases = [p for p in phases if p]
-    return int(sum(phases) / len(phases))
+    return round(sum(phases) / len(phases))
 
 def calculate_watt(v, a):
-    return int(v * a)
+    return round(v * a)
 
 def handle_status(message):
     v1 = message["data"]["voltage 1"]
