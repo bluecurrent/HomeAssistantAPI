@@ -39,7 +39,7 @@ class Client:
     # switches
     async def set_public_charging(self, evse_id, value, receiver=None):
         request = self.create_request(
-            "SET_PUBLICCHARGING", evse_id, value
+            "SET_PUBLIC_CHARGING", evse_id, value
         )
         await self.websocket.send_request(request, receiver)
         
