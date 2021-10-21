@@ -5,14 +5,15 @@ import ssl
 from asyncio.exceptions import TimeoutError
 from websockets.exceptions import ConnectionClosed
 from .errors import WebsocketError
+from .utils import handle_status
 
 default_objects = ["STATUS", "CHARGE_POINTS", "GRID_STATUS"]
 
 class Websocket:
     _connection = None
+    _has_connection = False
     token = None
     receiver = None
-
 
     def __init__(self):
         pass
@@ -30,23 +31,33 @@ class Websocket:
 
     # connect to api
     async def connect(self, token, url):
+
+        #needed for wss
+        def get_ssl():
+            ssl_context = ssl.create_default_context()
+            ssl_context.check_hostname = False
+            ssl_context.verify_mode = ssl.CERT_NONE
+            return ssl_context
+        
+        # disconnect and raise an WebSocketError when an connection already exists
+        if self._has_connection:
+            await self.disconnect()
+            raise WebsocketError("Connection already exists.")
+
         self.token = token
         try:
             if url[:3] == 'wss':
-                self._connection = await websockets.connect(url, ssl=self.get_ssl())
+                self._connection = await websockets.connect(url, ssl=get_ssl())
             else:
                 self._connection = await websockets.connect(url)
+            self._has_connection = True
         except (ConnectionRefusedError, TimeoutError) as err:
-            print(err)
-            raise WebsocketError("cannot connect to the websocket", err)
-
-    def get_ssl():
-        ssl_context = ssl.create_default_context()
-        ssl_context.check_hostname = False
-        ssl_context.verify_mode = ssl.CERT_NONE
-        return ssl_context
+            raise WebsocketError("Cannot connect to the websocket.", err)
 
     async def send_request(self, request, receiver=None):
+
+        def check_receiver():
+            return bool(self.receiver)
 
         if not self.token:
             raise AttributeError('token not set')
@@ -54,8 +65,11 @@ class Websocket:
         request['Authorization'] = self.token
 
         if receiver:
+            if check_receiver():
+                # waiting until the old request has a response and the receiver is None again
+                await asyncio.sleep(0.1)
+                check_receiver()
             self.receiver = receiver
-        await asyncio.sleep(0.1)
         await self._send(request)
 
     async def loop(self):
@@ -63,51 +77,57 @@ class Websocket:
             
             message: dict = await self._recv()
 
-            # loop still has to work so the error needs to be handled inside on_data
-            # if "error" in message:
-            #     raise WebsocketError(message["error"])
-
-            message
-
-            # TODO
-            # check if auth ok ! raise invalidToken
+            # message = None when disconnect has been called
+            if not message:
+                break
             
-            if message["object"] not in default_objects:
+            elif message["object"] not in default_objects:
                 if self.receiver:
                     self.receiver(message)
                     self.receiver = None
             else:
+                if message["object"] == "STATUS":
+                    message = handle_status(message)
+
                 self.on_data(message)
+
 
     # json
     async def _send(self, data):
+        self.check_connection()
         try:
-            self.check_connection()
             data = json.dumps(data)
             await self._connection.send(data)
-        except WebsocketError:
-            pass
+        except ConnectionClosed:
+            if self._has_connection:
+                self._has_connection = False
+                raise WebsocketError("SEND connection was closed.")
 
     async def _recv(self):
+        self.check_connection()
         try:
-            self.check_connection()
             data = await self._connection.recv()
             return json.loads(data)
         except ConnectionClosed:
-            self._connection = None
-            raise WebsocketError("connection was closed")
-        except WebsocketError:
-            pass
 
-    # close connection
+            # needed for when disconnect gets called. 
+            # Because of the await on self._connection.close() python runs ths method. ConnectionClosed gets called
+            # and the WebsocketError is raised but because of the sleep python goes back to the the disconnect, 
+            # finished it and this method now sees that has_connection is False.
+            await asyncio.sleep(0.1)
+
+            if self._has_connection:
+                self._has_connection = False
+                raise WebsocketError("RECV connection was closed.")
+
     async def disconnect(self):
-        try:
-            self.check_connection()
-            await self._connection.close()
-            self._connection = None
-        except WebsocketError:
-            pass
+        self.check_connection()
+        if not self._has_connection:
+            raise WebsocketError("Connection is already closed.")
+        await self._connection.close()
+        self._has_connection = False
+
 
     def check_connection(self):
-       if not self._connection:
-           raise WebsocketError("connection does not exist")
+        if not self._connection:
+            raise WebsocketError("Connection never started.")
