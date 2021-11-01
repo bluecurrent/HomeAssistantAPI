@@ -133,9 +133,4 @@ async def test_request_routing(mocker: MockerFixture):
         connection.set_next(1)
         await client.set_operative('101', True, a)
         connection.set_next(0)
-
-
-        # await asyncio.sleep(0.2)
-        # websocket._has_connection = False
-        # connection.set_next(3)
     await asyncio.gather(requests(), websocket.loop())
