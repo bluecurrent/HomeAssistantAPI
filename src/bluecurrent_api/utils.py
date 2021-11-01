@@ -5,6 +5,18 @@ def calculate_usage_from_phases(phases):
 def calculate_watt(v, a):
     return round(v * a)
 
+def get_vehicle_status(vehicle_status_key):
+    statuses = {
+        "A": "standby", 
+        "B": "vehicle detected",
+        "C": "ready",
+        "D":  "with ventialtion",
+        "E":  "no power",
+        "F":  "error",     
+    }
+
+    return statuses[vehicle_status_key]
+
 def handle_status(message):
     v1 = message["data"]["voltage 1"]
     v2 = message["data"]["voltage 2"]
@@ -22,6 +34,9 @@ def handle_status(message):
 
     wh = calculate_watt(v_total, c_total)
     message["data"]["total wh"] = wh
+
+    vehicle_status_key =  message["data"]["vehicle_status"]
+    message["data"]["vehicle_status"] = get_vehicle_status(vehicle_status_key)
 
     return message
     

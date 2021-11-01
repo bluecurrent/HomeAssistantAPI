@@ -1,4 +1,3 @@
-from datetime import datetime as dt, timedelta
 from src.bluecurrent_api.utils import *
 
 
@@ -21,12 +20,13 @@ def test_calculate_total_from_phases():
     total = calculate_usage_from_phases((5, 0, 0))
     assert total == 5
 
-def test_calculate_watt():
-    wh = calculate_watt(10, 10)
-    assert wh == 100
-
-    wh = calculate_watt(0, 10)
-    assert wh == 0
+def test_get_vehicle_status():
+    assert get_vehicle_status("A") == "standby"
+    assert get_vehicle_status("B") == "vehicle detected"
+    assert get_vehicle_status("C") == "ready"
+    assert get_vehicle_status("D") == "with ventialtion"
+    assert get_vehicle_status("E") == "no power"
+    assert get_vehicle_status("F") == "error"
 
 def test_handle_status():
     message = {
@@ -37,6 +37,7 @@ def test_handle_status():
             "current 1": 12,
             "current 2": 6,
             "current 3": 6,
+            "vehicle_status": "A"
         }
     }
 
@@ -44,4 +45,4 @@ def test_handle_status():
 
     assert result["data"]["total voltage"] == 10
     assert result["data"]["total current"] == 8
-    assert result["data"]["total wh"] == 80
+    assert result["data"]["vehicle_status"] == "standby"

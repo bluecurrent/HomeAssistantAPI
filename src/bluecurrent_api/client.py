@@ -1,6 +1,7 @@
 from .websocket import Websocket
 
-URL = "ws://172.17.25.92:8765"
+# URL = "ws://172.17.25.92:8765"
+URL = "wss://bo-acct001.bluecurrent.nl/appserver/2.0"
 # URL = "wss://130.61.188.91/appsocket/2.0"
 # URL = "wss://motown-dev2.bluecurrent.nl/appsocket"
 
