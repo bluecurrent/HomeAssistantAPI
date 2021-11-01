@@ -56,8 +56,12 @@ class Websocket:
 
     async def send_request(self, request, receiver=None):
 
-        def check_receiver():
-            return bool(self.receiver)
+        async def check_receiver():
+            if bool(self.receiver) and self._has_connection:
+                await asyncio.sleep(0.1)
+                await check_receiver()
+            else:
+                return
 
         if not self.token:
             raise AttributeError('token not set')
@@ -65,17 +69,15 @@ class Websocket:
         request['Authorization'] = self.token
 
         if receiver:
-            if check_receiver():
-                # waiting until the old request has a response and the receiver is None again
-                await asyncio.sleep(0.1)
-                check_receiver()
+            await check_receiver()
+
             self.receiver = receiver
         await self._send(request)
 
     async def loop(self):
         while True:
             
-            message: dict = await self._recv()
+            message: dict = await self._recv()       
 
             # message = None when disconnect has been called
             if not message:
