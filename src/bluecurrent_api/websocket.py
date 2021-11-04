@@ -7,7 +7,7 @@ from websockets.exceptions import ConnectionClosed
 from .errors import WebsocketError
 from .utils import handle_status
 
-default_objects = ["STATUS", "CHARGE_POINTS", "GRID_STATUS"]
+default_objects = ["STATUS", "CHARGE_POINTS", "CHARGEPOINTS", "GRID_STATUS"]
 
 class Websocket:
     _connection = None
@@ -22,14 +22,22 @@ class Websocket:
         await self.connect(token, url)
         await self.send_request({"command": "VALIDATE_TOKEN"})
         res = await self._recv()
+        # check result
         await self.disconnect()
-        return bool(res['data'])
+        
+        return True # temp
+
+    async def get_charge_cards(self, token, url):
+        await self.connect(token, url)
+        await self.send_request({"command": "GET_CARDS"})
+        res = await self._recv()
+        await self.disconnect()
+        return res
 
 
     def set_on_data(self, on_data):
         self.on_data = on_data
 
-    # connect to api
     async def connect(self, token, url):
 
         #needed for wss
@@ -77,9 +85,8 @@ class Websocket:
     async def loop(self):
         while True:
             
-            message: dict = await self._recv()       
-
-            # message = None when disconnect has been called
+            message: dict = await self._recv()
+    
             if not message:
                 break
             
@@ -89,7 +96,8 @@ class Websocket:
                     self.receiver = None
             else:
                 if message["object"] == "STATUS":
-                    message = handle_status(message)
+                    pass
+                    # message = handle_status(message)
 
                 self.on_data(message)
 
