@@ -1,6 +1,6 @@
 def calculate_usage_from_phases(phases):
     phases = [p for p in phases if p]
-    return round(sum(phases) / len(phases))
+    return round(sum(phases) / len(phases), 1)
 
 def get_vehicle_status(vehicle_status_key):
     statuses = {

@@ -1,6 +1,5 @@
 from .websocket import Websocket
 
-# URL = "ws://172.17.25.92:8765"
 URL = "wss://bo-acct001.bluecurrent.nl/appserver/2.0"
 # URL = "wss://130.61.188.91/appsocket/2.0"
 # URL = "wss://motown-dev2.bluecurrent.nl/appsocket"
@@ -12,6 +11,9 @@ class Client:
 
     async def validate_token(self, token, url=URL):
         return await self.websocket.validate_token(token, url)
+    
+    async def get_charge_cards(self, token, url=URL):
+        return await self.websocket.get_charge_cards(token, url)
 
     async def connect(self, token, url=URL):
         await self.websocket.connect(token, url)
@@ -56,10 +58,6 @@ class Client:
             "SET_OPERATIVE", evse_id, value
         )
         await self.websocket.send_request(request, receiver)
-
-    async def unlock_connector(self, evse_id):
-        request = self.create_request("UNLOCK_CONNECTOR", evse_id)
-        await self.websocket.send_request(request)
 
     async def reset(self, evse_id):
         request = self.create_request("RESET", evse_id)
