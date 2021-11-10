@@ -65,7 +65,7 @@ class Websocket:
     async def send_request(self, request, receiver=None):
 
         async def check_receiver():
-            if bool(self.receiver) and self._has_connection:
+            if self.receiver is not None and self._has_connection:
                 await asyncio.sleep(0.1)
                 await check_receiver()
             else:
@@ -124,7 +124,7 @@ class Websocket:
             # Because of the await on self._connection.close() python runs ths method. ConnectionClosed gets called
             # and the WebsocketError is raised but because of the sleep python goes back to the the disconnect, 
             # finished it and this method now sees that has_connection is False.
-            await asyncio.sleep(0.1)
+            # await asyncio.sleep(0.1)
 
             if self._has_connection:
                 self._has_connection = False
@@ -134,8 +134,8 @@ class Websocket:
         self.check_connection()
         if not self._has_connection:
             raise WebsocketError("Connection is already closed.")
-        await self._connection.close()
         self._has_connection = False
+        await self._connection.close()
 
 
     def check_connection(self):

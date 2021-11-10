@@ -14,7 +14,7 @@ class DummyConnection:
         pass
 
     async def send(self, data):
-        return
+        pass
 
     async def recv(self):
         return json.dumps({'object': 'test'})
@@ -193,4 +193,22 @@ async def test_no_connection():
     with pytest.raises(WebsocketError):
         await client.get_status('101')
 
+
+# @pytest.mark.asyncio
+# async def test_recv_disconnect():
+#     client = Client()
+
+#     async def requests():
+#         await client.get_charge_points()
+#         await client.disconnect()
+
+#     client.set_on_data(print)
+
+
+#     await client.connect('123', "ws://172.26.127.215:8765")
+
+#     await asyncio.gather(
+#         client.start_loop(),
+#         requests()
+#     )
 

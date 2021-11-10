@@ -24,12 +24,12 @@ def test_set_on_data():
     assert client.websocket.on_data == print
 
 
-@pytest.mark.asyncio
-async def test_server_down():
+# @pytest.mark.asyncio
+# async def test_server_down():
 
-    client = Client()
-    with pytest.raises(WebsocketError) as err:
-        await client.connect('123', 'ws://172.29.165.154')
+#     client = Client()
+#     with pytest.raises(WebsocketError) as err:
+#         await client.connect('123', 'ws://172.29.165.154')
 
 
 
