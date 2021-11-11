@@ -15,16 +15,16 @@ def get_vehicle_status(vehicle_status_key):
     return statuses[vehicle_status_key]
 
 def handle_status(message):
-    v1 = message["data"]["voltage 1"]
-    v2 = message["data"]["voltage 2"]
-    v3 = message["data"]["voltage 3"]
+    v1 = message["data"]["actual_v1"]
+    v2 = message["data"]["actual_v2"]
+    v3 = message["data"]["actual_v3"]
 
-    v_total = calculate_usage_from_phases((v1, v2 ,v3))
+    v_total = calculate_usage_from_phases((v1, v2, v3))
     message["data"]["total voltage"] = v_total
 
-    c1 = message["data"]["current 1"]
-    c2 = message["data"]["current 2"]
-    c3 = message["data"]["current 3"]
+    c1 = message["data"]["actual_p1"]
+    c2 = message["data"]["actual_p2"]
+    c3 = message["data"]["actual_p3"]
 
     c_total = calculate_usage_from_phases((c1, c2 ,c3))
     message["data"]["total current"] = c_total

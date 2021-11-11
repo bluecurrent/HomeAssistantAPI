@@ -31,8 +31,12 @@ class Client:
         request = self.create_request("GET_STATUS", evse_id)
         await self.websocket.send_request(request)
 
+    async def get_settings(self, evse_id):
+        request = self.create_request("GET_SETTINGS", evse_id)
+        await self.websocket.send_request(request)
+
     async def get_charge_points(self):
-        request = self.create_request("GET_CHARGEPOINTS")
+        request = self.create_request("GET_CHARGE_POINTS")
         await self.websocket.send_request(request)
 
     async def get_grid_status(self):

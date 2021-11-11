@@ -7,7 +7,7 @@ from websockets.exceptions import ConnectionClosed
 from .errors import WebsocketError
 from .utils import handle_status
 
-default_objects = ["STATUS", "CHARGE_POINTS", "CHARGEPOINTS", "GRID_STATUS"]
+default_objects = ["STATUS", "CHARGE_POINTS", "GRID", "SETTINGS"]
 
 class Websocket:
     _connection = None
@@ -84,12 +84,12 @@ class Websocket:
 
     async def loop(self):
         while True:
-            
+
             message: dict = await self._recv()
-    
+
             if not message:
                 break
-            
+
             elif message["object"] not in default_objects:
                 if self.receiver:
                     self.receiver(message)
@@ -97,9 +97,9 @@ class Websocket:
             else:
                 if message["object"] == "STATUS":
                     pass
-                    # message = handle_status(message)
-
-                self.on_data(message)
+                    message = handle_status(message)
+                #todo
+                await self.on_data(message)
 
 
     # json
