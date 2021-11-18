@@ -1,6 +1,11 @@
+from datetime import datetime
+
 def calculate_usage_from_phases(phases):
     phases = [p for p in phases if p]
     return round(sum(phases) / len(phases), 1)
+
+def create_datetime(timestamp):
+    return datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S")
 
 def get_vehicle_status(vehicle_status_key):
     statuses = {
@@ -20,17 +25,34 @@ def handle_status(message):
     v3 = message["data"]["actual_v3"]
 
     v_total = calculate_usage_from_phases((v1, v2, v3))
-    message["data"]["total voltage"] = v_total
+    message["data"]["total_voltage"] = v_total
 
     c1 = message["data"]["actual_p1"]
     c2 = message["data"]["actual_p2"]
     c3 = message["data"]["actual_p3"]
 
     c_total = calculate_usage_from_phases((c1, c2 ,c3))
-    message["data"]["total current"] = c_total
+    message["data"]["total_current"] = c_total
 
     vehicle_status_key =  message["data"]["vehicle_status"]
     message["data"]["vehicle_status"] = get_vehicle_status(vehicle_status_key)
 
+    start_session =  message["data"]["start_session"]
+    message["data"]["start_session"] = create_datetime(start_session)
+
+    stop_session =  message["data"]["stop_session"]
+    message["data"]["stop_session"] = create_datetime(stop_session)
+
+    offline_since =  message["data"]["offline_since"]
+    message["data"]["offline_since"] = create_datetime(offline_since)
+
     return message
     
+
+def handle_grid(message):
+    c1 = message["data"]["grid_actual_p1"]
+    c2 = message["data"]["grid_actual_p2"]
+    c3 = message["data"]["grid_actual_p3"]
+
+    c_total = calculate_usage_from_phases((c1, c2 ,c3))
+    message["data"]["grid_total_current"] = c_total

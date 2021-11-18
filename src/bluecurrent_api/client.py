@@ -45,22 +45,16 @@ class Client:
 
     # switches
     async def set_public_charging(self, evse_id, value, receiver=None):
-        request = self.create_request(
-            "SET_PUBLIC_CHARGING", evse_id, value
-        )
+        request = self.create_request("SET_PUBLIC_CHARGING", evse_id, value)
         await self.websocket.send_request(request, receiver)
         
 
     async def set_plug_and_charge(self, evse_id, value, receiver=None):
-        request = self.create_request(
-            "SET_PLUG_AND_CHARGE", evse_id, value
-        )
+        request = self.create_request("SET_PLUG_AND_CHARGE", evse_id, value)
         await self.websocket.send_request(request, receiver)
 
-    async def set_operative(self, evse_id, value, receiver=None):
-        request = self.create_request(
-            "SET_OPERATIVE", evse_id, value
-        )
+    async def set_available(self, evse_id, value, receiver=None):
+        request = self.create_request("SET_AVAILABLE", evse_id, value)
         await self.websocket.send_request(request, receiver)
 
     async def reset(self, evse_id):

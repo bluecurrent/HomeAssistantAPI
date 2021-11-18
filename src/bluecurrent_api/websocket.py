@@ -5,7 +5,7 @@ import ssl
 from asyncio.exceptions import TimeoutError
 from websockets.exceptions import ConnectionClosed
 from .errors import WebsocketError
-from .utils import handle_status
+from .utils import handle_grid, handle_status
 
 default_objects = ["STATUS", "CHARGE_POINTS", "GRID", "SETTINGS"]
 
@@ -90,14 +90,18 @@ class Websocket:
             if not message:
                 break
 
+            elif message.get('error') is not None:
+                raise WebsocketError(message.get('error'))
+
             elif message["object"] not in default_objects:
                 if self.receiver:
                     self.receiver(message)
                     self.receiver = None
             else:
                 if message["object"] == "STATUS":
-                    pass
                     message = handle_status(message)
+                elif message["object"] == "GRID":
+                    message = handle_grid(message)
                 #todo
                 await self.on_data(message)
 
