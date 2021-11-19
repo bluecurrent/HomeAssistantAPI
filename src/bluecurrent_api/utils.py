@@ -56,3 +56,5 @@ def handle_grid(message):
 
     c_total = calculate_usage_from_phases((c1, c2 ,c3))
     message["data"]["grid_total_current"] = c_total
+
+    return message

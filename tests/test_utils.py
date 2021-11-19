@@ -1,4 +1,5 @@
 from src.bluecurrent_api.utils import *
+from datetime import datetime
 
 
 def test_calculate_total_from_phases():
@@ -28,21 +29,43 @@ def test_get_vehicle_status():
     assert get_vehicle_status("E") == "no power"
     assert get_vehicle_status("F") == "error"
 
+def test_create_datetime():
+    assert create_datetime("2021-11-18T14:12:23") == datetime(2021, 11, 18, 14, 12, 23)
+
 def test_handle_status():
     message = {
         "data": {
-            "voltage 1": 12,
-            "voltage 2": 6,
-            "voltage 3": 12,
-            "current 1": 12,
-            "current 2": 6,
-            "current 3": 6,
-            "vehicle_status": "A"
+            'actual_v1': 12,
+            'actual_v2': 14,
+            'actual_v3': 15,
+            'actual_p1': 12,
+            'actual_p2': 10,
+            'actual_p3': 15,
+            'activity': "charging",
+            'start_session': "2021-11-18T14:12:23",
+            'stop_session': "2021-11-18T14:32:23",
+            'offline_since': "2021-11-18T14:32:23",
+            'total_cost': 10.52,
+            'vehicle_status': "A",
+            'actual_kwh': 10,
+            'evse_id': "101",
         }
     }
 
     result = handle_status(message)
 
-    assert result["data"]["total voltage"] == 10
-    assert result["data"]["total current"] == 8
+    assert result["data"]["total_voltage"] == 13.7
+    assert result["data"]["total_current"] == 12.3
     assert result["data"]["vehicle_status"] == "standby"
+
+def test_handle_grid():
+    message = {
+        "data": {
+            'grid_actual_p1': 12,
+            'grid_actual_p2': 14,
+            'grid_actual_p3': 15,
+        }
+    }
+
+    result = handle_grid(message)
+    assert result["data"]["grid_total_current"] == 13.7

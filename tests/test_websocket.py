@@ -106,7 +106,7 @@ async def test_request_routing(mocker: MockerFixture):
             elif self.next == 0:
                 a = {'object': 'SET_PUBLIC_CHARGING'}
             elif self.next == 1:
-                a = {'object': 'SET_OPERATIVE'}
+                a = {'object': 'SET_AVAILABLE'}
             
             self.next = 4
             return json.dumps(a)
@@ -129,18 +129,18 @@ async def test_request_routing(mocker: MockerFixture):
         assert data["object"] == 'SET_PUBLIC_CHARGING'
 
     def b(data):
-        assert data["object"] == 'SET_OPERATIVE'
+        assert data["object"] == 'SET_AVAILABLE'
 
     async def requests():
-        await client.set_operative('101', True, b)
+        await client.set_available('101', True, b)
         connection.set_next(1)
         await client.set_public_charging('101', True, a)
         connection.set_next(0)
-        await client.set_operative('101', True, b)
+        await client.set_available('101', True, b)
         connection.set_next(1)
-        await client.set_operative('101', True, b)
+        await client.set_available('101', True, b)
         connection.set_next(1)
-        await client.set_operative('101', True, a)
+        await client.set_available('101', True, a)
         connection.set_next(0)
 
         websocket._has_connection = False
@@ -192,23 +192,3 @@ async def test_no_connection():
 
     with pytest.raises(WebsocketError):
         await client.get_status('101')
-
-
-# @pytest.mark.asyncio
-# async def test_recv_disconnect():
-#     client = Client()
-
-#     async def requests():
-#         await client.get_charge_points()
-#         await client.disconnect()
-
-#     client.set_on_data(print)
-
-
-#     await client.connect('123', "ws://172.26.127.215:8765")
-
-#     await asyncio.gather(
-#         client.start_loop(),
-#         requests()
-#     )
-
