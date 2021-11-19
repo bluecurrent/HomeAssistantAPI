@@ -7,6 +7,13 @@ def calculate_usage_from_phases(phases):
 def create_datetime(timestamp):
     return datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S")
 
+#not supported in Home Assistant
+# def calculate_duration(start, stop=None):
+#     if not stop:
+#         stop = datetime.now()
+
+#     return stop - start
+
 def get_vehicle_status(vehicle_status_key):
     statuses = {
         "A": "standby", 
