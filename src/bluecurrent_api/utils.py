@@ -8,11 +8,11 @@ def create_datetime(timestamp):
     return datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S")
 
 #not supported in Home Assistant
-# def calculate_duration(start, stop=None):
-#     if not stop:
-#         stop = datetime.now()
+def calculate_duration(start, stop=None):
+    if not stop:
+        stop = datetime.now()
 
-#     return stop - start
+    return stop - start
 
 def get_vehicle_status(vehicle_status_key):
     statuses = {
@@ -44,11 +44,17 @@ def handle_status(message):
     vehicle_status_key =  message["data"]["vehicle_status"]
     message["data"]["vehicle_status"] = get_vehicle_status(vehicle_status_key)
 
-    start_session =  message["data"]["start_session"]
-    message["data"]["start_session"] = create_datetime(start_session)
+    start_session = message["data"]["start_session"]
+    new_start_session = create_datetime(start_session)
 
-    stop_session =  message["data"]["stop_session"]
-    message["data"]["stop_session"] = create_datetime(stop_session)
+    stop_session = message["data"]["stop_session"]
+    new_stop_session = create_datetime(stop_session)
+
+    message["data"]["start_session"] = new_start_session
+    message["data"]["stop_session"] = new_stop_session
+    # message["data"]["session_duration"] = calculate_duration(
+    #     new_start_session, new_stop_session
+    # )
 
     offline_since =  message["data"]["offline_since"]
     message["data"]["offline_since"] = create_datetime(offline_since)

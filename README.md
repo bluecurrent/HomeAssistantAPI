@@ -28,44 +28,44 @@ from blue_current_api.errors import ConnectionError
 import asyncio
 
 async def main():
-        token = 'token'
-        client = Client()
+    token = 'token'
+    client = Client()
 
-        #different receivers
-        def on_data(data):
-            print('received: ', data)
-     
-        def a(data):
-            print('a: ', data)
+    #different receivers
+    def on_data(data):
+        print('received: ', data)
+    
+    def a(data):
+        print('a: ', data)
 
-        # the receiver loop inside an try except to catch the connection error when the connection is stopped
-        async def loop():
-            try:
-                await client.start_loop()
-            except ConnectionError:
-                print('disconnected')
+    # the receiver loop inside an try except to catch the connection error when the connection is stopped
+    async def loop():
+        try:
+            await client.start_loop()
+        except ConnectionError:
+            print('disconnected')
 
-        # example requests
-        async def requests():
-            await client.set_operative('101', True, a)
-            await client.get_charge_points()
-            await client.set_plug_and_charge('101', True)
-            await client.disconnect()
+    # example requests
+    async def requests():
+        await client.set_operative('101', True, a)
+        await client.get_charge_points()
+        await client.set_plug_and_charge('101', True)
+        await client.disconnect()
 
 
-        #store the on_data method
-        client.set_on_data(on_data)
+    #store the on_data method
+    client.set_on_data(on_data)
 
-        #connect to the websocket
-        await client.connect(token)
+    #connect to the websocket
+    await client.connect(token)
 
-        #start the loop and send requests
-        await asyncio.gather(
-            loop(),
-            requests()
-        )
+    #start the loop and send requests
+    await asyncio.gather(
+        loop(),
+        requests()
+    )
 
-    asyncio.run(main())
+asyncio.run(main())
 ```
 
 ## Implemented methods

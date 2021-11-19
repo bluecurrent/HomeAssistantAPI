@@ -47,6 +47,11 @@ class Client:
     async def set_public_charging(self, evse_id, value, receiver=None):
         request = self.create_request("SET_PUBLIC_CHARGING", evse_id, value)
         await self.websocket.send_request(request, receiver)
+
+        #available / activity fix
+        # request = self.create_request("GET_STATUS", evse_id)
+        # await self.websocket.send_request(request)
+
         
 
     async def set_plug_and_charge(self, evse_id, value, receiver=None):
