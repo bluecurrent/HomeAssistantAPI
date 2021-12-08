@@ -21,6 +21,9 @@ def test_calculate_total_from_phases():
     total = calculate_usage_from_phases((5, 0, 0))
     assert total == 5
 
+    total = calculate_usage_from_phases((6, None, None))
+    assert total == 6
+
 def test_get_vehicle_status():
     assert get_vehicle_status("A") == "standby"
     assert get_vehicle_status("B") == "vehicle detected"
@@ -56,17 +59,17 @@ def test_handle_status():
     stop = message["data"]["stop_session"]
     offline = message["data"]["offline_since"]
 
-    result = handle_status(message)
+    handle_status(message)
 
-    assert result["data"]["total_voltage"] == 13.7
-    assert result["data"]["total_current"] == 12.3
-    assert result["data"]["start_session"] == datetime.strptime(start, "%Y-%m-%dT%H:%M:%S")
-    assert result["data"]["stop_session"] ==  datetime.strptime(stop, "%Y-%m-%dT%H:%M:%S")
-    assert result["data"]["offline_since"] ==  datetime.strptime(offline, "%Y-%m-%dT%H:%M:%S")
+    assert message["data"]["total_voltage"] == 13.7
+    assert message["data"]["total_current"] == 12.3
+    assert message["data"]["start_session"] == datetime.strptime(start, "%Y-%m-%dT%H:%M:%S")
+    assert message["data"]["stop_session"] ==  datetime.strptime(stop, "%Y-%m-%dT%H:%M:%S")
+    assert message["data"]["offline_since"] ==  datetime.strptime(offline, "%Y-%m-%dT%H:%M:%S")
     # assert result["data"]["session_duration"] ==  datetime.strptime(message["data"]["offline_since"], "%Y-%m-%dT%H:%M:%S")
-    assert result["data"]["vehicle_status"] == "standby"
+    assert message["data"]["vehicle_status"] == "standby"
 
-    assert len(result["data"]) == 16 # 17 = duration
+    assert len(message["data"]) == 16 # 17 = duration
 
 
 def test_handle_grid():
@@ -78,7 +81,7 @@ def test_handle_grid():
         }
     }
 
-    result = handle_grid(message)
-    assert result["data"]["grid_total_current"] == 13.7
+    handle_grid(message)
+    assert message["data"]["grid_total_current"] == 13.7
 
-    assert len(result["data"]) == 4
+    assert len(message["data"]) == 4
