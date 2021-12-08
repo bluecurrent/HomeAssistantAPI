@@ -99,9 +99,9 @@ class Websocket:
                     self.receiver = None
             else:
                 if message["object"] == "STATUS":
-                    message = handle_status(message)
+                    handle_status(message)
                 elif message["object"] == "GRID":
-                    message = handle_grid(message)
+                    handle_grid(message)
                 #todo
                 await self.on_data(message)
 
