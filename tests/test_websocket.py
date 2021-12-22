@@ -1,194 +1,198 @@
+from unittest.mock import AsyncMock
+from src.bluecurrent_api.websocket import Websocket
 from src.bluecurrent_api.errors import WebsocketError
-from src.bluecurrent_api import Client
 from asyncio.exceptions import TimeoutError
 import pytest
 import asyncio
 from pytest_mock import MockerFixture
-import json
 from websockets.exceptions import ConnectionClosed
 
-URL = 'ws://172.22.197.115:8765'
 
-class DummyConnection:
-    def __init__(self):
+def test_set_on_data():
+    websocket = Websocket()
+
+    def on_data():
         pass
 
-    async def send(self, data):
+    async def async_on_data():
         pass
 
-    async def recv(self):
-        return json.dumps({'object': 'test'})
+    websocket.set_on_data(on_data)
+    assert websocket.on_data == on_data
+    assert websocket.is_coroutine == False
 
-    async def close(self):
-        return True
+    websocket.set_on_data(async_on_data)
+    assert websocket.on_data == async_on_data
+    assert websocket.is_coroutine == True
 
-def dummy_recv(data):
-    return
+
+# @pytest.mark.asyncio
+# async def test_double_connect(mocker: MockerFixture):
+#     client = Client()
+#     websocket = client.websocket
+#     websocket.token = '123'
+#     websocket._has_connection = True
+
+#     connection = DummyConnection()
+
+#     mocker.patch.object(websocket, '_connection', connection)
+#     with pytest.raises(WebsocketError):
+#         await client.connect('123', '')
+
+
+# @pytest.mark.asyncio
+# async def test_no_connection():
+#     client = Client()
+#     client.websocket.token = '123'
+
+#     with pytest.raises(WebsocketError):
+#         await client.start_loop()
+
+#     with pytest.raises(WebsocketError):
+#         await client.get_status('101')
 
 @pytest.mark.asyncio
 async def test_connect(mocker: MockerFixture):
+    websocket = Websocket()
+    url = 'ws://172.21.107.206:8765'
+    token = '123'
 
-    client = Client()
+    websocket._has_connection = True
+    with pytest.raises(WebsocketError):
+        await websocket.connect(token, url)
 
-    websocket = client.websocket
+    websocket._has_connection = False
+    mocker.patch.object(Websocket, '_connection')
+    mocker.patch(
+        'src.bluecurrent_api.websocket.websockets.connect', create=True, side_effect=ConnectionRefusedError)
+    with pytest.raises(WebsocketError):
+        await websocket.connect(token, url)
+    mocker.patch(
+        'src.bluecurrent_api.websocket.websockets.connect', create=True, side_effect=TimeoutError)
+    with pytest.raises(WebsocketError):
+        await websocket.connect(token, 'wss://172.21.107.206:8765')
 
-    mocker.patch('bluecurrent_api.websocket.websockets.connect', side_effect=TimeoutError('mocked error'))
+
+@pytest.mark.asyncio
+async def test_send_request(mocker: MockerFixture):
+    websocket = Websocket()
+    mock_send = mocker.patch.object(Websocket, '_send')
+
+    # without on_data
+    with pytest.raises(WebsocketError):
+        await websocket.send_request({"command": "GET_CHARGE_POINTS"})
+
+    websocket.on_data = mocker.Mock()
+
+    # without token
+    with pytest.raises(WebsocketError):
+        await websocket.send_request({"command": "GET_CHARGE_POINTS"})
+
+    websocket.token = '123'
+
+    await websocket.send_request({"command": "GET_CHARGE_POINTS"})
+
+    mock_send.assert_called_with(
+        {"command": "GET_CHARGE_POINTS", "authorization": "123"})
+
+
+@pytest.mark.asyncio
+async def test_loop():
+    websocket = Websocket()
 
     with pytest.raises(WebsocketError):
-        await websocket.connect('123', 'dummy')
+        await websocket.loop()
+
+
+@pytest.mark.asyncio
+async def test_message_handler(mocker: MockerFixture):
+
+    mock_handle_status = mocker.patch(
+        'src.bluecurrent_api.websocket.handle_status')
+    mock_handle_grid = mocker.patch(
+        'src.bluecurrent_api.websocket.handle_grid')
+
+    websocket = Websocket()
+
+    async_mock_on_data = AsyncMock()
+    websocket.set_on_data(async_mock_on_data)
+
+    # normal flow with async on_data
+    message = {"object": "CHARGE_POINTS"}
+    mocker.patch.object(Websocket, '_recv', return_value=message)
+    await websocket._message_handler()
+    async_mock_on_data.assert_called_with(message)
+
+    mock_on_data = mocker.MagicMock()
+    websocket.set_on_data(mock_on_data)
+
+    # normal flow
+    message = {"object": "CHARGE_POINTS"}
+    mocker.patch.object(Websocket, '_recv', return_value=message)
+    await websocket._message_handler()
+    mock_on_data.assert_called_with(message)
+
+    # ch_status flow
+    message = {"object": "CH_STATUS"}
+    mocker.patch.object(Websocket, '_recv', return_value=message)
+    await websocket._message_handler()
+    mock_handle_status.assert_called_with(message)
+    mock_on_data.assert_called_with(message)
+
+    # grid_status flow
+    message = {"object": "GRID_STATUS"}
+    mocker.patch.object(Websocket, '_recv', return_value=message)
+    await websocket._message_handler()
+    mock_handle_grid.assert_called_with(message)
+    mock_on_data.assert_called_with(message)
+
+    # no object
+    message = {"value": True}
+    mocker.patch.object(Websocket, '_recv', return_value=message)
+    with pytest.raises(WebsocketError):
+        await websocket._message_handler()
 
 
 @pytest.mark.asyncio
 async def test_send(mocker: MockerFixture):
-
-    client = Client()
-    websocket = client.websocket
-    websocket.token = '123'
-    connection = DummyConnection()
-    
-    mocker.patch.object(websocket, '_connection', connection)
-
-    mocker.patch('src.bluecurrent_api.client.Websocket.check_connection', return_value=True)
-    await client.get_status('101')
-
-
-@pytest.mark.asyncio
-async def test_receiver(mocker: MockerFixture):
-    """Receiver should be set after given to request, and should be gone after response has been received"""
-
-    class DummyConnection:
-        called = False
-
-        def __init__(self):
-            pass
-
-        async def send(self, data):
-            return
-
-        async def recv(self):
-            if self.called:
-                raise ConnectionClosed(None, None)
-            self.called = True
-            return json.dumps({'object': 'test'})
-
-    client = Client()
-    websocket = client.websocket
-    websocket.token = '123'
-    
-    mocker.patch.object(websocket, '_connection', DummyConnection())
-    mocker.patch('src.bluecurrent_api.client.Websocket.check_connection', return_value=True)
-
-    await client.set_public_charging('101', True, dummy_recv)
-
-    assert websocket.receiver == dummy_recv
-
-    await websocket.loop()
-
-    assert websocket.receiver == None
-
-@pytest.mark.asyncio
-async def test_request_routing(mocker: MockerFixture):
-
-    class DummyConnection:
-        next = 4
-
-        def __init__(self):
-            pass
-
-        async def send(self, data):
-            return
-
-        async def recv(self):
-            await asyncio.sleep(0.1)
-            a = None
-            if self.next == 3:
-                raise ConnectionClosed(None, None)
-            elif self.next == 0:
-                a = {'object': 'SET_PUBLIC_CHARGING'}
-            elif self.next == 1:
-                a = {'object': 'SET_AVAILABLE'}
-            
-            self.next = 4
-            return json.dumps(a)
-
-        def set_next(self, next):
-            self.next = next
-            
-
-    connection = DummyConnection()
-
-    client = Client()
-    websocket = client.websocket
-    websocket.token = '123'
+    websocket = Websocket()
     websocket._has_connection = True
+    mocker.patch.object(Websocket, '_connection')
+    mocker.patch(
+        'src.bluecurrent_api.websocket.Websocket._connection.send', create=True, side_effect=ConnectionClosed(None, None))
 
-    mocker.patch.object(websocket, '_connection', connection)
-    mocker.patch('src.bluecurrent_api.client.Websocket.check_connection', return_value=True)
+    with pytest.raises(WebsocketError):
+        await websocket._send("test")
+    assert websocket._has_connection == False
 
-    def a(data):
-        assert data["object"] == 'SET_PUBLIC_CHARGING'
 
-    def b(data):
-        assert data["object"] == 'SET_AVAILABLE'
+@pytest.mark.asyncio
+async def test_recv(mocker: MockerFixture):
+    websocket = Websocket()
+    websocket._has_connection = True
+    mocker.patch.object(Websocket, '_connection')
+    mocker.patch(
+        'src.bluecurrent_api.websocket.Websocket._connection.recv', create=True, side_effect=ConnectionClosed(None, None))
 
-    async def requests():
-        await client.set_available('101', True, b)
-        connection.set_next(1)
-        await client.set_public_charging('101', True, a)
-        connection.set_next(0)
-        await client.set_available('101', True, b)
-        connection.set_next(1)
-        await client.set_available('101', True, b)
-        connection.set_next(1)
-        await client.set_available('101', True, a)
-        connection.set_next(0)
-
-        websocket._has_connection = False
-        connection.set_next(3)
-    await asyncio.gather(requests(), websocket.loop())
-
+    with pytest.raises(WebsocketError):
+        await websocket._recv()
+    assert websocket._has_connection == False
 
 
 @pytest.mark.asyncio
 async def test_disconnect(mocker: MockerFixture):
-    client = Client()
-    websocket = client.websocket
-    
-    with pytest.raises(WebsocketError):
-        await client.disconnect()
-
-
-    websocket.token = '123'
+    websocket = Websocket()
     websocket._has_connection = True
+    mocker.patch.object(Websocket, '_connection')
+    mocker.patch(
+        'src.bluecurrent_api.websocket.Websocket._connection.close', create=True, side_effect=AsyncMock())
 
-    connection = DummyConnection()
+    await websocket.disconnect()
+    assert websocket._has_connection == False
 
-    mocker.patch.object(websocket, '_connection', connection)
-    mocker.patch('src.bluecurrent_api.client.Websocket.check_connection', return_value=True)
-    await client.disconnect()
-    with pytest.raises(WebsocketError):
-        await client.disconnect()
-
-@pytest.mark.asyncio
-async def test_double_connect(mocker: MockerFixture):
-    client = Client()
-    websocket = client.websocket
-    websocket.token = '123'
-    websocket._has_connection = True
-
-    connection = DummyConnection()
-
-    mocker.patch.object(websocket, '_connection', connection)
-    with pytest.raises(WebsocketError):
-        await client.connect('123', '')
-
-@pytest.mark.asyncio
-async def test_no_connection():
-    client = Client()
-    client.websocket.token = '123'
-
-    with pytest.raises(WebsocketError):
-        await client.start_loop()
-
-    with pytest.raises(WebsocketError):
-        await client.get_status('101')
+# todo
+# ssl
+# object whitelist ?
+# check_connection
+# validate_token
+# get_charge_cards

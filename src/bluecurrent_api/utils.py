@@ -7,16 +7,8 @@ def calculate_usage_from_phases(phases):
 
 
 def create_datetime(timestamp):
-    return datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S")
-
-# not supported in Home Assistant
-
-
-def calculate_duration(start, stop=None):
-    if not stop:
-        stop = datetime.now()
-
-    return stop - start
+    timestamp += "+02:00"
+    return datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S%z")
 
 
 def get_vehicle_status(vehicle_status_key):
@@ -58,9 +50,6 @@ def handle_status(message):
 
     message["data"]["start_session"] = new_start_session
     message["data"]["stop_session"] = new_stop_session
-    # message["data"]["session_duration"] = calculate_duration(
-    #     new_start_session, new_stop_session
-    # )
 
     offline_since = message["data"]["offline_since"]
     message["data"]["offline_since"] = create_datetime(offline_since)

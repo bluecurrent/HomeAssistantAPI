@@ -1,5 +1,5 @@
 from src.bluecurrent_api.utils import *
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 
 def test_calculate_total_from_phases():
@@ -24,6 +24,7 @@ def test_calculate_total_from_phases():
     total = calculate_usage_from_phases((6, None, None))
     assert total == 6
 
+
 def test_get_vehicle_status():
     assert get_vehicle_status("A") == "standby"
     assert get_vehicle_status("B") == "vehicle detected"
@@ -32,8 +33,12 @@ def test_get_vehicle_status():
     assert get_vehicle_status("E") == "no power"
     assert get_vehicle_status("F") == "error"
 
+
 def test_create_datetime():
-    assert create_datetime("2021-11-18T14:12:23") == datetime(2021, 11, 18, 14, 12, 23)
+    assert create_datetime("2021-11-18T14:12:23") == datetime(
+        2021, 11, 18, 14, 12, 23, tzinfo=timezone(timedelta(seconds=7200))
+    )
+
 
 def test_handle_status():
     message = {
@@ -55,21 +60,19 @@ def test_handle_status():
         }
     }
 
-    start = message["data"]["start_session"]
-    stop = message["data"]["stop_session"]
-    offline = message["data"]["offline_since"]
-
     handle_status(message)
 
     assert message["data"]["total_voltage"] == 13.7
     assert message["data"]["total_current"] == 12.3
-    assert message["data"]["start_session"] == datetime.strptime(start, "%Y-%m-%dT%H:%M:%S")
-    assert message["data"]["stop_session"] ==  datetime.strptime(stop, "%Y-%m-%dT%H:%M:%S")
-    assert message["data"]["offline_since"] ==  datetime.strptime(offline, "%Y-%m-%dT%H:%M:%S")
-    # assert result["data"]["session_duration"] ==  datetime.strptime(message["data"]["offline_since"], "%Y-%m-%dT%H:%M:%S")
+    assert message["data"]["start_session"] == datetime(
+        2021, 11, 18, 14, 12, 23, tzinfo=timezone(timedelta(seconds=7200)))
+    assert message["data"]["stop_session"] == datetime(
+        2021, 11, 18, 14, 32, 23, tzinfo=timezone(timedelta(seconds=7200)))
+    assert message["data"]["offline_since"] == datetime(
+        2021, 11, 18, 14, 32, 23, tzinfo=timezone(timedelta(seconds=7200)))
     assert message["data"]["vehicle_status"] == "standby"
 
-    assert len(message["data"]) == 16 # 17 = duration
+    assert len(message["data"]) == 16
 
 
 def test_handle_grid():
