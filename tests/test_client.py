@@ -1,6 +1,5 @@
 from src.bluecurrent_api.client import Client
 import pytest
-from unittest.mock import patch
 from pytest_mock import MockerFixture
 
 
@@ -9,25 +8,25 @@ def test_create_request():
     client.websocket.token = '123'
 
     # command
-    request = client.create_request("GET_CHARGE_POINTS")
+    request = client._create_request("GET_CHARGE_POINTS")
     assert request == {'command': 'GET_CHARGE_POINTS'}
 
     # evse_id
-    request = client.create_request("GET_STATUS", '101')
+    request = client._create_request("GET_STATUS", '101')
     assert request == {'command': 'GET_STATUS', 'evse_id': '101'}
 
     # value
-    request = client.create_request("SET_PLUG_AND_CHARGE", '101', True)
+    request = client._create_request("SET_PLUG_AND_CHARGE", '101', True)
     assert request == {'command': 'SET_PLUG_AND_CHARGE',
                        'evse_id': '101', 'value': True}
 
     # card_uid
-    request = client.create_request("START_SESSION", '101', card_uid='1234')
+    request = client._create_request("START_SESSION", '101', card_uid='1234')
     assert request == {'command': 'START_SESSION',
                        'evse_id': '101', 'uid': '1234'}
 
     # card_id
-    request = client.create_request("ADD_CHARGE_CARD", card_id='1234')
+    request = client._create_request("ADD_CHARGE_CARD", card_id='1234')
     assert request == {'command': 'ADD_CHARGE_CARD', 'id': '1234'}
 
 
