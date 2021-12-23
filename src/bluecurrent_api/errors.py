@@ -13,3 +13,8 @@ class WebsocketError(BlueCurrentError):
 class InvalidToken(BlueCurrentError):
     """Define an error related to invalid tokens."""
     pass
+
+
+class NoCardsFound(BlueCurrentError):
+    """Define an error for when a token has no cards."""
+    pass

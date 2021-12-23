@@ -4,7 +4,7 @@ import websockets
 import ssl
 from asyncio.exceptions import TimeoutError
 from websockets.exceptions import ConnectionClosed
-from .errors import InvalidToken, WebsocketError
+from .errors import InvalidToken, WebsocketError, NoCardsFound
 from .utils import handle_grid, handle_status
 
 
@@ -21,17 +21,20 @@ class Websocket:
         await self.connect(token, url)
         await self.send_request({"command": "VALIDATE_TOKEN"})
         res = await self._recv()
-        if res['error']:
+        if not res["success"]:
             raise InvalidToken(res['error'])
         await self.disconnect()
-        return True  # temp
+        return True
 
     async def get_charge_cards(self, token, url):
         await self.connect(token, url)
         await self.send_request({"command": "GET_CARDS"})
         res = await self._recv()
+        cards = res["cards"]
+        if len(cards) == 0:
+            raise NoCardsFound()
         await self.disconnect()
-        return res
+        return cards
 
     def set_on_data(self, on_data):
         self.on_data = on_data
@@ -74,7 +77,7 @@ class Websocket:
             raise WebsocketError("on_data method not set")
 
         while True:
-            self._message_handler()
+            await self._message_handler()
 
     async def _message_handler(self):
         message: dict = await self._recv()
