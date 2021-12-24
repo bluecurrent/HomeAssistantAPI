@@ -21,19 +21,19 @@ class Websocket:
         await self.connect(token, url)
         await self.send_request({"command": "VALIDATE_TOKEN"})
         res = await self._recv()
+        await self.disconnect()
         if not res["success"]:
             raise InvalidToken(res['error'])
-        await self.disconnect()
         return True
 
     async def get_charge_cards(self, token, url):
         await self.connect(token, url)
-        await self.send_request({"command": "GET_CARDS"})
+        await self.send_request({"command": "GET_CHARGE_CARDS"})
         res = await self._recv()
+        await self.disconnect()
         cards = res["cards"]
         if len(cards) == 0:
             raise NoCardsFound()
-        await self.disconnect()
         return cards
 
     def set_on_data(self, on_data):
@@ -83,10 +83,6 @@ class Websocket:
         message: dict = await self._recv()
         if not message:
             return
-        # todo
-        # elif message.get('error') is not None:
-        #     raise WebsocketError(message.get('error'))
-
         elif not message.get("object"):
             raise WebsocketError("Received message has no object.")
         elif message["object"] == "CH_STATUS":
@@ -108,7 +104,7 @@ class Websocket:
         except ConnectionClosed:
             if self._has_connection:
                 self._has_connection = False
-                raise WebsocketError("SEND connection was closed.")
+                raise WebsocketError("connection was closed.")
 
     async def _recv(self):
         self.check_connection()
@@ -118,7 +114,7 @@ class Websocket:
         except ConnectionClosed:
             if self._has_connection:
                 self._has_connection = False
-                raise WebsocketError("RECV connection was closed.")
+                raise WebsocketError("connection was closed.")
 
     async def disconnect(self):
         self.check_connection()

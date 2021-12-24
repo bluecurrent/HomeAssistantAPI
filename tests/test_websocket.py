@@ -1,10 +1,8 @@
-from unittest import mock
 from unittest.mock import AsyncMock
 from src.bluecurrent_api.websocket import Websocket
 from src.bluecurrent_api.errors import WebsocketError, InvalidToken, NoCardsFound
 from asyncio.exceptions import TimeoutError
 import pytest
-import asyncio
 from pytest_mock import MockerFixture
 from websockets.exceptions import ConnectionClosed
 
@@ -208,10 +206,3 @@ async def test_disconnect(mocker: MockerFixture):
 
     await websocket.disconnect()
     assert websocket._has_connection == False
-
-# todo
-# ssl
-# object whitelist ?
-# check_connection
-# validate_token
-# get_charge_cards
