@@ -18,22 +18,24 @@ class Websocket:
         pass
 
     async def validate_token(self, token, url):
-        await self.connect(token, url)
-        await self.send_request({"command": "VALIDATE_TOKEN"})
+        await self._connect(url)
+        await self._send({"command": "VALIDATE_TOKEN", "token": token})
         res = await self._recv()
-        await self.disconnect()
         if not res["success"]:
-            raise InvalidToken(res['error'])
+            await self.disconnect()
+            raise InvalidToken("Invalid Token")
+        await self.disconnect()
         return True
 
     async def get_charge_cards(self, token, url):
-        await self.connect(token, url)
-        await self.send_request({"command": "GET_CHARGE_CARDS"})
+        await self._connect(token, url)
+        await self._send({"command": "GET_CHARGE_CARDS", "authorization": token})
         res = await self._recv()
-        await self.disconnect()
         cards = res["cards"]
         if len(cards) == 0:
+            await self.disconnect()
             raise NoCardsFound()
+        await self.disconnect()
         return cards
 
     def set_on_data(self, on_data):
@@ -41,18 +43,19 @@ class Websocket:
         self.is_coroutine = asyncio.iscoroutinefunction(on_data)
 
     async def connect(self, token, url):
+        if self._has_connection:
+            raise WebsocketError("Connection already started.")
+        await self.validate_token(token, url)
+        self.token = token
+        await self._connect(url)
 
+    async def _connect(self, url):
         # Needed for wss.
         def get_ssl():
             ssl_context = ssl.create_default_context()
             ssl_context.check_hostname = False
             ssl_context.verify_mode = ssl.CERT_NONE
             return ssl_context
-
-        if self._has_connection:
-            raise WebsocketError("Connection already started.")
-
-        self.token = token
 
         try:
             if url[:3] == 'wss':

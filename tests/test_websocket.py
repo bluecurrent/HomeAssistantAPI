@@ -12,8 +12,8 @@ async def test_validate_token(mocker: MockerFixture):
     token = '123'
     url = 'test_url'
     websocket = Websocket()
-    mocker.patch('src.bluecurrent_api.websocket.Websocket.connect')
-    mocker.patch('src.bluecurrent_api.websocket.Websocket.send_request')
+    mocker.patch('src.bluecurrent_api.websocket.Websocket._connect')
+    mocker.patch('src.bluecurrent_api.websocket.Websocket._send')
     mocker.patch('src.bluecurrent_api.websocket.Websocket.disconnect')
 
     mocker.patch('src.bluecurrent_api.websocket.Websocket._recv',
@@ -34,8 +34,8 @@ async def test_get_charge_cards(mocker: MockerFixture):
     token = '123'
     url = 'test_url'
     websocket = Websocket()
-    mocker.patch('src.bluecurrent_api.websocket.Websocket.connect')
-    mocker.patch('src.bluecurrent_api.websocket.Websocket.send_request')
+    mocker.patch('src.bluecurrent_api.websocket.Websocket._connect')
+    mocker.patch('src.bluecurrent_api.websocket.Websocket._send')
     mocker.patch('src.bluecurrent_api.websocket.Websocket.disconnect')
 
     mocker.patch('src.bluecurrent_api.websocket.Websocket._recv',
@@ -70,6 +70,28 @@ def test_set_on_data():
 
 @pytest.mark.asyncio
 async def test_connect(mocker: MockerFixture):
+    websocket = Websocket()
+    url = 'ws://172.21.107.206:8765'
+    token = '123'
+
+    websocket._has_connection = True
+    with pytest.raises(WebsocketError):
+        await websocket.connect(token, url)
+
+    websocket._has_connection = False
+    mocker.patch.object(Websocket, '_connection')
+    mocker.patch(
+        'src.bluecurrent_api.websocket.websockets.connect', create=True, side_effect=ConnectionRefusedError)
+    with pytest.raises(WebsocketError):
+        await websocket.connect(token, url)
+    mocker.patch(
+        'src.bluecurrent_api.websocket.websockets.connect', create=True, side_effect=TimeoutError)
+    with pytest.raises(WebsocketError):
+        await websocket.connect(token, 'wss://172.21.107.206:8765')
+
+
+@pytest.mark.asyncio
+async def test__connect(mocker: MockerFixture):
     websocket = Websocket()
     url = 'ws://172.21.107.206:8765'
     token = '123'
