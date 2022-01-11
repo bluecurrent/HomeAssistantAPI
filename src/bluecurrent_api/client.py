@@ -1,7 +1,6 @@
 from .websocket import Websocket
 
 URL = "wss://bo-acct001.bluecurrent.nl/appserver/2.0"
-# URL = "wss://motown-dev2.bluecurrent.nl/appsocket"
 
 
 class Client:

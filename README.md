@@ -80,6 +80,7 @@ asyncio.run(main())
 
 ### set_on_data(on_data)
 - Sets the on_data method.
+
 ### await start_loop()
 - Starts the receiver loop.
 
