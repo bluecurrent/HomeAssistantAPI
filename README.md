@@ -15,7 +15,7 @@ The library is an asyncio-driven library that interfaces with the Websocket API 
 ### Installation
 
 ```python
-pip install blue_current_api
+pip install bluecurrent_api
 ```
 
 ### Api token
@@ -35,8 +35,6 @@ async def main():
     def on_data(data):
         print('received: ', data)
     
-
-    # the receiver loop inside an try except to catch the connection error when the connection is stopped
     async def loop():
         try:
             await client.start_loop()
@@ -68,57 +66,58 @@ asyncio.run(main())
 
 ## Implemented methods
 
-### await validate_token(token)
-
+#### await validate_token(token)
 - Validates the given token.
 
-### await get_charge_cards(token)
-- Validates the given token.
+#### await get_charge_cards(token)
+- returns the users charge cards.
 
-### await connect(token)
+<sub>The methods validate_token and get_charge_cards are supposed to be used before connecting to the websocket with connect().<sub>
+
+#### await connect(token)
 - Connects to the websocket.
 
-### set_on_data(on_data)
+#### set_on_data(on_data)
 - Sets the on_data method.
 
-### await start_loop()
+#### await start_loop()
 - Starts the receiver loop.
 
-### await disconnect()
+#### await disconnect()
 - Stops the connection.
 
-### set_on_data(on_data)
+#### set_on_data(on_data)
 - Sets the default method to call with new data.
 
-### await get_charge_points()
+#### await get_charge_points()
 - Gets the chargepoints 
 
-### await get_status(evse_id)
+#### await get_status(evse_id)
 - Gets the status from an charge point.
 
-### await get_settings(evse_id)
+#### await get_settings(evse_id)
 - Gets the setting states from an charge point.
 
-### await get_grid_status(evse_id)
+#### await get_grid_status(evse_id)
 - Gets the grid status from an charge point.
 
-### await set_public_charging(evse_id, value)
+#### await set_public_charging(evse_id, value)
 - Sets public charging to True or False.
 
-### await set_plug_and_charge(evse_id, value)
+#### await set_plug_and_charge(evse_id, value)
 - Sets plug and charge to True or False.
 
-### await set_available(evse_id, value)
+#### await set_available(evse_id, value)
 - Sets operative to True or False.
 
-### await reset(evse_id)
+#### await reset(evse_id)
 - Resets the chargepoint.
 
-### await reboot(evse_id)
+#### await reboot(evse_id)
 - Reboots the chargepoint.
 
-### await start_session(evse_id card_uid)
+#### await start_session(evse_id card_uid)
 - Starts a charge session.
 
-### await stop_session(evse_id)
+#### await stop_session(evse_id)
 - Stops a charge session.
