@@ -21,13 +21,13 @@ class Websocket:
 
     async def validate_api_token(self, api_token):
         await self._connect()
-        await self._send({"command": "VALIDATE_TOKEN", "token": api_token})
+        await self._send({"command": "VALIDATE_API_TOKEN", "token": api_token})
         res = await self._recv()
         if not res["success"]:
             await self.disconnect()
             raise InvalidToken("Invalid Token")
         await self.disconnect()
-        self.auth_token = res["token"]
+        self.auth_token = "Token " + res["token"]
         return True
 
     async def get_charge_cards(self):

@@ -4,7 +4,6 @@ from .websocket import Websocket
 class Client:
     def __init__(self):
         self.websocket = Websocket()
-        pass
 
     async def validate_api_token(self, token):
         return await self.websocket.validate_api_token(token)

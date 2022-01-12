@@ -12,7 +12,7 @@ def calculate_usage_from_phases(phases):
 def create_datetime(timestamp):
     if timestamp == "":
         return None
-    timestamp += "+02:00"
+    timestamp += "+01:00"
     return datetime.strptime(timestamp, "%Y%m%d %H:%M:%S%z")
 
 
