@@ -9,30 +9,28 @@ from websockets.exceptions import ConnectionClosed
 
 @pytest.mark.asyncio
 async def test_validate_token(mocker: MockerFixture):
-    token = '123'
-    url = 'test_url'
+    api_token = '123'
     websocket = Websocket()
     mocker.patch('src.bluecurrent_api.websocket.Websocket._connect')
     mocker.patch('src.bluecurrent_api.websocket.Websocket._send')
     mocker.patch('src.bluecurrent_api.websocket.Websocket.disconnect')
 
     mocker.patch('src.bluecurrent_api.websocket.Websocket._recv',
-                 return_value={"object": "STATUS_API_TOKEN", "success": True})
-    result = await websocket.validate_token(token, url)
+                 return_value={"object": "STATUS_API_TOKEN", "success": True, "token": "abc"})
+    result = await websocket.validate_api_token(api_token)
     assert result == True
+    assert websocket.auth_token == "abc"
 
     error = 'this is an error'
     mocker.patch('src.bluecurrent_api.websocket.Websocket._recv',
                  return_value={"object": "STATUS_API_TOKEN", "success": False, 'error': error})
     with pytest.raises(InvalidToken) as err:
-        await websocket.validate_token(token, url)
+        await websocket.validate_api_token(api_token)
         assert err.value.message == error
 
 
 @pytest.mark.asyncio
 async def test_get_charge_cards(mocker: MockerFixture):
-    token = '123'
-    url = 'test_url'
     websocket = Websocket()
     mocker.patch('src.bluecurrent_api.websocket.Websocket._connect')
     mocker.patch('src.bluecurrent_api.websocket.Websocket._send')
@@ -40,13 +38,17 @@ async def test_get_charge_cards(mocker: MockerFixture):
 
     mocker.patch('src.bluecurrent_api.websocket.Websocket._recv',
                  return_value={"object": "CHARGE_CARDS", "cards": []})
+
+    with pytest.raises(WebsocketError):
+        await websocket.get_charge_cards()
+    websocket.auth_token = '123'
     with pytest.raises(NoCardsFound):
-        await websocket.get_charge_cards(token, url)
+        await websocket.get_charge_cards()
 
     cards = [{"name": "card_1", "uid": "1234", "id": "abc"}]
     mocker.patch('src.bluecurrent_api.websocket.Websocket._recv',
                  return_value={"object": "CHARGE_CARDS", "cards": cards})
-    result = await websocket.get_charge_cards(token, url)
+    result = await websocket.get_charge_cards()
     assert result == cards
 
 
@@ -71,45 +73,26 @@ def test_set_on_data():
 @pytest.mark.asyncio
 async def test_connect(mocker: MockerFixture):
     websocket = Websocket()
-    url = 'ws://172.21.107.206:8765'
-    token = '123'
+    api_token = '123'
 
     websocket._has_connection = True
     with pytest.raises(WebsocketError):
-        await websocket.connect(token, url)
-
-    websocket._has_connection = False
-    mocker.patch.object(Websocket, '_connection')
-    mocker.patch(
-        'src.bluecurrent_api.websocket.websockets.connect', create=True, side_effect=ConnectionRefusedError)
-    with pytest.raises(WebsocketError):
-        await websocket.connect(token, url)
-    mocker.patch(
-        'src.bluecurrent_api.websocket.websockets.connect', create=True, side_effect=TimeoutError)
-    with pytest.raises(WebsocketError):
-        await websocket.connect(token, 'wss://172.21.107.206:8765')
+        await websocket.connect(api_token)
 
 
 @pytest.mark.asyncio
 async def test__connect(mocker: MockerFixture):
     websocket = Websocket()
-    url = 'ws://172.21.107.206:8765'
-    token = '123'
 
-    websocket._has_connection = True
-    with pytest.raises(WebsocketError):
-        await websocket.connect(token, url)
-
-    websocket._has_connection = False
     mocker.patch.object(Websocket, '_connection')
     mocker.patch(
         'src.bluecurrent_api.websocket.websockets.connect', create=True, side_effect=ConnectionRefusedError)
     with pytest.raises(WebsocketError):
-        await websocket.connect(token, url)
+        await websocket._connect()
     mocker.patch(
         'src.bluecurrent_api.websocket.websockets.connect', create=True, side_effect=TimeoutError)
     with pytest.raises(WebsocketError):
-        await websocket.connect(token, 'wss://172.21.107.206:8765')
+        await websocket._connect()
 
 
 @pytest.mark.asyncio
@@ -127,7 +110,7 @@ async def test_send_request(mocker: MockerFixture):
     with pytest.raises(WebsocketError):
         await websocket.send_request({"command": "GET_CHARGE_POINTS"})
 
-    websocket.token = '123'
+    websocket.auth_token = '123'
 
     await websocket.send_request({"command": "GET_CHARGE_POINTS"})
 

@@ -7,29 +7,34 @@ from websockets.exceptions import ConnectionClosed
 from .errors import InvalidToken, WebsocketError, NoCardsFound
 from .utils import handle_grid, handle_status
 
+URL = "wss://bo-acct001.bluecurrent.nl/appserver/2.0"
+
 
 class Websocket:
     _connection = None
     _has_connection = False
-    token = None
+    auth_token = None
     on_data = None
 
     def __init__(self):
         pass
 
-    async def validate_token(self, token, url):
-        await self._connect(url)
-        await self._send({"command": "VALIDATE_TOKEN", "token": token})
+    async def validate_api_token(self, api_token):
+        await self._connect()
+        await self._send({"command": "VALIDATE_TOKEN", "token": api_token})
         res = await self._recv()
         if not res["success"]:
             await self.disconnect()
             raise InvalidToken("Invalid Token")
         await self.disconnect()
+        self.auth_token = res["token"]
         return True
 
-    async def get_charge_cards(self, token, url):
-        await self._connect(token, url)
-        await self._send({"command": "GET_CHARGE_CARDS", "authorization": token})
+    async def get_charge_cards(self):
+        if not self.auth_token:
+            raise WebsocketError('token not set')
+        await self._connect()
+        await self._send({"command": "GET_CHARGE_CARDS", "authorization": self.auth_token})
         res = await self._recv()
         cards = res["cards"]
         if len(cards) == 0:
@@ -42,14 +47,13 @@ class Websocket:
         self.on_data = on_data
         self.is_coroutine = asyncio.iscoroutinefunction(on_data)
 
-    async def connect(self, token, url):
+    async def connect(self, api_token):
         if self._has_connection:
             raise WebsocketError("Connection already started.")
-        await self.validate_token(token, url)
-        self.token = token
-        await self._connect(url)
+        await self.validate_api_token(api_token)
+        await self._connect()
 
-    async def _connect(self, url):
+    async def _connect(self):
         # Needed for wss.
         def get_ssl():
             ssl_context = ssl.create_default_context()
@@ -58,10 +62,7 @@ class Websocket:
             return ssl_context
 
         try:
-            if url[:3] == 'wss':
-                self._connection = await websockets.connect(url, ssl=get_ssl())
-            else:
-                self._connection = await websockets.connect(url)
+            self._connection = await websockets.connect(URL, ssl=get_ssl())
             self._has_connection = True
         except (ConnectionRefusedError, TimeoutError) as err:
             raise WebsocketError("Cannot connect to the websocket.", err)
@@ -69,10 +70,10 @@ class Websocket:
     async def send_request(self, request):
         if not self.on_data:
             raise WebsocketError("on_data method not set")
-        if not self.token:
+        if not self.auth_token:
             raise WebsocketError('token not set')
 
-        request['authorization'] = self.token
+        request['authorization'] = self.auth_token
         await self._send(request)
 
     async def loop(self):

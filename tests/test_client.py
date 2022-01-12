@@ -5,7 +5,7 @@ from pytest_mock import MockerFixture
 
 def test_create_request():
     client = Client()
-    client.websocket.token = '123'
+    client.websocket.auth_token = '123'
 
     # command
     request = client._create_request("GET_CHARGE_POINTS")
