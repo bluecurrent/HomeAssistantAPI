@@ -30,10 +30,10 @@ def test_create_request():
     assert request == {'command': 'ADD_CHARGE_CARD', 'id': '1234'}
 
 
-def test_set_on_data():
+def test_set_receiver():
     client = Client()
-    client.set_on_data(print)
-    assert client.websocket.on_data == print
+    client.set_receiver(print)
+    assert client.websocket.receiver == print
 
 
 @pytest.mark.asyncio

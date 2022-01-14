@@ -50,7 +50,7 @@ async def main():
 
 
     #set the on_data method
-    client.set_on_data(on_data)
+    client.set_receiver(on_data)
 
     #connect to the websocket
     await client.connect(token)
@@ -86,8 +86,8 @@ asyncio.run(main())
 #### await disconnect()
 - Stops the connection.
 
-#### set_on_data(on_data)
-- Sets the default method to call with new data.
+#### set_receiver(receiver)
+- Sets the method to call with new data.
 
 #### await get_charge_points()
 - Gets the chargepoints 

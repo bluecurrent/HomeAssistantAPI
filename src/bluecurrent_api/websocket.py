@@ -14,7 +14,7 @@ class Websocket:
     _connection = None
     _has_connection = False
     auth_token = None
-    on_data = None
+    receiver = None
 
     def __init__(self):
         pass
@@ -43,9 +43,9 @@ class Websocket:
         await self.disconnect()
         return cards
 
-    def set_on_data(self, on_data):
-        self.on_data = on_data
-        self.is_coroutine = asyncio.iscoroutinefunction(on_data)
+    def set_receiver(self, receiver):
+        self.receiver = receiver
+        self.receiver_is_coroutine = asyncio.iscoroutinefunction(receiver)
 
     async def connect(self, api_token):
         if self._has_connection:
@@ -68,8 +68,8 @@ class Websocket:
             raise WebsocketError("Cannot connect to the websocket.", err)
 
     async def send_request(self, request):
-        if not self.on_data:
-            raise WebsocketError("on_data method not set")
+        if not self.receiver:
+            raise WebsocketError("receiver method not set")
         if not self.auth_token:
             raise WebsocketError('token not set')
 
@@ -77,8 +77,8 @@ class Websocket:
         await self._send(request)
 
     async def loop(self):
-        if not self.on_data:
-            raise WebsocketError("on_data method not set")
+        if not self.receiver:
+            raise WebsocketError("receiver method not set")
 
         while True:
             await self._message_handler()
@@ -89,16 +89,20 @@ class Websocket:
             return
         elif not message.get("object"):
             raise WebsocketError("Received message has no object.")
+
+        # todo
+        elif message["object"] == "STATUS" and message["MESSAGE"] == "case not found":
+            raise WebsocketError
         elif message["object"] == "CH_STATUS":
             handle_status(message)
         elif message["object"] == "GRID_STATUS":
             handle_grid(message)
 
         # Checks if await is needed.
-        if self.is_coroutine:
-            await self.on_data(message)
+        if self.receiver_is_coroutine:
+            await self.receiver(message)
         else:
-            self.on_data(message)
+            self.receiver(message)
 
     async def _send(self, data):
         self.check_connection()

@@ -52,22 +52,22 @@ async def test_get_charge_cards(mocker: MockerFixture):
     assert result == cards
 
 
-def test_set_on_data():
+def test_set_receiver():
     websocket = Websocket()
 
-    def on_data():
+    def receiver():
         pass
 
-    async def async_on_data():
+    async def async_receiver():
         pass
 
-    websocket.set_on_data(on_data)
-    assert websocket.on_data == on_data
-    assert websocket.is_coroutine == False
+    websocket.set_receiver(receiver)
+    assert websocket.receiver == receiver
+    assert websocket.receiver_is_coroutine == False
 
-    websocket.set_on_data(async_on_data)
-    assert websocket.on_data == async_on_data
-    assert websocket.is_coroutine == True
+    websocket.set_receiver(async_receiver)
+    assert websocket.receiver == async_receiver
+    assert websocket.receiver_is_coroutine == True
 
 
 @pytest.mark.asyncio
@@ -100,11 +100,11 @@ async def test_send_request(mocker: MockerFixture):
     websocket = Websocket()
     mock_send = mocker.patch.object(Websocket, '_send')
 
-    # without on_data
+    # without receiver
     with pytest.raises(WebsocketError):
         await websocket.send_request({"command": "GET_CHARGE_POINTS"})
 
-    websocket.on_data = mocker.Mock()
+    websocket.receiver = mocker.Mock()
 
     # without token
     with pytest.raises(WebsocketError):
@@ -136,37 +136,37 @@ async def test_message_handler(mocker: MockerFixture):
 
     websocket = Websocket()
 
-    async_mock_on_data = AsyncMock()
-    websocket.set_on_data(async_mock_on_data)
+    async_mock_receiver = AsyncMock()
+    websocket.set_receiver(async_mock_receiver)
 
-    # normal flow with async on_data
+    # normal flow with async receiver
     message = {"object": "CHARGE_POINTS"}
     mocker.patch.object(Websocket, '_recv', return_value=message)
     await websocket._message_handler()
-    async_mock_on_data.assert_called_with(message)
+    async_mock_receiver.assert_called_with(message)
 
-    mock_on_data = mocker.MagicMock()
-    websocket.set_on_data(mock_on_data)
+    mock_receiver = mocker.MagicMock()
+    websocket.set_receiver(mock_receiver)
 
     # normal flow
     message = {"object": "CHARGE_POINTS"}
     mocker.patch.object(Websocket, '_recv', return_value=message)
     await websocket._message_handler()
-    mock_on_data.assert_called_with(message)
+    mock_receiver.assert_called_with(message)
 
     # ch_status flow
     message = {"object": "CH_STATUS"}
     mocker.patch.object(Websocket, '_recv', return_value=message)
     await websocket._message_handler()
     mock_handle_status.assert_called_with(message)
-    mock_on_data.assert_called_with(message)
+    mock_receiver.assert_called_with(message)
 
     # grid_status flow
     message = {"object": "GRID_STATUS"}
     mocker.patch.object(Websocket, '_recv', return_value=message)
     await websocket._message_handler()
     mock_handle_grid.assert_called_with(message)
-    mock_on_data.assert_called_with(message)
+    mock_receiver.assert_called_with(message)
 
     # no object
     message = {"value": True}

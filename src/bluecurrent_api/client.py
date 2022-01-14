@@ -20,8 +20,8 @@ class Client:
     async def disconnect(self):
         await self.websocket.disconnect()
 
-    def set_on_data(self, on_data):
-        self.websocket.set_on_data(on_data)
+    def set_receiver(self, receiver):
+        self.websocket.set_receiver(receiver)
 
     async def get_charge_points(self):
         request = self._create_request("GET_CHARGE_POINTS")
