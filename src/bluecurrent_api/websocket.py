@@ -23,24 +23,22 @@ class Websocket:
         await self._connect()
         await self._send({"command": "VALIDATE_API_TOKEN", "token": api_token})
         res = await self._recv()
-        if not res["success"]:
-            await self.disconnect()
-            raise InvalidToken("Invalid Token")
         await self.disconnect()
+        if not res["success"]:
+            raise InvalidToken("Invalid Token")
         self.auth_token = "Token " + res["token"]
         return True
 
     async def get_charge_cards(self):
         if not self.auth_token:
-            raise WebsocketError('token not set')
+            raise WebsocketError("token not set")
         await self._connect()
         await self._send({"command": "GET_CHARGE_CARDS", "authorization": self.auth_token})
         res = await self._recv()
         cards = res["cards"]
-        if len(cards) == 0:
-            await self.disconnect()
-            raise NoCardsFound()
         await self.disconnect()
+        if len(cards) == 0:
+            raise NoCardsFound()
         return cards
 
     def set_receiver(self, receiver):
@@ -71,9 +69,9 @@ class Websocket:
         if not self.receiver:
             raise WebsocketError("receiver method not set")
         if not self.auth_token:
-            raise WebsocketError('token not set')
+            raise WebsocketError("token not set")
 
-        request['authorization'] = self.auth_token
+        request["authorization"] = self.auth_token
         await self._send(request)
 
     async def loop(self):
@@ -87,15 +85,21 @@ class Websocket:
         message: dict = await self._recv()
         if not message:
             return
-        elif not message.get("object"):
-            raise WebsocketError("Received message has no object.")
 
-        # todo
-        elif message["object"] == "STATUS" and message["MESSAGE"] == "case not found":
-            raise WebsocketError
-        elif message["object"] == "CH_STATUS":
+        object_name = message.get("object")
+        error_code = message.get("error")
+
+        if error_code == 0:
+            raise WebsocketError("Send unknown command")
+        elif error_code == 1 or error_code == 2:
+            raise InvalidToken
+        elif error_code == 9:
+            raise WebsocketError("Unknown error")
+        elif not object_name:
+            raise WebsocketError("Received message has no object.")
+        elif object_name == "CH_STATUS":
             handle_status(message)
-        elif message["object"] == "GRID_STATUS":
+        elif object_name == "GRID_STATUS":
             handle_grid(message)
 
         # Checks if await is needed.

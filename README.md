@@ -49,7 +49,7 @@ async def main():
         await client.disconnect()
 
 
-    #set the on_data method
+    #set the receiver method
     client.set_receiver(on_data)
 
     #connect to the websocket
@@ -66,28 +66,25 @@ asyncio.run(main())
 
 ## Implemented methods
 
-#### await validate_token(token)
+#### await validate_token(api_token)
 - Validates the given token.
 
-#### await get_charge_cards(token)
+#### await get_charge_cards(auth_token)
 - returns the users charge cards.
 
 <sub>The methods validate_token and get_charge_cards are supposed to be used before connecting to the websocket with connect().<sub>
 
-#### await connect(token)
+#### await connect(auth_token)
 - Connects to the websocket.
 
-#### set_on_data(on_data)
-- Sets the on_data method.
+#### set_receiver(receiver)
+- Sets the receiver method.
 
 #### await start_loop()
 - Starts the receiver loop.
 
 #### await disconnect()
 - Stops the connection.
-
-#### set_receiver(receiver)
-- Sets the method to call with new data.
 
 #### await get_charge_points()
 - Gets the chargepoints 

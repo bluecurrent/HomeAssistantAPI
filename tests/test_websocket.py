@@ -174,6 +174,30 @@ async def test_message_handler(mocker: MockerFixture):
     with pytest.raises(WebsocketError):
         await websocket._message_handler()
 
+    # unknown command
+    message = {"error": 0}
+    mocker.patch.object(Websocket, '_recv', return_value=message)
+    with pytest.raises(WebsocketError):
+        await websocket._message_handler()
+
+    # unknown token
+    message = {"error": 1}
+    mocker.patch.object(Websocket, '_recv', return_value=message)
+    with pytest.raises(InvalidToken):
+        await websocket._message_handler()
+
+    # token not autorized
+    message = {"error": 2}
+    mocker.patch.object(Websocket, '_recv', return_value=message)
+    with pytest.raises(InvalidToken):
+        await websocket._message_handler()
+
+    # unknown error
+    message = {"error": 9}
+    mocker.patch.object(Websocket, '_recv', return_value=message)
+    with pytest.raises(WebsocketError):
+        await websocket._message_handler()
+
 
 @pytest.mark.asyncio
 async def test_send(mocker: MockerFixture):
