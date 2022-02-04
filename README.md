@@ -24,40 +24,35 @@ using this library requires an Blue Current api token. You can generate one in t
 ## Example
 
 ```python
-from blue_current_api import Client
-from blue_current_api.errors import ConnectionError
+from bluecurrent_api import Client
 import asyncio
 
+
 async def main():
-    token = 'token'
+    token = 'test_api_token'
     client = Client()
 
+    # data receiver
     def on_data(data):
         print('received: ', data)
-    
-    async def loop():
-        try:
-            await client.start_loop()
-        except ConnectionError:
-            print('disconnected')
+
+    # set the receiver method
+    client.set_receiver(on_data)
+
+    # connect to the websocket
+    await client.connect(token)
 
     # example requests
     async def requests():
         await client.get_charge_points()
-        await client.get_status('BCU1111')
-        await client.set_plug_and_charge('BCU1111', True)
+        await client.get_status('EVSE_ID')
+
+        await asyncio.sleep(1)
         await client.disconnect()
 
-
-    #set the receiver method
-    client.set_receiver(on_data)
-
-    #connect to the websocket
-    await client.connect(token)
-
-    #start the loop and send requests
+    # start the loop and send requests
     await asyncio.gather(
-        loop(),
+        client.start_loop(),
         requests()
     )
 
@@ -72,7 +67,7 @@ asyncio.run(main())
 #### await get_charge_cards(auth_token)
 - returns the users charge cards.
 
-<sub>The methods validate_token and get_charge_cards are supposed to be used before connecting to the websocket with connect().<sub>
+<sub>The methods validate_token and get_charge_cards are to be used before connecting to the websocket with connect().<sub>
 
 #### await connect(auth_token)
 - Connects to the websocket.
