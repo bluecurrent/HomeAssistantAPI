@@ -1,22 +1,25 @@
 from datetime import datetime
 
 
-def calculate_usage_from_phases(phases):
-    phases = [p for p in phases if p]
-    if len(phases):
-        return round(sum(phases) / len(phases), 1)
+def calculate_usage_from_phases(phases: tuple):
+    """Get the average of the phases that are not 0."""
+    used_phases = [p for p in phases if p]
+    if len(used_phases):
+        return round(sum(used_phases) / len(used_phases), 1)
     else:
         return 0
 
 
-def create_datetime(timestamp):
+def create_datetime(timestamp: str):
+    """Get a datetime object from an timestamp."""
     if timestamp == "":
         return None
     timestamp += "+01:00"
     return datetime.strptime(timestamp, "%Y%m%d %H:%M:%S%z")
 
 
-def get_vehicle_status(vehicle_status_key):
+def get_vehicle_status(vehicle_status_key: str):
+    """Get the vehicle status."""
     statuses = {
         "A": "standby",
         "B": "vehicle detected",
@@ -29,7 +32,8 @@ def get_vehicle_status(vehicle_status_key):
     return statuses[vehicle_status_key]
 
 
-def handle_status(message):
+def handle_status(message: dict):
+    """Transform status values and add others."""
     v1 = message["data"]["ch_actual_v1"]
     v2 = message["data"]["ch_actual_v2"]
     v3 = message["data"]["ch_actual_v3"]
@@ -60,7 +64,8 @@ def handle_status(message):
     message["data"]["ch_offline_since"] = create_datetime(offline_since)
 
 
-def handle_grid(message):
+def handle_grid(message: dict):
+    """Add grid_total_current to a message."""
     c1 = message["data"]["grid_actual_p1"]
     c2 = message["data"]["grid_actual_p2"]
     c3 = message["data"]["grid_actual_p3"]
