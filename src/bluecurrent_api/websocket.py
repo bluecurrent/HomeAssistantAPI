@@ -4,7 +4,7 @@ from typing import Callable
 import websockets
 import ssl
 from asyncio.exceptions import TimeoutError
-from websockets.exceptions import ConnectionClosed
+from websockets.exceptions import ConnectionClosed, InvalidStatusCode
 from .errors import InvalidToken, WebsocketError, NoCardsFound
 from .utils import handle_grid, handle_status
 
@@ -68,8 +68,8 @@ class Websocket:
         try:
             self._connection = await websockets.connect(URL, ssl=get_ssl())
             self._has_connection = True
-        except (ConnectionRefusedError, TimeoutError) as err:
-            raise WebsocketError("Cannot connect to the websocket.", err)
+        except (ConnectionRefusedError, TimeoutError, InvalidStatusCode) as err:
+            raise WebsocketError("Cannot connect to the websocket.")
 
     async def send_request(self, request: dict):
         """Add authorization and send request."""
@@ -125,7 +125,7 @@ class Websocket:
         try:
             data_str = json.dumps(data)
             await self._connection.send(data_str)
-        except ConnectionClosed:
+        except (ConnectionClosed, InvalidStatusCode):
             if self._has_connection:
                 self._has_connection = False
                 raise WebsocketError("connection was closed.")
@@ -136,7 +136,7 @@ class Websocket:
         try:
             data = await self._connection.recv()
             return json.loads(data)
-        except ConnectionClosed:
+        except (ConnectionClosed, InvalidStatusCode):
             if self._has_connection:
                 self._has_connection = False
                 raise WebsocketError("connection was closed.")
