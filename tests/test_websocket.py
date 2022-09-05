@@ -115,7 +115,7 @@ async def test_send_request(mocker: MockerFixture):
     await websocket.send_request({"command": "GET_CHARGE_POINTS"})
 
     mock_send.assert_called_with(
-        {"command": "GET_CHARGE_POINTS", "authorization": "123"})
+        {"command": "GET_CHARGE_POINTS", "Authorization": "123"})
 
 
 @pytest.mark.asyncio

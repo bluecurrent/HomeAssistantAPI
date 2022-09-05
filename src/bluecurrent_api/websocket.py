@@ -27,7 +27,7 @@ class Websocket:
         res = await self._recv()
         await self.disconnect()
         if not res["success"]:
-            raise InvalidToken("Invalid Token")
+            raise InvalidToken("Invalid Api Token")
         self.auth_token = "Token " + res["token"]
         return True
 
@@ -50,7 +50,7 @@ class Websocket:
         self.receiver_is_coroutine = asyncio.iscoroutinefunction(receiver)
 
     async def connect(self, api_token: str):
-        """Validate token and connect to the websocket."""
+        """Validate api_token and connect to the websocket."""
         if self._has_connection:
             raise WebsocketError("Connection already started.")
         await self.validate_api_token(api_token)
@@ -76,9 +76,9 @@ class Websocket:
         if not self.receiver:
             raise WebsocketError("receiver method not set")
         if not self.auth_token:
-            raise WebsocketError("token not set")
+            raise WebsocketError("auth token not set")
 
-        request["authorization"] = self.auth_token
+        request["Authorization"] = self.auth_token
         await self._send(request)
 
     async def loop(self):
@@ -103,7 +103,7 @@ class Websocket:
         if error_code == 0:
             raise WebsocketError("Unknown command")
         elif error_code == 1 or error_code == 2:
-            raise InvalidToken
+            raise InvalidToken('Invalid Auth Token')
         elif error_code == 9:
             raise WebsocketError("Unknown error")
         elif not object_name:

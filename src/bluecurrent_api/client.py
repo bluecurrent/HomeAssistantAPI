@@ -7,17 +7,17 @@ class Client:
         """Initialize the Client."""
         self.websocket = Websocket()
 
-    async def validate_api_token(self, token: str):
+    async def validate_api_token(self, api_token: str):
         """Validate an api_token."""
-        return await self.websocket.validate_api_token(token)
+        return await self.websocket.validate_api_token(api_token)
 
     async def get_charge_cards(self):
         """Get the charge cards."""
         return await self.websocket.get_charge_cards()
 
-    async def connect(self, token: str):
+    async def connect(self, api_token: str):
         """Connect to the websocket."""
-        await self.websocket.connect(token)
+        await self.websocket.connect(api_token)
 
     async def start_loop(self):
         """Start the receive loop."""

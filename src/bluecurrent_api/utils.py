@@ -34,19 +34,19 @@ def get_vehicle_status(vehicle_status_key: str):
 
 def handle_status(message: dict):
     """Transform status values and add others."""
-    v1 = message["data"]["ch_actual_v1"]
-    v2 = message["data"]["ch_actual_v2"]
-    v3 = message["data"]["ch_actual_v3"]
+    v1 = message["data"]["actual_v1"]
+    v2 = message["data"]["actual_v2"]
+    v3 = message["data"]["actual_v3"]
 
     v_total = calculate_usage_from_phases((v1, v2, v3))
-    message["data"]["ch_total_voltage"] = v_total
+    message["data"]["total_voltage"] = v_total
 
-    c1 = message["data"]["ch_actual_p1"]
-    c2 = message["data"]["ch_actual_p2"]
-    c3 = message["data"]["ch_actual_p3"]
+    c1 = message["data"]["actual_p1"]
+    c2 = message["data"]["actual_p2"]
+    c3 = message["data"]["actual_p3"]
 
     c_total = calculate_usage_from_phases((c1, c2, c3))
-    message["data"]["ch_total_current"] = c_total
+    message["data"]["total_current"] = c_total
 
     vehicle_status_key = message["data"]["vehicle_status"]
     message["data"]["vehicle_status"] = get_vehicle_status(vehicle_status_key)
@@ -60,8 +60,8 @@ def handle_status(message: dict):
     message["data"]["start_datetime"] = new_start_datetime
     message["data"]["stop_datetime"] = new_stop_datetime
 
-    offline_since = message["data"]["ch_offline_since"]
-    message["data"]["ch_offline_since"] = create_datetime(offline_since)
+    offline_since = message["data"]["offline_since"]
+    message["data"]["offline_since"] = create_datetime(offline_since)
 
 
 def handle_grid(message: dict):
