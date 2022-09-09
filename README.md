@@ -47,7 +47,7 @@ async def main():
         await client.get_charge_points()
         await client.get_status('EVSE_ID')
 
-        await asyncio.sleep(1)
+        await client.await_receiver_event()
         await client.disconnect()
 
     # start the loop and send requests
@@ -60,6 +60,9 @@ asyncio.run(main())
 ```
 
 ## Implemented methods
+
+#### await await_receiver_event()
+- Waits until the next message is received.
 
 #### await validate_token(api_token)
 - Validates the given token.

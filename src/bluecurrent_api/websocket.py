@@ -16,10 +16,16 @@ class Websocket:
     _has_connection = False
     auth_token = None
     receiver = None
+    receive_event = asyncio.Event()
 
     def __init__(self):
         pass
 
+    def get_receiver_event(self):
+        if self.receive_event is None:
+            self.receive_event= asyncio.Event()
+        return self.receive_event
+    
     async def validate_api_token(self, api_token: str):
         """Validate an api token."""
         await self._connect()
@@ -68,7 +74,7 @@ class Websocket:
         try:
             self._connection = await websockets.connect(URL, ssl=get_ssl())
             self._has_connection = True
-        except (ConnectionRefusedError, TimeoutError, InvalidStatusCode) as err:
+        except Exception:
             raise WebsocketError("Cannot connect to the websocket.")
 
     async def send_request(self, request: dict):
@@ -112,6 +118,9 @@ class Websocket:
             handle_status(message)
         elif object_name == "GRID_STATUS":
             handle_grid(message)
+
+        self.receive_event.set()
+        self.receive_event.clear()
 
         # Checks if await is needed.
         if self.receiver_is_coroutine:

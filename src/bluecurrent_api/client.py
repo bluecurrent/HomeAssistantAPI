@@ -7,6 +7,9 @@ class Client:
         """Initialize the Client."""
         self.websocket = Websocket()
 
+    async def await_receiver_event(self):
+        await self.websocket.get_receiver_event().wait()
+
     async def validate_api_token(self, api_token: str):
         """Validate an api_token."""
         return await self.websocket.validate_api_token(api_token)
