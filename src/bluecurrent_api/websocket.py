@@ -67,15 +67,8 @@ class Websocket:
 
     async def _connect(self):
         """Connect to the websocket."""
-        # Needed for wss.
-        def get_ssl():
-            ssl_context = ssl.create_default_context()
-            ssl_context.check_hostname = False
-            ssl_context.verify_mode = ssl.CERT_NONE
-            return ssl_context
-
         try:
-            self._connection = await websockets.connect(URL, ssl=get_ssl())
+            self._connection = await websockets.connect(URL)
             self._has_connection = True
         except Exception:
             raise WebsocketError("Cannot connect to the websocket.")

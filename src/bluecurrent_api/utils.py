@@ -14,7 +14,7 @@ def create_datetime(timestamp: str):
     """Get a datetime object from an timestamp."""
     if timestamp == "":
         return None
-    timestamp += "+01:00"
+    timestamp += "+00:00"
     return datetime.strptime(timestamp, "%Y%m%d %H:%M:%S%z")
 
 
