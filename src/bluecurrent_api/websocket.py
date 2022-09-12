@@ -3,7 +3,6 @@ import json
 from typing import Callable
 import websockets
 import ssl
-from asyncio.exceptions import TimeoutError
 from websockets.exceptions import ConnectionClosed, InvalidStatusCode
 from .errors import InvalidToken, WebsocketError, NoCardsFound
 from .utils import handle_grid, handle_status
@@ -16,14 +15,18 @@ class Websocket:
     _has_connection = False
     auth_token = None
     receiver = None
-    receive_event = asyncio.Event()
+    receive_event = None
 
     def __init__(self):
         pass
 
     def get_receiver_event(self):
+
+        self._check_connection()
         if self.receive_event is None:
-            self.receive_event= asyncio.Event()
+            self.receive_event = asyncio.Event()
+
+        self.receive_event.clear()
         return self.receive_event
     
     async def validate_api_token(self, api_token: str):
@@ -108,8 +111,10 @@ class Websocket:
 
         if error_code == 0:
             raise WebsocketError("Unknown command")
-        elif error_code == 1 or error_code == 2:
+        elif error_code == 1:
             raise InvalidToken('Invalid Auth Token')
+        elif error_code == 2:
+            raise WebsocketError('Not authorized')
         elif error_code == 9:
             raise WebsocketError("Unknown error")
         elif not object_name:
@@ -119,10 +124,7 @@ class Websocket:
         elif object_name == "GRID_STATUS":
             handle_grid(message)
 
-        self.receive_event.set()
-        self.receive_event.clear()
-
-        # Checks if await is needed.
+        self.handle_receive_event()
         if self.receiver_is_coroutine:
             await self.receiver(message)
         else:
@@ -135,9 +137,7 @@ class Websocket:
             data_str = json.dumps(data)
             await self._connection.send(data_str)
         except (ConnectionClosed, InvalidStatusCode):
-            if self._has_connection:
-                self._has_connection = False
-                raise WebsocketError("connection was closed.")
+            self.handle_connection_errors()
 
     async def _recv(self):
         """Receive data from de websocket."""
@@ -146,20 +146,28 @@ class Websocket:
             data = await self._connection.recv()
             return json.loads(data)
         except (ConnectionClosed, InvalidStatusCode):
-            if self._has_connection:
-                self._has_connection = False
-                raise WebsocketError("connection was closed.")
+            self.handle_connection_errors()
+
+    def handle_connection_errors(self):
+        if self._has_connection:
+            self._has_connection = False
+            self.handle_receive_event()
+            raise WebsocketError("connection was closed.")
 
     async def disconnect(self):
         """Disconnect from de websocket"""
         self._check_connection()
         if not self._has_connection:
-
             raise WebsocketError("Connection is already closed.")
         self._has_connection = False
+        self.handle_receive_event()
         await self._connection.close()
 
     def _check_connection(self):
         """check if the connection still exists."""
         if not self._connection:
             raise WebsocketError("No connection with the api.")
+
+    def handle_receive_event(self):
+        if self.receive_event is not None:
+            self.receive_event.set()
