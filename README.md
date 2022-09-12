@@ -29,7 +29,7 @@ import asyncio
 
 
 async def main():
-    token = 'test_api_token'
+    api_token = 'test_api_token'
     client = Client()
 
     # data receiver
@@ -40,14 +40,12 @@ async def main():
     client.set_receiver(on_data)
 
     # connect to the websocket
-    await client.connect(token)
+    await client.connect(api_token)
 
     # example requests
     async def requests():
         await client.get_charge_points()
-        await client.get_status('EVSE_ID')
-
-        await client.await_receiver_event()
+        await client.wait_for_response()
         await client.disconnect()
 
     # start the loop and send requests
@@ -60,17 +58,16 @@ asyncio.run(main())
 ```
 
 ## Implemented methods
+---
+<b>The methods validate_token and get_charge_cards are to be used before connecting to the websocket with connect().</b>
 
-#### await await_receiver_event()
-- Waits until the next message is received.
-
-#### await validate_token(api_token)
+#### await validate_token(api_token) -> bool
 - Validates the given token.
 
-#### await get_charge_cards(auth_token)
+#### await get_charge_cards(auth_token) -> list
 - returns the users charge cards.
 
-<sub>The methods validate_token and get_charge_cards are to be used before connecting to the websocket with connect().<sub>
+---
 
 #### await connect(auth_token)
 - Connects to the websocket.
@@ -81,8 +78,13 @@ asyncio.run(main())
 #### await start_loop()
 - Starts the receiver loop.
 
+#### await wait_for_response()
+- Waits until the next message is received.
+
 #### await disconnect()
 - Stops the connection.
+
+---
 
 #### await get_charge_points()
 - Gets the chargepoints 
@@ -96,6 +98,8 @@ asyncio.run(main())
 #### await get_grid_status(evse_id)
 - Gets the grid status from an charge point.
 
+---
+
 #### await set_public_charging(evse_id, value)
 - Sets public charging to True or False.
 
@@ -104,6 +108,8 @@ asyncio.run(main())
 
 #### await set_available(evse_id, value)
 - Sets operative to True or False.
+
+---
 
 #### await reset(evse_id)
 - Resets the chargepoint.
