@@ -27,12 +27,21 @@ def test_calculate_total_from_phases():
     total = calculate_usage_from_phases((6, None, None))
     assert total == 6
 
+    total = calculate_usage_from_phases((None, None, None))
+    assert total == 0
+
+def test_calculate_total_wattage():
+    total = calculate_total_wattage(5, 5)
+    assert total == 25
+
+    total = calculate_total_wattage(5.7, 5.7)
+    assert total == 32.5
 
 def test_get_vehicle_status():
     assert get_vehicle_status("A") == "standby"
     assert get_vehicle_status("B") == "vehicle detected"
     assert get_vehicle_status("C") == "ready"
-    assert get_vehicle_status("D") == "with ventialtion"
+    assert get_vehicle_status("D") == "ready"
     assert get_vehicle_status("E") == "no power"
     assert get_vehicle_status("F") == "error"
 
@@ -70,6 +79,7 @@ def test_handle_status():
 
     assert message["data"]["total_voltage"] == 13.7
     assert message["data"]["total_current"] == 12.3
+    assert message["data"]["total_wattage"] == 168.5
     assert message["data"]["start_datetime"] == datetime(
         2021, 11, 18, 14, 12, 23, tzinfo=timezone(timedelta(seconds=0)))
     assert message["data"]["stop_datetime"] == datetime(
@@ -78,7 +88,7 @@ def test_handle_status():
         2021, 11, 18, 14, 32, 23, tzinfo=timezone(timedelta(seconds=0)))
     assert message["data"]["vehicle_status"] == "standby"
 
-    assert len(message["data"]) == 16
+    assert len(message["data"]) == 17
 
 
 def test_handle_grid():

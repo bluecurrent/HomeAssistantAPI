@@ -5,7 +5,6 @@ dist
 __pycache__
 bluecurrent_api.egg-info
 
-notes
-packagemanager.sh
+packagemanager.bat
 
 connect.py

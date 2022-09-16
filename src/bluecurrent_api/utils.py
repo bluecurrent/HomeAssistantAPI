@@ -9,6 +9,8 @@ def calculate_usage_from_phases(phases: tuple):
     else:
         return 0
 
+def calculate_total_wattage(v, c):
+    return round(v * c, 1)
 
 def create_datetime(timestamp: str):
     """Get a datetime object from an timestamp."""
@@ -24,7 +26,7 @@ def get_vehicle_status(vehicle_status_key: str):
         "A": "standby",
         "B": "vehicle detected",
         "C": "ready",
-        "D": "with ventialtion",
+        "D": "ready",
         "E": "no power",
         "F": "error",
     }
@@ -47,6 +49,8 @@ def handle_status(message: dict):
 
     c_total = calculate_usage_from_phases((c1, c2, c3))
     message["data"]["total_current"] = c_total
+
+    message["data"]["total_wattage"] = calculate_total_wattage(v_total, c_total)
 
     vehicle_status_key = message["data"]["vehicle_status"]
     message["data"]["vehicle_status"] = get_vehicle_status(vehicle_status_key)
