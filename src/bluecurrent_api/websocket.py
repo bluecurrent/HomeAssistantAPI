@@ -28,7 +28,7 @@ class Websocket:
 
         self.receive_event.clear()
         return self.receive_event
-    
+
     async def validate_api_token(self, api_token: str):
         """Validate an api token."""
         await self._connect()
@@ -45,7 +45,7 @@ class Websocket:
         if not self.auth_token:
             raise WebsocketError("token not set")
         await self._connect()
-        await self._send({"command": "GET_CHARGE_CARDS", "authorization": self.auth_token})
+        await self._send({"command": "GET_CHARGE_CARDS", "Authorization": self.auth_token})
         res = await self._recv()
         cards = res["cards"]
         await self.disconnect()
@@ -87,6 +87,8 @@ class Websocket:
         """Loop the message_handler."""
         if not self.receiver:
             raise WebsocketError("receiver method not set")
+
+        await self._send({"command": "HELLO", "Authorization": self.auth_token})
 
         while True:
             stop = await self._message_handler()
