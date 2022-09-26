@@ -90,7 +90,7 @@ class Client:
         request = self._create_request("STOP_SESSION", evse_id)
         await self.websocket.send_request(request)
 
-    def _create_request(self, command, evse_id=None, value=None, card_uid=None, card_id=None):
+    def _create_request(self, command, evse_id=None, value=None, card_uid=None):
         """Create a request."""
         request = {"command": command}
 
@@ -102,8 +102,5 @@ class Client:
 
         if card_uid:
             request["uid"] = card_uid
-
-        if card_id:
-            request["id"] = card_id
 
         return request

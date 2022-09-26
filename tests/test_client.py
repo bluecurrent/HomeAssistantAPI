@@ -25,10 +25,6 @@ def test_create_request():
     assert request == {'command': 'START_SESSION',
                        'evse_id': '101', 'uid': '1234'}
 
-    # card_id
-    request = client._create_request("ADD_CHARGE_CARD", card_id='1234')
-    assert request == {'command': 'ADD_CHARGE_CARD', 'id': '1234'}
-
 
 def test_set_receiver():
     client = Client()
