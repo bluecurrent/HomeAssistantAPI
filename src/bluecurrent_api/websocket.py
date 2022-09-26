@@ -2,7 +2,6 @@ import asyncio
 import json
 from typing import Callable
 import websockets
-import ssl
 from websockets.exceptions import ConnectionClosed, InvalidStatusCode
 from .errors import InvalidToken, WebsocketError, NoCardsFound
 from .utils import handle_grid, handle_status
@@ -102,16 +101,19 @@ class Websocket:
             return True
 
         object_name = message.get("object")
-        error_code = message.get("error")
+        error = message.get("error")
+        success = message.get("success")
 
-        if error_code == 0:
+        if error == 0:
             raise WebsocketError("Unknown command")
-        elif error_code == 1:
+        elif error == 1:
             raise InvalidToken('Invalid Auth Token')
-        elif error_code == 2:
+        elif error == 2:
             raise WebsocketError('Not authorized')
-        elif error_code == 9:
+        elif error == 9:
             raise WebsocketError("Unknown error")
+        elif success == False:
+            raise WebsocketError(error)
         elif not object_name:
             raise WebsocketError("Received message has no object.")
         elif object_name == "CH_STATUS":
@@ -120,6 +122,7 @@ class Websocket:
             handle_grid(message)
 
         self.handle_receive_event()
+
         if self.receiver_is_coroutine:
             await self.receiver(message)
         else:

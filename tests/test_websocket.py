@@ -231,6 +231,12 @@ async def test_message_handler(mocker: MockerFixture):
     with pytest.raises(WebsocketError):
         await websocket._message_handler()
 
+    # success false
+    message = {"success": False, "error": "this is an error"}
+    mocker.patch.object(Websocket, '_recv', return_value=message)
+    with pytest.raises(WebsocketError):
+        await websocket._message_handler()
+
     # None message
     message = None
     mocker.patch.object(Websocket, '_recv', return_value=message)
