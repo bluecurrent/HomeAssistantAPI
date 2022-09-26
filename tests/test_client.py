@@ -63,9 +63,13 @@ async def test_requests(mocker: MockerFixture):
     test_send_request.assert_called_with(
         {'command': 'SET_PLUG_AND_CHARGE', 'evse_id': '101', 'value': True})
 
-    await client.set_available('101', True)
+    await client.set_operative('101', True)
     test_send_request.assert_called_with(
-        {'command': 'SET_AVAILABLE', 'evse_id': '101', 'value': True})
+        {'command': 'SET_OPERATIVE', 'evse_id': '101'})
+
+    await client.set_operative('101', False)
+    test_send_request.assert_called_with(
+        {'command': 'SET_INOPERATIVE', 'evse_id': '101'})
 
     await client.reset('101')
     test_send_request.assert_called_with(

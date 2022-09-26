@@ -64,9 +64,12 @@ class Client:
         request = self._create_request("SET_PLUG_AND_CHARGE", evse_id, value)
         await self.websocket.send_request(request)
 
-    async def set_available(self, evse_id: str, value: bool):
+    async def set_operative(self, evse_id: str, value: bool):
         """Set available of a charge point to a value."""
-        request = self._create_request("SET_AVAILABLE", evse_id, value)
+        command = "SET_OPERATIVE"
+        if value is False:
+            command = "SET_INOPERATIVE"
+        request = self._create_request(command, evse_id)
         await self.websocket.send_request(request)
 
     async def reset(self, evse_id: str):
