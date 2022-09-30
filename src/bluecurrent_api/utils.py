@@ -14,23 +14,27 @@ def calculate_total_kW(v, c):
     return round((v * c / 1000), 2)
 
 
-def create_datetime(timestamp: str):
+def create_datetime(timestamp: str, is_offline_since=False):
     """Get a datetime object from an timestamp."""
     if timestamp == "":
         return None
     timestamp += "+00:00"
-    return datetime.strptime(timestamp, "%Y%m%d %H:%M:%S%z")
+
+    if is_offline_since:
+        return datetime.strptime(timestamp, "%Y%m%d %H:%M:%S%z")
+
+    return datetime.strptime(timestamp, "%d-%m-%Y %H:%M:%S%z")
 
 
 def get_vehicle_status(vehicle_status_key: str):
     """Get the vehicle status."""
     statuses = {
         "A": "standby",
-        "B": "vehicle detected",
+        "B": "vehicle_detected",
         "C": "ready",
         "D": "ready",
-        "E": "no power",
-        "F": "error",
+        "E": "no_power",
+        "F": "vehicle_error",
     }
 
     return statuses[vehicle_status_key]
@@ -68,7 +72,7 @@ def handle_status(message: dict):
     message["data"]["stop_datetime"] = new_stop_datetime
 
     offline_since = message["data"]["offline_since"]
-    message["data"]["offline_since"] = create_datetime(offline_since)
+    message["data"]["offline_since"] = create_datetime(offline_since, True)
 
 
 def handle_grid(message: dict):
@@ -79,3 +83,19 @@ def handle_grid(message: dict):
 
     c_total = calculate_usage_from_phases((c1, c2, c3))
     message["data"]["grid_total_current"] = c_total
+
+
+def handle_setting_change(message: dict):
+    """Change result to a boolean"""
+    message["result"] = "true" in message["result"]["setting"]
+    message["object"] = message["object"].replace("STATUS_SET_", "")
+
+
+def handle_session_messages(message: dict):
+
+    object_name = message["object"].replace(
+        "STATUS_", "").replace("RECEIVED_", "")
+
+    if "STATUS" in message["object"]:
+        message["error"] = f"{object_name.lower()} {message['error'].lower()} for chargepoint: {message['evse_id']}"
+    message["object"] = object_name

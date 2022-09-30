@@ -216,7 +216,7 @@ async def test_message_handler(mocker: MockerFixture):
     # unknown token
     message = {"error": 1}
     mocker.patch.object(Websocket, '_recv', return_value=message)
-    with pytest.raises(InvalidToken):
+    with pytest.raises(WebsocketError):
         await websocket._message_handler()
 
     # token not autorized
@@ -241,6 +241,11 @@ async def test_message_handler(mocker: MockerFixture):
     message = None
     mocker.patch.object(Websocket, '_recv', return_value=message)
     assert await websocket._message_handler() == True
+
+    # RECEIVED without error
+    message = {'object': "RECEIVED_START_SESSION", 'error': ''}
+    mocker.patch.object(Websocket, '_recv', return_value=message)
+    assert await websocket._message_handler() == False
 
 
 @pytest.mark.asyncio

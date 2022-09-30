@@ -4,7 +4,7 @@ from typing import Callable
 import websockets
 from websockets.exceptions import ConnectionClosed, InvalidStatusCode
 from .errors import InvalidToken, WebsocketError, NoCardsFound
-from .utils import handle_grid, handle_status
+from .utils import *
 
 URL = "wss://bo-acct001.bluecurrent.nl/appserver/2.0"
 
@@ -96,30 +96,41 @@ class Websocket:
 
     async def _message_handler(self):
         """Wait for a message and give it to the receiver."""
+        errors = {
+            0: "Unknown command",
+            1: "Invalid Auth Token",
+            2: "Not authorized",
+            9: "Unknown error"
+        }
+
         message: dict = await self._recv()
+
+        # websocket has disconnected
         if not message:
             return True
 
         object_name = message.get("object")
         error = message.get("error")
-        success = message.get("success")
 
-        if error == 0:
-            raise WebsocketError("Unknown command")
-        elif error == 1:
-            raise InvalidToken('Invalid Auth Token')
-        elif error == 2:
-            raise WebsocketError('Not authorized')
-        elif error == 9:
-            raise WebsocketError("Unknown error")
-        elif success == False:
-            raise WebsocketError(error)
-        elif not object_name:
+        if not object_name:
             raise WebsocketError("Received message has no object.")
+
+        # ignore RECEIVED objects without error
+        elif "RECEIVED" in object_name and not error:
+            return False
+
+        # handle errors
+        if error in errors.keys():
+            raise WebsocketError(errors[error])
+
         elif object_name == "CH_STATUS":
             handle_status(message)
         elif object_name == "GRID_STATUS":
             handle_grid(message)
+        elif "STATUS_SET_P" in object_name:
+            handle_setting_change(message)
+        elif "STATUS" in object_name or "RECEIVED" in object_name:
+            handle_session_messages(message)
 
         self.handle_receive_event()
 
