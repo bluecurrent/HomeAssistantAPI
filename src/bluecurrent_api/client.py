@@ -91,6 +91,7 @@ class Client:
     async def stop_session(self, evse_id: str):
         """Stop a charge session at a charge point."""
         request = self._create_request("STOP_SESSION", evse_id)
+        request["evseid"] = request.pop("evse_id")
         await self.websocket.send_request(request)
 
     def _create_request(self, command, evse_id=None, value=None, card_uid=None):
@@ -104,6 +105,6 @@ class Client:
             request["value"] = value
 
         if card_uid:
-            request["uid"] = card_uid
+            request["session_token"] = card_uid
 
         return request

@@ -132,7 +132,7 @@ asyncio.run(main())
 
 - Sets plug and charge to True or False.
 
-#### await set_available(evse_id, value)
+#### await set_operative(evse_id, value)
 
 - Sets operative to True or False.
 
