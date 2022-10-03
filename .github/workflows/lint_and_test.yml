@@ -17,8 +17,8 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pylint websockets
+        pip install websockets pylint pytest pytest_mock
     - name: Run pylint and Pytest
       run: |
         pylint src
-        python -m pytest
+        python3 -m pytest
