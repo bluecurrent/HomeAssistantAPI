@@ -6,7 +6,7 @@ class WebsocketError(BlueCurrentError):
     """Define an error related to the connection."""
 
 
-class InvalidToken(BlueCurrentError):
+class InvalidApiToken(BlueCurrentError):
     """Define an error related to an invalid token"""
 
 

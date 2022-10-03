@@ -1,6 +1,6 @@
 from unittest.mock import AsyncMock
 from src.bluecurrent_api.websocket import Websocket
-from src.bluecurrent_api.errors import WebsocketError, InvalidToken, NoCardsFound
+from src.bluecurrent_api.errors import WebsocketError, InvalidApiToken, NoCardsFound
 from asyncio.exceptions import TimeoutError
 import pytest
 from pytest_mock import MockerFixture
@@ -44,7 +44,7 @@ async def test_validate_token(mocker: MockerFixture):
         return_value={"object": "STATUS_API_TOKEN",
                       "success": False, 'error': error}
     )
-    with pytest.raises(InvalidToken) as err:
+    with pytest.raises(InvalidApiToken) as err:
         await websocket.validate_api_token(api_token)
         assert err.value.message == error
 

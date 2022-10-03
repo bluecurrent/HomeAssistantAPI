@@ -3,7 +3,7 @@ import json
 from typing import Callable
 import websockets
 from websockets.exceptions import ConnectionClosed, InvalidStatusCode
-from .errors import InvalidToken, WebsocketError, NoCardsFound
+from .errors import InvalidApiToken, WebsocketError, NoCardsFound
 from .utils import *
 
 URL = "wss://bo-acct001.bluecurrent.nl/appserver/2.0"
@@ -35,7 +35,7 @@ class Websocket:
         res = await self._recv()
         await self.disconnect()
         if not res["success"]:
-            raise InvalidToken("Invalid Api Token")
+            raise InvalidApiToken("Invalid Api Token")
         self.auth_token = "Token " + res["token"]
         return True
 
@@ -132,7 +132,8 @@ class Websocket:
         elif "STATUS" in object_name or "RECEIVED" in object_name:
             handle_session_messages(message)
 
-        self.handle_receive_event()
+        if object_name != "HELLO":
+            self.handle_receive_event()
 
         if self.receiver_is_coroutine:
             await self.receiver(message)
