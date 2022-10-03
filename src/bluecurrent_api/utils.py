@@ -6,20 +6,24 @@ def calculate_usage_from_phases(phases: tuple):
     used_phases = [p for p in phases if p]
     if len(used_phases):
         return round(sum(used_phases) / len(used_phases), 1)
-    else:
-        return 0
+    return 0
 
 
-def calculate_total_kW(v, c):
-    return round((v * c / 1000), 2)
+def calculate_total_kw(voltage, current):
+    """Calculate the total kW"""
+    return round((voltage * current / 1000), 2)
 
 
 def create_datetime(timestamp: str, is_offline_since=False):
     """Get a datetime object from an timestamp."""
+
+    # fix for timezone
     if timestamp == "":
         return None
-    timestamp += "+00:00"
+    # CEST
+    timestamp += "+02:00"
 
+    # fix for different formats
     if is_offline_since:
         return datetime.strptime(timestamp, "%Y%m%d %H:%M:%S%z")
 
@@ -42,21 +46,21 @@ def get_vehicle_status(vehicle_status_key: str):
 
 def handle_status(message: dict):
     """Transform status values and add others."""
-    v1 = message["data"]["actual_v1"]
-    v2 = message["data"]["actual_v2"]
-    v3 = message["data"]["actual_v3"]
+    voltage1 = message["data"]["actual_v1"]
+    voltage2 = message["data"]["actual_v2"]
+    voltage3 = message["data"]["actual_v3"]
 
-    v_total = calculate_usage_from_phases((v1, v2, v3))
+    v_total = calculate_usage_from_phases((voltage1, voltage2, voltage3))
     message["data"]["total_voltage"] = v_total
 
-    c1 = message["data"]["actual_p1"]
-    c2 = message["data"]["actual_p2"]
-    c3 = message["data"]["actual_p3"]
+    current1 = message["data"]["actual_p1"]
+    current2 = message["data"]["actual_p2"]
+    current3 = message["data"]["actual_p3"]
 
-    c_total = calculate_usage_from_phases((c1, c2, c3))
+    c_total = calculate_usage_from_phases((current1, current2, current3))
     message["data"]["total_current"] = c_total
 
-    message["data"]["total_kw"] = calculate_total_kW(
+    message["data"]["total_kw"] = calculate_total_kw(
         v_total, c_total)
 
     vehicle_status_key = message["data"]["vehicle_status"]
@@ -77,11 +81,11 @@ def handle_status(message: dict):
 
 def handle_grid(message: dict):
     """Add grid_total_current to a message."""
-    c1 = message["data"]["grid_actual_p1"]
-    c2 = message["data"]["grid_actual_p2"]
-    c3 = message["data"]["grid_actual_p3"]
+    current1 = message["data"]["grid_actual_p1"]
+    current2 = message["data"]["grid_actual_p2"]
+    current3 = message["data"]["grid_actual_p3"]
 
-    c_total = calculate_usage_from_phases((c1, c2, c3))
+    c_total = calculate_usage_from_phases((current1, current2, current3))
     message["data"]["grid_total_current"] = c_total
 
 
@@ -92,10 +96,14 @@ def handle_setting_change(message: dict):
 
 
 def handle_session_messages(message: dict):
+    """handle session messages"""
 
     object_name = message["object"].replace(
         "STATUS_", "").replace("RECEIVED_", "")
 
     if "STATUS" in message["object"]:
-        message["error"] = f"{object_name.lower()} {message['error'].lower()} for chargepoint: {message['evse_id']}"
+        name = object_name.lower()
+        error = message['error'].lower()
+        evse_id = message['evse_id']
+        message["error"] = f"{name} {error} for chargepoint: {evse_id}"
     message["object"] = object_name

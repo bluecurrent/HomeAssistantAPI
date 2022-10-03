@@ -1,25 +1,28 @@
 import asyncio
 import json
 from typing import Callable
-import websockets
+from websockets.client import connect
 from websockets.exceptions import ConnectionClosed, InvalidStatusCode
 from .errors import InvalidApiToken, WebsocketError, NoCardsFound
-from .utils import *
+from .utils import handle_status, handle_grid, handle_setting_change, handle_session_messages
 
 URL = "wss://bo-acct001.bluecurrent.nl/appserver/2.0"
 
 
 class Websocket:
+    """Class for handling requests and responses for the BlueCurrent Websocket Api"""
     _connection = None
     _has_connection = False
     auth_token = None
     receiver = None
     receive_event = None
+    receiver_is_coroutine = None
 
     def __init__(self):
         pass
 
     def get_receiver_event(self):
+        """Returns cleared receive_event when connected."""
 
         self._check_connection()
         if self.receive_event is None:
@@ -67,10 +70,10 @@ class Websocket:
     async def _connect(self):
         """Connect to the websocket."""
         try:
-            self._connection = await websockets.connect(URL)
+            self._connection = await connect(URL)
             self._has_connection = True
-        except Exception:
-            raise WebsocketError("Cannot connect to the websocket.")
+        except Exception as err:
+            raise WebsocketError("Cannot connect to the websocket.") from err
 
     async def send_request(self, request: dict):
         """Add authorization and send request."""
@@ -116,14 +119,14 @@ class Websocket:
             raise WebsocketError("Received message has no object.")
 
         # ignore RECEIVED objects without error
-        elif "RECEIVED" in object_name and not error:
+        if "RECEIVED" in object_name and not error:
             return False
 
         # handle errors
-        if error in errors.keys():
+        if error in errors:
             raise WebsocketError(errors[error])
 
-        elif object_name == "CH_STATUS":
+        if object_name == "CH_STATUS":
             handle_status(message)
         elif object_name == "GRID_STATUS":
             handle_grid(message)
@@ -159,6 +162,7 @@ class Websocket:
             self.handle_connection_errors()
 
     def handle_connection_errors(self):
+        """Handle connection errors"""
         if self._has_connection:
             self._has_connection = False
             self.handle_receive_event()
@@ -174,10 +178,11 @@ class Websocket:
         await self._connection.close()
 
     def _check_connection(self):
-        """check if the connection still exists."""
+        """Throw error if there is no connection."""
         if not self._connection:
             raise WebsocketError("No connection with the api.")
 
     def handle_receive_event(self):
+        "Set receive_event if it exists"
         if self.receive_event is not None:
             self.receive_event.set()

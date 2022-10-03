@@ -111,14 +111,14 @@ async def test__connect(mocker: MockerFixture):
 
     mocker.patch.object(Websocket, '_connection')
     mocker.patch(
-        'src.bluecurrent_api.websocket.websockets.connect',
+        'src.bluecurrent_api.websocket.connect',
         create=True,
         side_effect=ConnectionRefusedError
     )
     with pytest.raises(WebsocketError):
         await websocket._connect()
     mocker.patch(
-        'src.bluecurrent_api.websocket.websockets.connect',
+        'src.bluecurrent_api.websocket.connect',
         create=True,
         side_effect=TimeoutError
     )

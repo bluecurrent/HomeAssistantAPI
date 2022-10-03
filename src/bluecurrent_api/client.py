@@ -3,11 +3,14 @@ from .websocket import Websocket
 
 
 class Client:
+    """Api Client for the BlueCurrent Websocket Api"""
+
     def __init__(self):
         """Initialize the Client."""
         self.websocket = Websocket()
 
     async def wait_for_response(self):
+        """Wait for next response."""
         await self.websocket.get_receiver_event().wait()
 
     async def validate_api_token(self, api_token: str):
@@ -101,7 +104,7 @@ class Client:
         if evse_id:
             request["evse_id"] = evse_id
 
-        if value != None:
+        if value is not None:
             request["value"] = value
 
         if card_uid:

@@ -32,10 +32,10 @@ def test_calculate_total_from_phases():
 
 
 def test_calculate_total_kW():
-    total = calculate_total_kW(16, 220)
+    total = calculate_total_kw(16, 220)
     assert total == 3.52
 
-    total = calculate_total_kW(8, 110)
+    total = calculate_total_kw(8, 110)
     assert total == 0.88
 
 
