@@ -1,6 +1,6 @@
 from unittest.mock import AsyncMock
 from src.bluecurrent_api.websocket import Websocket
-from src.bluecurrent_api.errors import WebsocketError, InvalidApiToken, NoCardsFound
+from src.bluecurrent_api.exceptions import WebsocketException, InvalidApiToken, NoCardsFound
 from asyncio.exceptions import TimeoutError
 import pytest
 from pytest_mock import MockerFixture
@@ -11,7 +11,7 @@ import asyncio
 async def test_get_receiver_event(mocker: MockerFixture):
     websocket = Websocket()
 
-    with pytest.raises(WebsocketError):
+    with pytest.raises(WebsocketException):
         websocket.get_receiver_event()
 
     mocker.patch.object(Websocket, '_connection')
@@ -61,7 +61,7 @@ async def test_get_charge_cards(mocker: MockerFixture):
         return_value={"object": "CHARGE_CARDS", "cards": []}
     )
 
-    with pytest.raises(WebsocketError):
+    with pytest.raises(WebsocketException):
         await websocket.get_charge_cards()
     websocket.auth_token = '123'
     with pytest.raises(NoCardsFound):
@@ -101,7 +101,7 @@ async def test_connect(mocker: MockerFixture):
     api_token = '123'
 
     websocket._has_connection = True
-    with pytest.raises(WebsocketError):
+    with pytest.raises(WebsocketException):
         await websocket.connect(api_token)
 
 
@@ -115,14 +115,14 @@ async def test__connect(mocker: MockerFixture):
         create=True,
         side_effect=ConnectionRefusedError
     )
-    with pytest.raises(WebsocketError):
+    with pytest.raises(WebsocketException):
         await websocket._connect()
     mocker.patch(
         'src.bluecurrent_api.websocket.connect',
         create=True,
         side_effect=TimeoutError
     )
-    with pytest.raises(WebsocketError):
+    with pytest.raises(WebsocketException):
         await websocket._connect()
 
 
@@ -132,13 +132,13 @@ async def test_send_request(mocker: MockerFixture):
     mock_send = mocker.patch.object(Websocket, '_send')
 
     # without receiver
-    with pytest.raises(WebsocketError):
+    with pytest.raises(WebsocketException):
         await websocket.send_request({"command": "GET_CHARGE_POINTS"})
 
     websocket.receiver = mocker.Mock()
 
     # without token
-    with pytest.raises(WebsocketError):
+    with pytest.raises(WebsocketException):
         await websocket.send_request({"command": "GET_CHARGE_POINTS"})
 
     websocket.auth_token = '123'
@@ -153,7 +153,7 @@ async def test_send_request(mocker: MockerFixture):
 async def test_loop():
     websocket = Websocket()
 
-    with pytest.raises(WebsocketError):
+    with pytest.raises(WebsocketException):
         await websocket.loop()
 
 
@@ -204,37 +204,37 @@ async def test_message_handler(mocker: MockerFixture):
     # no object
     message = {"value": True}
     mocker.patch.object(Websocket, '_recv', return_value=message)
-    with pytest.raises(WebsocketError):
+    with pytest.raises(WebsocketException):
         await websocket._message_handler()
 
     # unknown command
     message = {"error": 0}
     mocker.patch.object(Websocket, '_recv', return_value=message)
-    with pytest.raises(WebsocketError):
+    with pytest.raises(WebsocketException):
         await websocket._message_handler()
 
     # unknown token
     message = {"error": 1}
     mocker.patch.object(Websocket, '_recv', return_value=message)
-    with pytest.raises(WebsocketError):
+    with pytest.raises(WebsocketException):
         await websocket._message_handler()
 
     # token not autorized
     message = {"error": 2}
     mocker.patch.object(Websocket, '_recv', return_value=message)
-    with pytest.raises(WebsocketError):
+    with pytest.raises(WebsocketException):
         await websocket._message_handler()
 
     # unknown error
     message = {"error": 9}
     mocker.patch.object(Websocket, '_recv', return_value=message)
-    with pytest.raises(WebsocketError):
+    with pytest.raises(WebsocketException):
         await websocket._message_handler()
 
     # success false
     message = {"success": False, "error": "this is an error"}
     mocker.patch.object(Websocket, '_recv', return_value=message)
-    with pytest.raises(WebsocketError):
+    with pytest.raises(WebsocketException):
         await websocket._message_handler()
 
     # None message
@@ -261,7 +261,7 @@ async def test_disconnect(mocker: MockerFixture):
         side_effect=AsyncMock()
     )
 
-    with pytest.raises(WebsocketError):
+    with pytest.raises(WebsocketException):
         await websocket.disconnect()
 
     websocket._has_connection = True
@@ -280,7 +280,7 @@ async def test_handle_connection_errors(mocker: MockerFixture):
     websocket._has_connection = True
     websocket.receive_event = asyncio.Event()
 
-    with pytest.raises(WebsocketError):
+    with pytest.raises(WebsocketException):
         websocket.handle_connection_errors()
 
     assert websocket._has_connection == False

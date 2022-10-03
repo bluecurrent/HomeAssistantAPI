@@ -51,11 +51,11 @@ def test_get_vehicle_status():
 def test_create_datetime():
 
     assert create_datetime("01-01-2001 00:00:00") == datetime(
-        2001, 1, 1, 0, 0, 0, tzinfo=timezone(timedelta(seconds=0))
+        2001, 1, 1, 0, 0, 0, tzinfo=timezone(timedelta(seconds=7200))
     )
 
     assert create_datetime("20010101 00:00:00", True) == datetime(
-        2001, 1, 1, 0, 0, 0, tzinfo=timezone(timedelta(seconds=0))
+        2001, 1, 1, 0, 0, 0, tzinfo=timezone(timedelta(seconds=7200))
     )
 
     assert create_datetime("") == None
@@ -87,11 +87,11 @@ def test_handle_status():
     assert message["data"]["total_current"] == 12.3
     assert message["data"]["total_kw"] == 2.71
     assert message["data"]["start_datetime"] == datetime(
-        2021, 11, 18, 14, 12, 23, tzinfo=timezone(timedelta(seconds=0)))
+        2021, 11, 18, 14, 12, 23, tzinfo=timezone(timedelta(seconds=7200)))
     assert message["data"]["stop_datetime"] == datetime(
-        2021, 11, 18, 14, 32, 23, tzinfo=timezone(timedelta(seconds=0)))
+        2021, 11, 18, 14, 32, 23, tzinfo=timezone(timedelta(seconds=7200)))
     assert message["data"]["offline_since"] == datetime(
-        2021, 11, 18, 14, 32, 23, tzinfo=timezone(timedelta(seconds=0)))
+        2021, 11, 18, 14, 32, 23, tzinfo=timezone(timedelta(seconds=7200)))
     assert message["data"]["vehicle_status"] == "standby"
 
     assert len(message["data"]) == 17

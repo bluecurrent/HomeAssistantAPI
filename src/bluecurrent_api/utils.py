@@ -1,3 +1,4 @@
+"""Define a functions for modifying incoming data."""
 from datetime import datetime
 
 
@@ -10,7 +11,7 @@ def calculate_usage_from_phases(phases: tuple):
 
 
 def calculate_total_kw(voltage, current):
-    """Calculate the total kW"""
+    """Calculate the total kW."""
     return round((voltage * current / 1000), 2)
 
 
@@ -90,13 +91,13 @@ def handle_grid(message: dict):
 
 
 def handle_setting_change(message: dict):
-    """Change result to a boolean"""
+    """Change result to a boolean."""
     message["result"] = "true" in message["result"]["setting"]
     message["object"] = message["object"].replace("STATUS_SET_", "")
 
 
 def handle_session_messages(message: dict):
-    """handle session messages"""
+    """handle session messages."""
 
     object_name = message["object"].replace(
         "STATUS_", "").replace("RECEIVED_", "")

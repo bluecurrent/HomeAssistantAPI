@@ -1,16 +1,17 @@
+"""Define an object with all public methods."""
 import asyncio
 import json
 from typing import Callable
 from websockets.client import connect
 from websockets.exceptions import ConnectionClosed, InvalidStatusCode
-from .errors import InvalidApiToken, WebsocketError, NoCardsFound
+from .exceptions import InvalidApiToken, WebsocketException, NoCardsFound
 from .utils import handle_status, handle_grid, handle_setting_change, handle_session_messages
 
 URL = "wss://bo-acct001.bluecurrent.nl/appserver/2.0"
 
 
 class Websocket:
-    """Class for handling requests and responses for the BlueCurrent Websocket Api"""
+    """Class for handling requests and responses for the BlueCurrent Websocket Api."""
     _connection = None
     _has_connection = False
     auth_token = None
@@ -38,21 +39,21 @@ class Websocket:
         res = await self._recv()
         await self.disconnect()
         if not res["success"]:
-            raise InvalidApiToken("Invalid Api Token")
+            raise InvalidApiToken
         self.auth_token = "Token " + res["token"]
         return True
 
     async def get_charge_cards(self):
-        """Get the charge cards"""
+        """Get the charge cards."""
         if not self.auth_token:
-            raise WebsocketError("token not set")
+            raise WebsocketException("token not set")
         await self._connect()
         await self._send({"command": "GET_CHARGE_CARDS", "Authorization": self.auth_token})
         res = await self._recv()
         cards = res["cards"]
         await self.disconnect()
         if len(cards) == 0:
-            raise NoCardsFound()
+            raise NoCardsFound
         return cards
 
     def set_receiver(self, receiver: Callable):
@@ -63,7 +64,7 @@ class Websocket:
     async def connect(self, api_token: str):
         """Validate api_token and connect to the websocket."""
         if self._has_connection:
-            raise WebsocketError("Connection already started.")
+            raise WebsocketException("Connection already started.")
         await self.validate_api_token(api_token)
         await self._connect()
 
@@ -73,14 +74,15 @@ class Websocket:
             self._connection = await connect(URL)
             self._has_connection = True
         except Exception as err:
-            raise WebsocketError("Cannot connect to the websocket.") from err
+            raise WebsocketException(
+                "Cannot connect to the websocket.") from err
 
     async def send_request(self, request: dict):
         """Add authorization and send request."""
         if not self.receiver:
-            raise WebsocketError("receiver method not set")
+            raise WebsocketException("receiver method not set")
         if not self.auth_token:
-            raise WebsocketError("auth token not set")
+            raise WebsocketException("auth token not set")
 
         request["Authorization"] = self.auth_token
         await self._send(request)
@@ -88,7 +90,7 @@ class Websocket:
     async def loop(self):
         """Loop the message_handler."""
         if not self.receiver:
-            raise WebsocketError("receiver method not set")
+            raise WebsocketException("receiver method not set")
 
         await self._send({"command": "HELLO", "Authorization": self.auth_token})
 
@@ -116,7 +118,7 @@ class Websocket:
         error = message.get("error")
 
         if not object_name:
-            raise WebsocketError("Received message has no object.")
+            raise WebsocketException("Received message has no object.")
 
         # ignore RECEIVED objects without error
         if "RECEIVED" in object_name and not error:
@@ -124,7 +126,7 @@ class Websocket:
 
         # handle errors
         if error in errors:
-            raise WebsocketError(errors[error])
+            raise WebsocketException(errors[error])
 
         if object_name == "CH_STATUS":
             handle_status(message)
@@ -162,17 +164,17 @@ class Websocket:
             self.handle_connection_errors()
 
     def handle_connection_errors(self):
-        """Handle connection errors"""
+        """Handle connection errors."""
         if self._has_connection:
             self._has_connection = False
             self.handle_receive_event()
-            raise WebsocketError("connection was closed.")
+            raise WebsocketException("connection was closed.")
 
     async def disconnect(self):
-        """Disconnect from de websocket"""
+        """Disconnect from de websocket."""
         self._check_connection()
         if not self._has_connection:
-            raise WebsocketError("Connection is already closed.")
+            raise WebsocketException("Connection is already closed.")
         self._has_connection = False
         self.handle_receive_event()
         await self._connection.close()
@@ -180,7 +182,7 @@ class Websocket:
     def _check_connection(self):
         """Throw error if there is no connection."""
         if not self._connection:
-            raise WebsocketError("No connection with the api.")
+            raise WebsocketException("No connection with the api.")
 
     def handle_receive_event(self):
         "Set receive_event if it exists"

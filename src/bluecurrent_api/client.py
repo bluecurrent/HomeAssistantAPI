@@ -1,9 +1,10 @@
+"""Define an object to interact with the BlueCurrent websocket api."""
 from typing import Callable
 from .websocket import Websocket
 
 
 class Client:
-    """Api Client for the BlueCurrent Websocket Api"""
+    """Api Client for the BlueCurrent Websocket Api."""
 
     def __init__(self):
         """Initialize the Client."""
