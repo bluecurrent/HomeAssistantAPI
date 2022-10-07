@@ -1,0 +1,7 @@
+websockets 
+
+# dev dependencies
+pylint 
+pytest 
+pytest-mock 
+pytest-asyncio
