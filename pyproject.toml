@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bluecurrent-api"
+version = "1.0.0"
+authors = [
+  { name="Floris272", email="florispuijk@outlook.com" },
+]
+description = "A wrapper for the Blue Current websocket api"
+readme = "README.md"
+license = { file="LICENSE" }
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "websockets >= 10.0",
+    "asyncio >= 3.4.3"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/bluecurrent/HomeAssistantAPI"
+"Bug Tracker" = "https://github.com/bluecurrent/HomeAssistantAPI/issues"

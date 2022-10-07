@@ -2,130 +2,158 @@
 
 Python wrapper for the blue current api
 
-The library is an asyncio-driven library that interfaces with the Websocket API provided by Blue Current. This was made for the Blue Current Home Assistant integration. 
+The library is a asyncio-driven library that interfaces with the Websocket API provided by Blue Current. This was made for the Blue Current Home Assistant integration.
 
 ## Usage
 
 ### Requirements
 
-Python 3.9 or newer
-Python modules websockets, asyncio
+- Python 3.9 or newer
+- websockets
+- asyncio
 
 ### Installation
 
 ```python
-pip install blue_current_api
+pip install bluecurrent_api
 ```
 
 ### Api token
-using this library requires an Blue Current api token. You can generate one in the Blue Current portal
+
+using this library requires a Blue Current api token. You can generate one in your Blue Current dashboard.
 
 ## Example
 
 ```python
-from blue_current_api import Client
-from blue_current_api.errors import ConnectionError
+from bluecurrent_api import Client
 import asyncio
 
+
 async def main():
-        token = 'token'
-        client = Client()
+    api_token = 'api_token'
+    client = Client()
 
-        #different receivers
-        def on_data(data):
-            print('received: ', data)
-     
-        def a(data):
-            print('a: ', data)
+    # data receiver
+    def on_data(data):
+        print('received: ', data)
 
-        # the receiver loop inside an try except to catch the connection error when the connection is stopped
-        async def loop():
-            try:
-                await client.start_loop()
-            except ConnectionError:
-                print('disconnected')
+    # set the receiver
+    client.set_receiver(on_data)
 
-        # example requests
-        async def requests():
-            await client.set_operative('101', True, a)
-            await client.get_charge_points()
-            await client.set_plug_and_charge('101', True)
-            await client.disconnect()
+    # connect to the websocket
+    await client.connect(api_token)
 
+    # example requests
+    async def requests():
+        await client.get_charge_points()
+        await client.wait_for_response()
+        await client.disconnect()
 
-        #store the on_data method
-        client.set_on_data(on_data)
+    # start the loop and send requests
+    await asyncio.gather(
+        client.start_loop(),
+        requests()
+    )
 
-        #connect to the websocket
-        await client.connect(token)
-
-        #start the loop and send requests
-        await asyncio.gather(
-            loop(),
-            requests()
-        )
-
-    asyncio.run(main())
+asyncio.run(main())
 ```
 
 ## Implemented methods
 
-### await validate_token(token)
+---
 
-- validates the given token.
+<b>The methods validate_token and get_charge_cards are stand-alone and to be used <u>before</u> connecting to the websocket with connect().</b>
 
-### await connect(token)
+<br>
 
-- connects to the websocket
+#### await validate_token(api_token) -> bool
 
-### await disconnect()
+- Validates the given token.
 
-- stops the connection
+#### await get_charge_cards(auth_token) -> list
 
-### await start_loop()
+- returns the users charge cards.
 
-- starts the receiver loop
+---
 
-### set_on_data(on_data)
+#### await connect(auth_token)
 
-- sets the default method to call with new data
+- Connects to the websocket.
 
-### await get_charge_points()
+#### set_receiver(receiver)
 
-- gets the chargepoints 
+- Sets the receiver method.
 
-### await get_status(evse_id)
+#### await start_loop()
 
-- gets the status from an charge point
+- Starts the receiver loop.
 
-### await set_public_charging(evse_id, value, receiver)
+#### await wait_for_response()
 
-- sets public charging to True or False and sends the response to the receiver
+- Waits until the next message is received.
 
-### await set_plug_and_charge(evse_id, value, receiver)
+#### await disconnect()
 
-- sets plug and charge to True or False and sends the response to the receiver
+- Stops the connection.
 
-### await set_operative(evse_id, value, receiver)
+<br>
 
-- sets operative to True or False and sends the response to the receiver
+### Data
 
-### await unlock_connector(evse_id)
+---
 
-- unlocks the connector
+#### await get_charge_points()
 
-### await reset(evse_id)
+- Gets the chargepoints
 
-- resets the chargepoint
+#### await get_status(evse_id)
 
-### await reboot(evse_id)
+- Gets the status from a chargepoint.
 
-- reboots the chargepoint
+#### await get_settings(evse_id)
 
-### await start_session(evse_id, receiver, card_id)
+- Gets the setting states from a chargepoint.
 
-- starts a charge session
+#### await get_grid_status(evse_id)
 
-### await stop_session(evse_id, receiver, card_id)
+- Gets the grid status from a chargepoint.
 
-- stops a charge session
+<br>
+
+### Settings
+
+---
+
+#### await set_public_charging(evse_id, value)
+
+- Sets public charging to True or False.
+
+#### await set_plug_and_charge(evse_id, value)
+
+- Sets plug and charge to True or False.
+
+#### await set_operative(evse_id, value)
+
+- Sets operative to True or False.
+
+<br>
+
+### Actions
+
+---
+
+#### await reset(evse_id)
+
+- Resets the chargepoint.
+
+#### await reboot(evse_id)
+
+- Reboots the chargepoint.
+
+#### await start_session(evse_id card_uid)
+
+- Starts a charge session.
+
+#### await stop_session(evse_id)
+
+- Stops a charge session.
