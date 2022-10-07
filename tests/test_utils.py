@@ -3,40 +3,37 @@ from datetime import datetime, timezone, timedelta
 
 
 def test_calculate_total_from_phases():
-    total = calculate_usage_from_phases((10, 10, 10))
+    total = calculate_average_usage_from_phases((10, 10, 10))
     assert total == 10
 
-    total = calculate_usage_from_phases((0, 0, 0))
+    total = calculate_average_usage_from_phases((0, 0, 0))
     assert total == 0
 
-    total = calculate_usage_from_phases((10, None, 20))
+    total = calculate_average_usage_from_phases((10, None, 20))
     assert total == 15
 
-    total = calculate_usage_from_phases((10, 6, 10))
+    total = calculate_average_usage_from_phases((10, 6, 10))
     assert total == 8.7
 
-    total = calculate_usage_from_phases((10, 8, 1))
+    total = calculate_average_usage_from_phases((10, 8, 1))
     assert total == 6.3
 
-    total = calculate_usage_from_phases((10, 0, 20))
+    total = calculate_average_usage_from_phases((10, 0, 20))
     assert total == 15
 
-    total = calculate_usage_from_phases((5, 0, 0))
+    total = calculate_average_usage_from_phases((5, 0, 0))
     assert total == 5
 
-    total = calculate_usage_from_phases((6, None, None))
+    total = calculate_average_usage_from_phases((6, None, None))
     assert total == 6
 
-    total = calculate_usage_from_phases((None, None, None))
+    total = calculate_average_usage_from_phases((None, None, None))
     assert total == 0
 
 
 def test_calculate_total_kW():
-    total = calculate_total_kw(16, 220)
-    assert total == 3.52
-
-    total = calculate_total_kw(8, 110)
-    assert total == 0.88
+    total = calculate_total_kw((14, 12, 15), 230)
+    assert total == 9.43
 
 
 def test_get_vehicle_status():
@@ -49,12 +46,7 @@ def test_get_vehicle_status():
 
 
 def test_create_datetime():
-
-    assert create_datetime("01-01-2001 00:00:00") == datetime(
-        2001, 1, 1, 0, 0, 0, tzinfo=timezone(timedelta(seconds=7200))
-    )
-
-    assert create_datetime("20010101 00:00:00", True) == datetime(
+    assert create_datetime("20010101 00:00:00") == datetime(
         2001, 1, 1, 0, 0, 0, tzinfo=timezone(timedelta(seconds=7200))
     )
 
@@ -71,8 +63,8 @@ def test_handle_status():
             'actual_p2': 10,
             'actual_p3': 15,
             'activity': "charging",
-            'start_datetime': "18-11-2021 14:12:23",
-            'stop_datetime': "18-11-2021 14:32:23",
+            'start_datetime': "20211118 14:12:23",
+            'stop_datetime': "20211118 14:32:23",
             'offline_since': "20211118 14:32:23",
             'total_cost': 10.52,
             'vehicle_status': "A",
@@ -83,9 +75,9 @@ def test_handle_status():
 
     handle_status(message)
 
-    assert message["data"]["total_voltage"] == 220.0
-    assert message["data"]["total_current"] == 12.3
-    assert message["data"]["total_kw"] == 2.71
+    assert message["data"]["avg_voltage"] == 220.0
+    assert message["data"]["avg_current"] == 12.3
+    assert message["data"]["total_kw"] == 8.14
     assert message["data"]["start_datetime"] == datetime(
         2021, 11, 18, 14, 12, 23, tzinfo=timezone(timedelta(seconds=7200)))
     assert message["data"]["stop_datetime"] == datetime(
@@ -107,9 +99,10 @@ def test_handle_grid():
     }
 
     handle_grid(message)
-    assert message["data"]["grid_total_current"] == 13.7
+    assert message["data"]["grid_avg_current"] == 13.7
+    assert message["data"]["grid_max_current"] == 15
 
-    assert len(message["data"]) == 4
+    assert len(message["data"]) == 5
 
 
 def test_handle_setting_change():
