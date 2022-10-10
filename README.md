@@ -72,7 +72,7 @@ asyncio.run(main())
 
 #### await get_charge_cards(auth_token) -> list
 
-- returns the users charge cards.
+- Returns the users charge cards.
 
 ---
 

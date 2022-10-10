@@ -8,3 +8,5 @@ bluecurrent_api.egg-info
 packagemanager.bat
 
 connect.py
+venv
+build/
