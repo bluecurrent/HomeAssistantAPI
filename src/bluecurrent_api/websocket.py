@@ -23,7 +23,7 @@ class Websocket:
         pass
 
     def get_receiver_event(self):
-        """Returns cleared receive_event when connected."""
+        """Return cleared receive_event when connected."""
 
         self._check_connection()
         if self.receive_event is None:
@@ -92,6 +92,7 @@ class Websocket:
         if not self.receiver:
             raise WebsocketException("receiver method not set")
 
+        # Needed for receiving updates
         await self._send({"command": "HELLO", "Authorization": self.auth_token})
 
         while True:
@@ -120,8 +121,9 @@ class Websocket:
         if not object_name:
             raise WebsocketException("Received message has no object.")
 
-        # ignore RECEIVED objects without error
-        if "RECEIVED" in object_name and not error:
+        # ignored objects
+        if (("RECEIVED" in object_name and not error)
+                or object_name == "HELLO" or "OPERATIVE" in object_name):
             return False
 
         # handle errors
@@ -137,8 +139,7 @@ class Websocket:
         elif "STATUS" in object_name or "RECEIVED" in object_name:
             handle_session_messages(message)
 
-        if object_name != "HELLO":
-            self.handle_receive_event()
+        self.handle_receive_event()
 
         if self.receiver_is_coroutine:
             await self.receiver(message)

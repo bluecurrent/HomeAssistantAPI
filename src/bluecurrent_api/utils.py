@@ -78,7 +78,7 @@ def handle_status(message: dict):
 
 
 def handle_grid(message: dict):
-    """Add grid_total_current to a message."""
+    """Add grid total and avg to a message."""
     current1 = message["data"]["grid_actual_p1"]
     current2 = message["data"]["grid_actual_p2"]
     current3 = message["data"]["grid_actual_p3"]
