@@ -16,7 +16,7 @@ build:
 publish:
 	twine upload dist/*
 
-make html:
+html:
 	cd docs && make.bat clean && make.bat html
 	
 build-ha:
