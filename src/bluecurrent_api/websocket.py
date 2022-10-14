@@ -1,4 +1,4 @@
-"""Define an object with all public methods."""
+"""Define an object that handles the connection to the Websocket"""
 import asyncio
 import json
 from typing import Callable
@@ -7,7 +7,7 @@ from websockets.exceptions import ConnectionClosed, InvalidStatusCode
 from .exceptions import InvalidApiToken, WebsocketException, NoCardsFound
 from .utils import handle_status, handle_grid, handle_setting_change, handle_session_messages
 
-URL = "wss://bo-acct001.bluecurrent.nl/appserver/2.0"
+URL = "wss://bo.bluecurrent.nl/appserver/2.0"
 
 
 class Websocket:
