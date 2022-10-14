@@ -1,4 +1,4 @@
-# integration
+# Integration
 
 ```
 homeassistant/components/bluecurrent
@@ -31,6 +31,8 @@ tests/components/bluecurrent
  ┗ test_switch.py
 ```
 
+## Code
+
 ### strings.json
 
 Contains the strings for the config_flow that the user sees when adding the integration to Home Assistant.
@@ -54,7 +56,7 @@ Defines all services.
 
 ### const.py
 
-contains all the constants of the integration. All entities are defined here.
+Contains all the constants of the integration. All entities are defined here.
 
 ### sensor.py
 
@@ -74,4 +76,14 @@ Defines the setup flow of the integration. Contains two steps. One for the api t
 
 ### \_\_init\_\_.py
 
-Contains the setup method, the Connector Class that handles all incomming data from the api. And the BlueCurrentEntity class that all the platforms inherit. It adds device info to the entities and connects the dispatcher to listen for data updates.
+Contains the setup method, the Connector Class that handles all incoming data from the api and the BlueCurrentEntity class that all the platforms inherit. It also adds device info to the entities and connects the dispatcher to listen for data updates.
+
+## Tests
+
+### \_\_init\_\_.py
+
+Contains the method `init_integration` which starts the BlueCurrent integration with a single platform (sensor, switch or button) and test data.
+
+### Other test files
+
+The other test files contain tests for the file referenced in the name.

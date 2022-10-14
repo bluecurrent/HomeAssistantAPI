@@ -6,7 +6,7 @@
 
 Home assistant has tasks that can be run inside Vscode:
 
-Open command pallette with `F1` or `ctrl+shift+p` and search for Tasks: run task
+Open command palette with `F1` or `ctrl+shift+p` and search for Tasks: run task
 
 The important ones are:
 
@@ -27,7 +27,7 @@ The important ones are:
 ## Running
 
 1. run task `Home Assistant Core`
-2. goto http://localhost:8123
+2. go to [localhost:8123](http://localhost:8123)
 
 ## Testing
 
