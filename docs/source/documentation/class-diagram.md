@@ -5,3 +5,5 @@
 :align: center
 :scale: 20%
 ```
+
+Click to enlarge

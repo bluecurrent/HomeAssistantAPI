@@ -10,6 +10,12 @@ For an explanation for the integration flow, see [](flow).
 
 For the documentation of all the functions see [](documentation).
 
+## Complementary documentation
+
+- [Home Assistant](https://developers.home-assistant.io/)
+- [Websockets](https://websockets.readthedocs.io/en/stable/)
+- [Asyncio](https://docs.python.org/3/library/asyncio.html)
+
 ```{toctree}
 ---
 hidden:
@@ -19,6 +25,5 @@ setting-up
 file-overview
 flow
 documentation
-keywords
-faq
+notes
 ```
