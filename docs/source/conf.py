@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'HowTo Docs'
+project = 'Blue Current HA integration Docs'
 copyright = '2022, Floris Puijk'
 author = 'Floris Puijk'
 

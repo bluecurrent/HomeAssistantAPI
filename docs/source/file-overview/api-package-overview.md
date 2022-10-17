@@ -23,7 +23,7 @@ Defines the module export.
 
 ### exceptions.py
 
-Defines the exceptions used in the API package
+Defines the exceptions used in the API package.
 
 ### client.py
 
@@ -31,7 +31,7 @@ Contains the Client class that has all the 'public' methods of the API package.
 
 ### websockets.py
 
-Defines the Websocket Class that handles the connection to the Websocket
+Defines the Websocket Class that handles the connection to the Websocket.
 
 ### utils.py
 

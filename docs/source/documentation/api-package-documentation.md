@@ -65,7 +65,7 @@ The Client class has all the 'public' methods of the package.
 
 ### set_receiver(receiver)
 
-- sets the receiver method.
+- Sets the receiver method.
 
 ### await start_loop()
 
@@ -153,13 +153,13 @@ The Websocket class does all the work of sending and receiving messages.
 
 ### get_receiver_event() -> asyncio.Event
 
-- Returns cleared receive_event when connected
+- Returns cleared receive_event when connected.
 
 ### validate_api_token(api_token) -> bool
 
-- Returns True when the token is correct or throws an InvalidApiToken error
+- Returns True when the token is correct or throws an InvalidApiToken error.
 
-Stores the received `auth_token` in Websocket
+- Stores the received `auth_token` in the Websocket class.
 
 ### get_charge_cards() -> list
 
@@ -169,7 +169,7 @@ Also throws WebsocketException if `auth_token` is not set with `validate_api_tok
 
 ### set_receiver(self, receiver: Callable)
 
-- Sets the receiver and if the receiver asynchronous or not
+- Sets the receiver and if the receiver asynchronous or not.
 
 ### connect(api_token)
 
@@ -179,15 +179,15 @@ If there already is a connection an WebsocketException is thrown.
 
 ### \_connect()
 
-Tries to connect to websocket and stores the connection in a variable. Also sets \_has_connection to True
+Tries to connect to websocket and stores the connection in a variable. Also sets \_has_connection to True.
 
-Throws WebsocketException if connecting has failed
+Throws WebsocketException if connecting has failed.
 
 ### send_request(request: dict)
 
 Checks if the receiver and auth_token are set and throws WebsocketException if not.
 
-Adds `Authorization` to request dict and calls `_send`
+Adds `Authorization` to request dict and calls `_send`.
 
 ### loop()
 
@@ -201,7 +201,7 @@ Creates an infinite loop that calls `_message_handler` and stops if \_message_ha
 
 - Handles all incoming messages from `_recv`.
 
-Awaits the next message with `_recv`
+Awaits the next message with `_recv`.
 
 If the websocket has disconnected and `_recv` returns None return True to so that the loop is stopped in `loop`.
 
@@ -211,36 +211,36 @@ Ignore messages with "RECEIVED" in object_name and no error and HELLO.
 
 Throws WebsocketException if message has an error code.
 
-Call util methods based on object_name
+Call util methods based on object_name.
 
 Plug_and_charge and public_charging status get handled by handle_setting_change.
 
-Operative is ignored because if it is successful ch_status will also be received
+Operative is ignored because if it is successful ch_status will also be received.
 
 Calls `handle_receive_event` to set the event.
 
-Pass the message to the receiver method
+Pass the message to the receiver method.
 
 ### \_send(data: dict)
 
 - Sends data to the websocket.
   Checks connection with `_check_connection`
 
-Tries to send a JSON message to websocket and calls `handle_connection_errors()` on errors
+Tries to send a JSON message to websocket and calls `handle_connection_errors()` on errors.
 
 ### \_recv() -> dict
 
 - Receives data from the websocket.
 
-Checks connection with `_check_connection`
+Checks connection with `_check_connection`.
 
-Tries to send JSON message to websocket and calls `handle_connection_errors()` on errors
+Tries to send JSON message to websocket and calls `handle_connection_errors()` on errors.
 
 ### handle_connection_errors()
 
 - Handles connection errors.
 
-If `_has_connection` is still True set it to false, calls `handle_receive_event` to unblock. And throw an WebsocketException
+If `_has_connection` is still True set it to false, calls `handle_receive_event` to unblock. And throw an WebsocketException.
 
 ### disconnect()
 
@@ -248,7 +248,7 @@ If `_has_connection` is still True set it to false, calls `handle_receive_event`
 
 Throws an WebsocketException if \_has_connection is already False.
 
-Calls `handle_receive_event` to unblock
+Calls `handle_receive_event` to unblock.
 
 ### \_check_connection()
 
@@ -256,7 +256,7 @@ Throws an WebsocketException if connection is None.
 
 ### handle_receive_event():
 
-- Sets receive_event if it exists
+- Sets receive_event if it exists.
 
 ## Utils
 
@@ -264,21 +264,21 @@ Contains methods for modifying incoming data.
 
 ### calculate_average_usage_from_phases(phases tuple) -> float
 
-- Returns the average of used phases
+- Returns the average of used phases.
 
 ### calculate_total_kw(current: tuple, v_avg) -> float
 
-- Returns an estimate of the total kw
+- Returns an estimate of the total kw.
 
 ### create_datetime(timestamp: str) -> datetime
 
-- Returns a timestamp
+- Returns a timestamp.
 
-adds CEST timezone if not already in timestamp
+Adds CEST timezone if not already in timestamp.
 
 ### get_vehicle_status(vehicle_status_key: str) -> str
 
-- Returns the vehicle status
+- Returns the vehicle status.
 
 ### handle_status(message: dict)
 
@@ -286,7 +286,7 @@ adds CEST timezone if not already in timestamp
 
 ### handle_grid(message: dict)
 
-- Adds total and avg grid current to given message
+- Adds total and avg grid current to given message.
 
 ### handle_setting_change(message: dict)
 
@@ -294,6 +294,6 @@ adds CEST timezone if not already in timestamp
 
 ### handle_session_messages(message: dict)
 
-- changes the object name
+- Changes the object name.
 
 Changes the error to a better readable form.

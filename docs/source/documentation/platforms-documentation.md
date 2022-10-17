@@ -13,7 +13,7 @@
 
 - Is called when signal is dispatched.
 - Gets the (potentially) new value from the connector class.
-- If the value is not null, set the value and make the entity available.
+- If the value is not none, set the value and make the entity available.
 - Else set the entity to unavailable except when the entity is one of `start_datetime` `stop_datetime` or `ch_offline_since`. Because those values are not always filled when receiving a status update.
 
 ## ChargePointButton(BlueCurrentEntity, ButtonEntity):
@@ -32,7 +32,7 @@
 
 ### update_from_latest_data()
 
-- Not implemented
+- Not implemented.
 
 ## ChargePointSwitch(BlueCurrentEntity, SwitchEntity)
 
@@ -47,11 +47,11 @@
 
 - Calls the function to send the request to the API with the given value. Logs an error if there is no connection with the API.
 
-## async_turn_on()
+### async_turn_on()
 
 - Turns the setting on.
 
-## async_turn_off()
+### async_turn_off()
 
 - Turns the setting off
 
@@ -59,5 +59,5 @@
 
 - Is called when signal is dispatched.
 - Gets the (potentially) new value from the connector class.
-- If the value is not null, set the value and make the entity available.
+- If the value is not none, set the value and make the entity available.
 - Else set the entity to unavailable.

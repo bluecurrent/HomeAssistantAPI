@@ -38,7 +38,7 @@ to develop on the API package, the following tools are needed:
 
 - `make html`
 
-### using updated API package
+### Using an updated API package (without publishing it).
 
 1. `make build`
 2. `pip install bluecurrent_api-<VERSION>-py3-none-any.whl`
@@ -51,3 +51,7 @@ to develop on the API package, the following tools are needed:
    - container: the name of the HA devcontainer
    - version: the version of package
 3. Run the script.
+
+```{note}
+bluecurrent_api-<VERSION>-py3-none-any.whl needs to match the .whl file in dist/ after make build
+```

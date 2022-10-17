@@ -3,22 +3,22 @@
 ### async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool
 
 - Retrieves the api token from the config_entry.
-- Tries to connect to the API
-- Starts the loop
+- Tries to connect to the API.
+- Starts the loop.
 - Waits until `CHARGE_POINTS` is received.
 - Stores the connector, so it can be retrieved in other classes.
-- Tells Ha to start the platform setup
+- Tells Ha to start the platform setup.
 - Sets disconnect to be called when the integration is unloaded.
 - Defines all service methods.
 - Registers services.
 
 ### async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool
 
-unloads the config entry.
+- Unloads the config entry.
 
 ### set_entities_unavailable(hass: HomeAssistant, config_id: str)
 
-- sets all BlueCurrent entities to unavailable
+- Sets all BlueCurrent entities to unavailable.
 
 ## Connector
 
@@ -27,7 +27,7 @@ grid: dict[str, Any]
 
 ### \_\_init\_\_(hass: HomeAssistant, config: ConfigEntry, client: Client)
 
-- stores the given parameters.
+- Stores the given parameters.
 
 ### connect(token: str)
 
@@ -50,7 +50,7 @@ Routes the received message to the correct function based on the object.
 
 ### add_charge_point(self, evse_id: str, model: str)
 
-- Ads the charge point to `charge_points`
+- Adds the charge point to `charge_points`
 
 ### update_charge_point(self, evse_id: str, data: dict)
 
@@ -70,7 +70,7 @@ Routes the received message to the correct function based on the object.
 - If the websocket disconnects, a warning is logged and the reconnect method is called after 1 second.
 
 ```{note}
-the reason for the one second delay is that the connection closes quite frequently so with this it 'immediately' reconnects.
+The reason for the one second delay is that the connection closes quite frequently so with this it 'immediately' reconnects.
 ```
 
 ### reconnect(self, event_time: datetime | None = None)
