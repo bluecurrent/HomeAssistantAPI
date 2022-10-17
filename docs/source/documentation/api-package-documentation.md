@@ -23,9 +23,6 @@ async def main():
     def on_data(data):
         print('received: ', data)
 
-    # set the receiver
-    client.set_receiver(on_data)
-
     # connect to the websocket
     await client.connect(api_token)
 
@@ -36,7 +33,7 @@ async def main():
 
     # start the loop and send requests
     await asyncio.gather(
-        client.start_loop(),
+        client.start_loop(on_data),
         requests()
     )
 

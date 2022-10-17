@@ -56,11 +56,6 @@ class Websocket:
             raise NoCardsFound
         return cards
 
-    def set_receiver(self, receiver: Callable):
-        """Set a receiver."""
-        self.receiver = receiver
-        self.receiver_is_coroutine = asyncio.iscoroutinefunction(receiver)
-
     async def connect(self, api_token: str):
         """Validate api_token and connect to the websocket."""
         if self._has_connection:
@@ -87,10 +82,11 @@ class Websocket:
         request["Authorization"] = self.auth_token
         await self._send(request)
 
-    async def loop(self):
+    async def loop(self, receiver: Callable):
         """Loop the message_handler."""
-        if not self.receiver:
-            raise WebsocketException("receiver method not set")
+
+        self.receiver = receiver
+        self.receiver_is_coroutine = asyncio.iscoroutinefunction(receiver)
 
         # Needed for receiving updates
         await self._send({"command": "HELLO", "Authorization": self.auth_token})
