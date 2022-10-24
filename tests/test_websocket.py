@@ -76,24 +76,6 @@ async def test_get_charge_cards(mocker: MockerFixture):
     assert result == cards
 
 
-def test_set_receiver():
-    websocket = Websocket()
-
-    def receiver():
-        pass
-
-    async def async_receiver():
-        pass
-
-    websocket.set_receiver(receiver)
-    assert websocket.receiver == receiver
-    assert websocket.receiver_is_coroutine == False
-
-    websocket.set_receiver(async_receiver)
-    assert websocket.receiver == async_receiver
-    assert websocket.receiver_is_coroutine == True
-
-
 @pytest.mark.asyncio
 async def test_connect(mocker: MockerFixture):
     mocker.patch('src.bluecurrent_api.websocket.Websocket._send')
@@ -150,11 +132,25 @@ async def test_send_request(mocker: MockerFixture):
 
 
 @pytest.mark.asyncio
-async def test_loop():
+async def test_loop(mocker: MockerFixture):
+    mocker.patch('src.bluecurrent_api.websocket.Websocket._send')
+    mocker.patch(
+        'src.bluecurrent_api.websocket.Websocket._message_handler', return_value=True)
     websocket = Websocket()
 
-    with pytest.raises(WebsocketException):
-        await websocket.loop()
+    def receiver():
+        pass
+
+    async def async_receiver():
+        pass
+
+    await websocket.loop(receiver)
+    assert websocket.receiver == receiver
+    assert websocket.receiver_is_coroutine == False
+
+    await websocket.loop(async_receiver)
+    assert websocket.receiver == async_receiver
+    assert websocket.receiver_is_coroutine == True
 
 
 @pytest.mark.asyncio
@@ -170,7 +166,8 @@ async def test_message_handler(mocker: MockerFixture):
     websocket = Websocket()
 
     async_mock_receiver = AsyncMock()
-    websocket.set_receiver(async_mock_receiver)
+    websocket.receiver = async_mock_receiver
+    websocket.receiver_is_coroutine = True
 
     # normal flow with async receiver
     message = {"object": "CHARGE_POINTS"}
@@ -179,7 +176,8 @@ async def test_message_handler(mocker: MockerFixture):
     async_mock_receiver.assert_called_with(message)
 
     mock_receiver = mocker.MagicMock()
-    websocket.set_receiver(mock_receiver)
+    websocket.receiver = mock_receiver
+    websocket.receiver_is_coroutine = False
 
     # normal flow
     message = {"object": "CHARGE_POINTS"}

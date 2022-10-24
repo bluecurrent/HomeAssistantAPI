@@ -46,8 +46,13 @@ def test_get_vehicle_status():
 
 
 def test_create_datetime():
+
+    assert create_datetime("20010101 00:00:00+00:00") == datetime(
+        2001, 1, 1, 0, 0, 0, tzinfo=timezone.utc
+    )
+
     assert create_datetime("20010101 00:00:00") == datetime(
-        2001, 1, 1, 0, 0, 0, tzinfo=timezone(timedelta(seconds=7200))
+        2001, 1, 1, 0, 0, 0, tzinfo=timezone(timedelta(hours=2))
     )
 
     assert create_datetime("") == None
@@ -62,15 +67,16 @@ def test_handle_status():
             'actual_p1': 12,
             'actual_p2': 10,
             'actual_p3': 15,
-            'activity': "charging",
+            'activity': "available",
             'start_datetime': "20211118 14:12:23",
             'stop_datetime': "20211118 14:32:23",
             'offline_since': "20211118 14:32:23",
             'total_cost': 10.52,
             'vehicle_status': "A",
             'actual_kwh': 10,
-            'evse_id': "101",
-        }
+            'evse_id': 'BCU101'
+        },
+        "evse_id": 'BCU101'
     }
 
     handle_status(message)
@@ -152,3 +158,7 @@ def test_handle_session_messages():
     handle_session_messages(message)
     assert message == {'object': 'SOFT_RESET', 'success': False, "evse_id": "BCU101",
                        'error': 'soft_reset timeout for chargepoint: BCU101'}
+
+def test_get_dummy_message():
+
+    assert get_dummy_message('BCU101') == {'evse_id': 'BCU101', 'object': 'CH_STATUS', 'data': {'start_datetime': datetime.now(timezone.utc)}}

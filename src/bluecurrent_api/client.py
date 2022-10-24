@@ -26,17 +26,13 @@ class Client:
         """Connect to the websocket."""
         await self.websocket.connect(api_token)
 
-    async def start_loop(self):
+    async def start_loop(self, receiver: Callable):
         """Start the receive loop."""
-        await self.websocket.loop()
+        await self.websocket.loop(receiver)
 
     async def disconnect(self):
         """Disconnect the websocket."""
         await self.websocket.disconnect()
-
-    def set_receiver(self, receiver: Callable):
-        """Set the receiver."""
-        self.websocket.set_receiver(receiver)
 
     async def get_charge_points(self):
         """Get the charge points."""
