@@ -5,8 +5,10 @@ from typing import Callable
 from websockets.client import connect
 from websockets.exceptions import ConnectionClosed, InvalidStatusCode
 from .exceptions import InvalidApiToken, WebsocketException, NoCardsFound
-from .utils import handle_status, handle_grid, handle_setting_change, handle_session_messages
-
+from .utils import (
+    handle_status, handle_grid, handle_setting_change, handle_session_messages,
+    get_dummy_message
+)
 URL = "wss://bo.bluecurrent.nl/appserver/2.0"
 
 
@@ -74,8 +76,6 @@ class Websocket:
 
     async def send_request(self, request: dict):
         """Add authorization and send request."""
-        if not self.receiver:
-            raise WebsocketException("receiver method not set")
         if not self.auth_token:
             raise WebsocketException("auth token not set")
 
@@ -137,6 +137,13 @@ class Websocket:
 
         self.handle_receive_event()
 
+        await self.send_to_receiver(message)
+
+        if object_name == 'STATUS_START_SESSION' and not error:
+            await self.send_to_receiver(get_dummy_message(message['evse_id']))
+
+    async def send_to_receiver(self, message):
+        """Send data to the given receiver."""
         if self.receiver_is_coroutine:
             await self.receiver(message)
         else:

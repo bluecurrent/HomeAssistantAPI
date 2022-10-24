@@ -1,5 +1,5 @@
 """Define a functions for modifying incoming data."""
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 def calculate_average_usage_from_phases(phases: tuple):
@@ -101,9 +101,18 @@ def handle_session_messages(message: dict):
     object_name = message["object"].replace(
         "STATUS_", "").replace("RECEIVED_", "")
 
-    if "STATUS" in message["object"]:
+    if "STATUS" in message["object"] and message["error"]:
         name = object_name.lower()
         error = message['error'].lower()
         evse_id = message['evse_id']
         message["error"] = f"{name} {error} for chargepoint: {evse_id}"
     message["object"] = object_name
+
+
+def get_dummy_message(evse_id):
+    """Return a CH_STATUS message with the current time as start_datetime"""
+    return {
+        'evse_id': evse_id,
+        'object': 'CH_STATUS',
+        'data': {'start_datetime': datetime.now(timezone.utc)}
+    }
