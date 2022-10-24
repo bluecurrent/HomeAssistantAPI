@@ -60,13 +60,9 @@ The Client class has all the 'public' methods of the package.
 
 - Connects to the websocket.
 
-### set_receiver(receiver)
+### await start_loop(receiver)
 
-- Sets the receiver method.
-
-### await start_loop()
-
-- Starts the receiver loop.
+- Starts the loop and routes the incoming messages to the given receiver method 
 
 ### await wait_for_response()
 
