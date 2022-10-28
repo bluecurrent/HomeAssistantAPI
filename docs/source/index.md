@@ -10,6 +10,8 @@ For an explanation for the integration flow, see [](flow).
 
 For the documentation of all the functions see [](documentation).
 
+For documentation on testing see [](testing)
+
 ## Complementary documentation
 
 - [Home Assistant](https://developers.home-assistant.io/)
