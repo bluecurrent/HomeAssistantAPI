@@ -1,6 +1,8 @@
+import re
+from unittest import mock
 from src.bluecurrent_api.utils import *
 from datetime import datetime, timezone, timedelta
-
+from pytest_mock import MockerFixture
 
 def test_calculate_total_from_phases():
     total = calculate_average_usage_from_phases((10, 10, 10))
@@ -159,6 +161,8 @@ def test_handle_session_messages():
     assert message == {'object': 'SOFT_RESET', 'success': False, "evse_id": "BCU101",
                        'error': 'soft_reset timeout for chargepoint: BCU101'}
 
-def test_get_dummy_message():
-
-    assert get_dummy_message('BCU101') == {'evse_id': 'BCU101', 'object': 'CH_STATUS', 'data': {'start_datetime': datetime.now(timezone.utc)}}
+def test_get_dummy_message(mocker: MockerFixture):
+    time = datetime(1901, 12, 21)
+    datetime_mock = mocker.patch('src.bluecurrent_api.utils.datetime')
+    datetime_mock.now = mock.Mock(return_value=time)
+    assert get_dummy_message('BCU101') == {'evse_id': 'BCU101', 'object': 'CH_STATUS', 'data': {'start_datetime': time}}
