@@ -8,10 +8,13 @@ test:
 	python -m pytest
 
 test-cov:
-	python -m pytest -cov=src --cov-report term-missing
+	python -m pytest --cov=src --cov-report term-missing
 
 build:
 	python -m build
 
 publish:
 	twine upload dist/*
+
+html:
+	cd docs && make.bat clean && make.bat html

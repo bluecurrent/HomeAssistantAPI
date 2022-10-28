@@ -1,42 +1,41 @@
+import re
+from unittest import mock
 from src.bluecurrent_api.utils import *
 from datetime import datetime, timezone, timedelta
-
+from pytest_mock import MockerFixture
 
 def test_calculate_total_from_phases():
-    total = calculate_usage_from_phases((10, 10, 10))
+    total = calculate_average_usage_from_phases((10, 10, 10))
     assert total == 10
 
-    total = calculate_usage_from_phases((0, 0, 0))
+    total = calculate_average_usage_from_phases((0, 0, 0))
     assert total == 0
 
-    total = calculate_usage_from_phases((10, None, 20))
+    total = calculate_average_usage_from_phases((10, None, 20))
     assert total == 15
 
-    total = calculate_usage_from_phases((10, 6, 10))
+    total = calculate_average_usage_from_phases((10, 6, 10))
     assert total == 8.7
 
-    total = calculate_usage_from_phases((10, 8, 1))
+    total = calculate_average_usage_from_phases((10, 8, 1))
     assert total == 6.3
 
-    total = calculate_usage_from_phases((10, 0, 20))
+    total = calculate_average_usage_from_phases((10, 0, 20))
     assert total == 15
 
-    total = calculate_usage_from_phases((5, 0, 0))
+    total = calculate_average_usage_from_phases((5, 0, 0))
     assert total == 5
 
-    total = calculate_usage_from_phases((6, None, None))
+    total = calculate_average_usage_from_phases((6, None, None))
     assert total == 6
 
-    total = calculate_usage_from_phases((None, None, None))
+    total = calculate_average_usage_from_phases((None, None, None))
     assert total == 0
 
 
 def test_calculate_total_kW():
-    total = calculate_total_kw(16, 220)
-    assert total == 3.52
-
-    total = calculate_total_kw(8, 110)
-    assert total == 0.88
+    total = calculate_total_kw((14, 12, 15), 230)
+    assert total == 9.43
 
 
 def test_get_vehicle_status():
@@ -50,12 +49,12 @@ def test_get_vehicle_status():
 
 def test_create_datetime():
 
-    assert create_datetime("01-01-2001 00:00:00") == datetime(
-        2001, 1, 1, 0, 0, 0, tzinfo=timezone(timedelta(seconds=7200))
+    assert create_datetime("20010101 00:00:00+00:00") == datetime(
+        2001, 1, 1, 0, 0, 0, tzinfo=timezone.utc
     )
 
-    assert create_datetime("20010101 00:00:00", True) == datetime(
-        2001, 1, 1, 0, 0, 0, tzinfo=timezone(timedelta(seconds=7200))
+    assert create_datetime("20010101 00:00:00") == datetime(
+        2001, 1, 1, 0, 0, 0, tzinfo=timezone(timedelta(hours=2))
     )
 
     assert create_datetime("") == None
@@ -70,22 +69,23 @@ def test_handle_status():
             'actual_p1': 12,
             'actual_p2': 10,
             'actual_p3': 15,
-            'activity': "charging",
-            'start_datetime': "18-11-2021 14:12:23",
-            'stop_datetime': "18-11-2021 14:32:23",
+            'activity': "available",
+            'start_datetime': "20211118 14:12:23",
+            'stop_datetime': "20211118 14:32:23",
             'offline_since': "20211118 14:32:23",
             'total_cost': 10.52,
             'vehicle_status': "A",
             'actual_kwh': 10,
-            'evse_id': "101",
-        }
+            'evse_id': 'BCU101'
+        },
+        "evse_id": 'BCU101'
     }
 
     handle_status(message)
 
-    assert message["data"]["total_voltage"] == 220.0
-    assert message["data"]["total_current"] == 12.3
-    assert message["data"]["total_kw"] == 2.71
+    assert message["data"]["avg_voltage"] == 220.0
+    assert message["data"]["avg_current"] == 12.3
+    assert message["data"]["total_kw"] == 8.14
     assert message["data"]["start_datetime"] == datetime(
         2021, 11, 18, 14, 12, 23, tzinfo=timezone(timedelta(seconds=7200)))
     assert message["data"]["stop_datetime"] == datetime(
@@ -107,9 +107,10 @@ def test_handle_grid():
     }
 
     handle_grid(message)
-    assert message["data"]["grid_total_current"] == 13.7
+    assert message["data"]["grid_avg_current"] == 13.7
+    assert message["data"]["grid_max_current"] == 15
 
-    assert len(message["data"]) == 4
+    assert len(message["data"]) == 5
 
 
 def test_handle_setting_change():
@@ -159,3 +160,9 @@ def test_handle_session_messages():
     handle_session_messages(message)
     assert message == {'object': 'SOFT_RESET', 'success': False, "evse_id": "BCU101",
                        'error': 'soft_reset timeout for chargepoint: BCU101'}
+
+def test_get_dummy_message(mocker: MockerFixture):
+    time = datetime(1901, 12, 21)
+    datetime_mock = mocker.patch('src.bluecurrent_api.utils.datetime')
+    datetime_mock.now = mock.Mock(return_value=time)
+    assert get_dummy_message('BCU101') == {'evse_id': 'BCU101', 'object': 'CH_STATUS', 'data': {'start_datetime': time}}

@@ -1,13 +1,15 @@
-"""Define an object with all public methods."""
+"""Define an object that handles the connection to the Websocket"""
 import asyncio
 import json
 from typing import Callable
 from websockets.client import connect
 from websockets.exceptions import ConnectionClosed, InvalidStatusCode
 from .exceptions import InvalidApiToken, WebsocketException, NoCardsFound
-from .utils import handle_status, handle_grid, handle_setting_change, handle_session_messages
-
-URL = "wss://bo-acct001.bluecurrent.nl/appserver/2.0"
+from .utils import (
+    handle_status, handle_grid, handle_setting_change, handle_session_messages,
+    get_dummy_message
+)
+URL = "wss://bo.bluecurrent.nl/appserver/2.0"
 
 
 class Websocket:
@@ -23,7 +25,7 @@ class Websocket:
         pass
 
     def get_receiver_event(self):
-        """Returns cleared receive_event when connected."""
+        """Return cleared receive_event when connected."""
 
         self._check_connection()
         if self.receive_event is None:
@@ -56,11 +58,6 @@ class Websocket:
             raise NoCardsFound
         return cards
 
-    def set_receiver(self, receiver: Callable):
-        """Set a receiver."""
-        self.receiver = receiver
-        self.receiver_is_coroutine = asyncio.iscoroutinefunction(receiver)
-
     async def connect(self, api_token: str):
         """Validate api_token and connect to the websocket."""
         if self._has_connection:
@@ -79,19 +76,19 @@ class Websocket:
 
     async def send_request(self, request: dict):
         """Add authorization and send request."""
-        if not self.receiver:
-            raise WebsocketException("receiver method not set")
         if not self.auth_token:
             raise WebsocketException("auth token not set")
 
         request["Authorization"] = self.auth_token
         await self._send(request)
 
-    async def loop(self):
+    async def loop(self, receiver: Callable):
         """Loop the message_handler."""
-        if not self.receiver:
-            raise WebsocketException("receiver method not set")
 
+        self.receiver = receiver
+        self.receiver_is_coroutine = asyncio.iscoroutinefunction(receiver)
+
+        # Needed for receiving updates
         await self._send({"command": "HELLO", "Authorization": self.auth_token})
 
         while True:
@@ -120,8 +117,9 @@ class Websocket:
         if not object_name:
             raise WebsocketException("Received message has no object.")
 
-        # ignore RECEIVED objects without error
-        if "RECEIVED" in object_name and not error:
+        # ignored objects
+        if (("RECEIVED" in object_name and not error)
+                or object_name == "HELLO" or "OPERATIVE" in object_name):
             return False
 
         # handle errors
@@ -137,9 +135,16 @@ class Websocket:
         elif "STATUS" in object_name or "RECEIVED" in object_name:
             handle_session_messages(message)
 
-        if object_name != "HELLO":
-            self.handle_receive_event()
+        self.handle_receive_event()
 
+        await self.send_to_receiver(message)
+
+        # Fix for api sending old start_datetime
+        if object_name == 'STATUS_START_SESSION' and not error:
+            await self.send_to_receiver(get_dummy_message(message['evse_id']))
+
+    async def send_to_receiver(self, message):
+        """Send data to the given receiver."""
         if self.receiver_is_coroutine:
             await self.receiver(message)
         else:
