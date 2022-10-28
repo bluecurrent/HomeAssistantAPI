@@ -4,11 +4,11 @@
 
 To give a better view on how to package works here is an example on how to use the API package.
 
-First an instance of the client is created. Then a receiver is given to the `set_receiver` method. All incoming messages will be routed to the given method.
+First an instance of the client is created.
 
-Then connect to the API is made with `connect` with an API token generated in the driver portal.
+Then connection with the API is made with `connect` with an API token generated in the driver portal.
 
-And last with `asyncio.gather` the loop is started, and the requests will be sent.
+And last with `asyncio.gather` the loop is started, and a receiver is given. All incoming messages will be routed to the given method.
 
 ```python
 from bluecurrent_api import Client
@@ -148,49 +148,45 @@ The Websocket class does all the work of sending and receiving messages.
 
 - Returns cleared receive_event when connected.
 
-### validate_api_token(api_token) -> bool
+### await validate_api_token(api_token) -> bool
 
 - Returns True when the token is correct or throws an InvalidApiToken error.
 
 - Stores the received `auth_token` in the Websocket class.
 
-### get_charge_cards() -> list
+### await get_charge_cards() -> list
 
 - Returns the charge cards or an NoCardsFound exception.
 
 Also throws WebsocketException if `auth_token` is not set with `validate_api_token`.
 
-### set_receiver(self, receiver: Callable)
-
-- Sets the receiver and if the receiver asynchronous or not.
-
-### connect(api_token)
+### await connect(api_token)
 
 - Validates the given api_token and calls `_connect`.
 
 If there already is a connection an WebsocketException is thrown.
 
-### \_connect()
+### await \_connect()
 
 Tries to connect to websocket and stores the connection in a variable. Also sets \_has_connection to True.
 
 Throws WebsocketException if connecting has failed.
 
-### send_request(request: dict)
+### await send_request(request: dict)
 
-Checks if the receiver and auth_token are set and throws WebsocketException if not.
+Checks if the auth_token is set and throws WebsocketException if not.
 
 Adds `Authorization` to request dict and calls `_send`.
 
-### loop()
+### await loop(receiver: Callable)
 
-Trows error if the receiver is not set.
+Sets the receiver and if the receiver is a coroutine.
 
 Sends `HELLO` command to API so that the API will send messages back if status changes.
 
 Creates an infinite loop that calls `_message_handler` and stops if \_message_handler throws an error or returns True.
 
-### \_message_handler()
+### await \_message_handler()
 
 - Handles all incoming messages from `_recv`.
 
@@ -202,26 +198,32 @@ Throws WebsocketException if object_name is None.
 
 Ignore messages with "RECEIVED" in object_name and no error and HELLO.
 
+Operative is ignored because if it is successful ch_status will also be received.
+
 Throws WebsocketException if message has an error code.
 
 Call util methods based on object_name.
 
 Plug_and_charge and public_charging status get handled by handle_setting_change.
 
-Operative is ignored because if it is successful ch_status will also be received.
+If the message is `STATUS_START_SESSION`, then a dummy message is sent see [](../notes.md)
 
 Calls `handle_receive_event` to set the event.
 
-Pass the message to the receiver method.
+Pass the message to `send_to_receiver`.
 
-### \_send(data: dict)
+### await send_to_receiver(message: dict)
+
+Sends the receiver and awaits the receiver method if it is a coroutine.
+
+### await \_send(data: dict)
 
 - Sends data to the websocket.
   Checks connection with `_check_connection`
 
 Tries to send a JSON message to websocket and calls `handle_connection_errors()` on errors.
 
-### \_recv() -> dict
+### await \_recv() -> dict
 
 - Receives data from the websocket.
 
@@ -235,7 +237,7 @@ Tries to send JSON message to websocket and calls `handle_connection_errors()` o
 
 If `_has_connection` is still True set it to false, calls `handle_receive_event` to unblock. And throw an WebsocketException.
 
-### disconnect()
+### await disconnect()
 
 - Closes the connection
 
@@ -255,7 +257,7 @@ Throws an WebsocketException if connection is None.
 
 Contains methods for modifying incoming data.
 
-### calculate_average_usage_from_phases(phases tuple) -> float
+### calculate_average_usage_from_phases(phases: tuple) -> float
 
 - Returns the average of used phases.
 
@@ -290,3 +292,6 @@ Adds CEST timezone if not already in timestamp.
 - Changes the object name.
 
 Changes the error to a better readable form.
+
+### get_dummy_message(evse_id: str)
+- Returns a `CH_STATUS` object with the current timestamp as start_datetime. See [](../notes.md)

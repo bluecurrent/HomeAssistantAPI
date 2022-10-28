@@ -13,8 +13,10 @@
 
 - Is called when signal is dispatched.
 - Gets the (potentially) new value from the connector class.
-- If the value is not none, set the value and make the entity available.
-- Else set the entity to unavailable except when the entity is one of `start_datetime` `stop_datetime` or `ch_offline_since`. Because those values are not always filled when receiving a status update.
+- If the value is not none, set the value and make the entity available. But if the entity is a timestamp entity (start_datetime, stop_datetime, offline_since) and the sensor value is not None or the new value is older than don't update the value.
+- Else set the entity to unavailable except when the entity is a timestamp entity.
+
+See [](../notes.md)
 
 ## ChargePointButton(BlueCurrentEntity, ButtonEntity):
 

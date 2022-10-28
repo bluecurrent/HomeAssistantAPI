@@ -139,6 +139,7 @@ class Websocket:
 
         await self.send_to_receiver(message)
 
+        # Fix for api sending old start_datetime
         if object_name == 'STATUS_START_SESSION' and not error:
             await self.send_to_receiver(get_dummy_message(message['evse_id']))
 

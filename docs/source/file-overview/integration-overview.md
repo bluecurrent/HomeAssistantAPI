@@ -87,3 +87,5 @@ Contains the method `init_integration` which starts the BlueCurrent integration 
 ### Other test files
 
 The other test files contain tests for the file referenced in the name.
+
+See [](../testing/integration-testing.md)

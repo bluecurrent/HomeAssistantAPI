@@ -1,4 +1,5 @@
 from unittest.mock import AsyncMock
+
 from src.bluecurrent_api.websocket import Websocket
 from src.bluecurrent_api.exceptions import WebsocketException, InvalidApiToken, NoCardsFound
 from asyncio.exceptions import TimeoutError
@@ -161,43 +162,65 @@ async def test_message_handler(mocker: MockerFixture):
     mock_handle_grid = mocker.patch(
         'src.bluecurrent_api.websocket.handle_grid')
 
+    mock_handle_setting_change = mocker.patch(
+        'src.bluecurrent_api.websocket.handle_setting_change')
+
+    mock_handle_handle_session_messages = mocker.patch(
+        'src.bluecurrent_api.websocket.handle_session_messages')
+
     mocker.patch.object(Websocket, 'handle_receive_event')
 
+    mock_send_to_receiver = mocker.patch(
+        'src.bluecurrent_api.websocket.Websocket.send_to_receiver',
+        create=True,
+        side_effect=AsyncMock()
+    )
+
     websocket = Websocket()
-
-    async_mock_receiver = AsyncMock()
-    websocket.receiver = async_mock_receiver
-    websocket.receiver_is_coroutine = True
-
-    # normal flow with async receiver
-    message = {"object": "CHARGE_POINTS"}
-    mocker.patch.object(Websocket, '_recv', return_value=message)
-    await websocket._message_handler()
-    async_mock_receiver.assert_called_with(message)
-
-    mock_receiver = mocker.MagicMock()
-    websocket.receiver = mock_receiver
-    websocket.receiver_is_coroutine = False
 
     # normal flow
     message = {"object": "CHARGE_POINTS"}
     mocker.patch.object(Websocket, '_recv', return_value=message)
     await websocket._message_handler()
-    mock_receiver.assert_called_with(message)
+    mock_send_to_receiver.assert_called_with(message)
 
     # ch_status flow
     message = {"object": "CH_STATUS"}
     mocker.patch.object(Websocket, '_recv', return_value=message)
     await websocket._message_handler()
     mock_handle_status.assert_called_with(message)
-    mock_receiver.assert_called_with(message)
+    mock_send_to_receiver.assert_called_with(message)
 
     # grid_status flow
     message = {"object": "GRID_STATUS"}
     mocker.patch.object(Websocket, '_recv', return_value=message)
     await websocket._message_handler()
     mock_handle_grid.assert_called_with(message)
-    mock_receiver.assert_called_with(message)
+    mock_send_to_receiver.assert_called_with(message)
+
+    # setting change flow
+    message = {"object": "STATUS_SET_PLUG_AND_CHARGE"}
+    mocker.patch.object(Websocket, '_recv', return_value=message)
+    await websocket._message_handler()
+    mock_handle_setting_change.assert_called_with(message)
+    mock_send_to_receiver.assert_called_with(message)
+
+    # session message flow
+    message = {"object": "STATUS_STOP_SESSION"}
+    mocker.patch.object(Websocket, '_recv', return_value=message)
+    await websocket._message_handler()
+    mock_handle_handle_session_messages.assert_called_with(message)
+    mock_send_to_receiver.assert_called_with(message)
+
+    mock_get_dummy_message = mocker.patch(
+        'src.bluecurrent_api.websocket.get_dummy_message')
+
+    # STATUS_START_SESSION
+    message = {"object": "STATUS_START_SESSION", 'evse_id': 'BCU101'}
+    mocker.patch.object(Websocket, '_recv', return_value=message)
+    await websocket._message_handler()
+    mock_handle_handle_session_messages.assert_called_with(message)
+    mock_get_dummy_message.assert_called_with('BCU101')
 
     # no object
     message = {"value": True}
@@ -206,25 +229,25 @@ async def test_message_handler(mocker: MockerFixture):
         await websocket._message_handler()
 
     # unknown command
-    message = {"error": 0}
+    message = {"error": 0, "object": "CH_STATUS"}
     mocker.patch.object(Websocket, '_recv', return_value=message)
     with pytest.raises(WebsocketException):
         await websocket._message_handler()
 
     # unknown token
-    message = {"error": 1}
+    message = {"error": 1, "object": "CH_STATUS"}
     mocker.patch.object(Websocket, '_recv', return_value=message)
     with pytest.raises(WebsocketException):
         await websocket._message_handler()
 
     # token not autorized
-    message = {"error": 2}
+    message = {"error": 2, "object": "CH_STATUS"}
     mocker.patch.object(Websocket, '_recv', return_value=message)
     with pytest.raises(WebsocketException):
         await websocket._message_handler()
 
     # unknown error
-    message = {"error": 9}
+    message = {"error": 9, "object": "CH_STATUS"}
     mocker.patch.object(Websocket, '_recv', return_value=message)
     with pytest.raises(WebsocketException):
         await websocket._message_handler()
@@ -244,6 +267,26 @@ async def test_message_handler(mocker: MockerFixture):
     message = {'object': "RECEIVED_START_SESSION", 'error': ''}
     mocker.patch.object(Websocket, '_recv', return_value=message)
     assert await websocket._message_handler() == False
+
+
+@pytest.mark.asyncio
+async def test_send_to_receiver(mocker: MockerFixture):
+    websocket = Websocket()
+
+    mock_receiver = mocker.MagicMock()
+    websocket.receiver = mock_receiver
+    websocket.receiver_is_coroutine = False
+
+    await websocket.send_to_receiver('test')
+
+    mock_receiver.assert_called_with('test')
+
+    async_mock_receiver = AsyncMock()
+    websocket.receiver = async_mock_receiver
+    websocket.receiver_is_coroutine = True
+
+    await websocket.send_to_receiver('test')
+    async_mock_receiver.assert_called_with('test')
 
 
 @pytest.mark.asyncio
