@@ -22,14 +22,14 @@ def create_datetime(timestamp: str):
     """Get a datetime object from an timestamp."""
 
     if timestamp == "":
-        return
+        return None
 
     if '+' in timestamp:
         return datetime.strptime(timestamp, "%Y%m%d %H:%M:%S%z")
 
-    dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
-    dt = TZ.localize(dt)
-    return dt
+    time = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
+    time = TZ.localize(time)
+    return time
 
 
 def get_vehicle_status(vehicle_status_key: str):

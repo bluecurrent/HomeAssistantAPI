@@ -87,17 +87,19 @@ def test_handle_status():
         "evse_id": 'BCU101'
     }
 
+    TZ = pytz.timezone('Europe/Amsterdam')
+
     handle_status(message)
 
     assert message["data"]["avg_voltage"] == 220.0
     assert message["data"]["avg_current"] == 12.3
     assert message["data"]["total_kw"] == 8.14
-    assert message["data"]["start_datetime"] == datetime(
-        2021, 11, 18, 14, 12, 23, tzinfo=timezone(timedelta(seconds=7200)))
-    assert message["data"]["stop_datetime"] == datetime(
-        2021, 11, 18, 14, 32, 23, tzinfo=timezone(timedelta(seconds=7200)))
-    assert message["data"]["offline_since"] == datetime(
-        2021, 11, 18, 14, 32, 23, tzinfo=timezone(timedelta(seconds=7200)))
+    assert message["data"]["start_datetime"] == TZ.localize(datetime(
+        2021, 11, 18, 14, 12, 23))
+    assert message["data"]["stop_datetime"] == TZ.localize(datetime(
+        2021, 11, 18, 14, 32, 23))
+    assert message["data"]["offline_since"] == TZ.localize(datetime(
+        2021, 11, 18, 14, 32, 23))
     assert message["data"]["vehicle_status"] == "standby"
 
     assert len(message["data"]) == 17
