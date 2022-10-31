@@ -3,6 +3,8 @@ from unittest import mock
 from src.bluecurrent_api.utils import *
 from datetime import datetime, timezone, timedelta
 from pytest_mock import MockerFixture
+import pytz
+
 
 def test_calculate_total_from_phases():
     total = calculate_average_usage_from_phases((10, 10, 10))
@@ -49,12 +51,16 @@ def test_get_vehicle_status():
 
 def test_create_datetime():
 
+    TZ = pytz.timezone('Europe/Amsterdam')
+
+    test_time = TZ.localize(datetime(
+        2001, 1, 1, 0, 0, 0
+    ))
+
+    assert create_datetime("20010101 00:00:00") == test_time
+
     assert create_datetime("20010101 00:00:00+00:00") == datetime(
         2001, 1, 1, 0, 0, 0, tzinfo=timezone.utc
-    )
-
-    assert create_datetime("20010101 00:00:00") == datetime(
-        2001, 1, 1, 0, 0, 0, tzinfo=timezone(timedelta(hours=2))
     )
 
     assert create_datetime("") == None
@@ -161,8 +167,10 @@ def test_handle_session_messages():
     assert message == {'object': 'SOFT_RESET', 'success': False, "evse_id": "BCU101",
                        'error': 'soft_reset timeout for chargepoint: BCU101'}
 
+
 def test_get_dummy_message(mocker: MockerFixture):
     time = datetime(1901, 12, 21)
     datetime_mock = mocker.patch('src.bluecurrent_api.utils.datetime')
     datetime_mock.now = mock.Mock(return_value=time)
-    assert get_dummy_message('BCU101') == {'evse_id': 'BCU101', 'object': 'CH_STATUS', 'data': {'start_datetime': time}}
+    assert get_dummy_message('BCU101') == {'object': 'CH_STATUS', 'data': {
+        'start_datetime': time, 'evse_id': 'BCU101'}}

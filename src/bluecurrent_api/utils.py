@@ -1,5 +1,8 @@
 """Define a functions for modifying incoming data."""
 from datetime import datetime, timezone
+import pytz
+
+TZ = pytz.timezone('Europe/Amsterdam')
 
 
 def calculate_average_usage_from_phases(phases: tuple):
@@ -19,12 +22,14 @@ def create_datetime(timestamp: str):
     """Get a datetime object from an timestamp."""
 
     if timestamp == "":
-        return None
+        return
 
-    if '+' not in timestamp:
-        timestamp += '+02:00'
+    if '+' in timestamp:
+        return datetime.strptime(timestamp, "%Y%m%d %H:%M:%S%z")
 
-    return datetime.strptime(timestamp, "%Y%m%d %H:%M:%S%z")
+    dt = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
+    dt = TZ.localize(dt)
+    return dt
 
 
 def get_vehicle_status(vehicle_status_key: str):
@@ -112,7 +117,6 @@ def handle_session_messages(message: dict):
 def get_dummy_message(evse_id):
     """Return a CH_STATUS message with the current time as start_datetime"""
     return {
-        'evse_id': evse_id,
         'object': 'CH_STATUS',
-        'data': {'start_datetime': datetime.now(timezone.utc)}
+        'data': {'start_datetime': datetime.now(timezone.utc), 'evse_id': evse_id, }
     }

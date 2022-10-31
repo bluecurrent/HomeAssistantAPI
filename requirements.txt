@@ -1,4 +1,5 @@
-websockets 
+websockets
+pytz
 
 # dev dependencies
 pylint 
