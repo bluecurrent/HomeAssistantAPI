@@ -1,15 +1,16 @@
 """Define a functions for modifying incoming data."""
 from datetime import datetime, timedelta
 import pytz
+from .exceptions import RequestLimitReached, WebsocketException
 
 TZ = pytz.timezone('Europe/Amsterdam')
 
 ERRORS = {
-    0: "Unknown command",
-    1: "Invalid Auth Token",
-    2: "Not authorized",
-    9: "Unknown error",
-    42: "Request limit reached"
+    0: WebsocketException("Unknown command"),
+    1: WebsocketException("Invalid Auth Token"),
+    2: WebsocketException("Not authorized"),
+    9: WebsocketException("Unknown error"),
+    42: RequestLimitReached
 }
 
 
@@ -54,14 +55,14 @@ def get_vehicle_status(vehicle_status_key: str):
     return statuses[vehicle_status_key]
 
 
-def get_error_message(message: dict):
+def get_exception(message: dict):
     """Return a defined error message or one from the server"""
     error = message["error"]
     message = message["message"]
 
     if error in ERRORS:
         return ERRORS[error]
-    return message
+    return WebsocketException(message)
 
 
 def handle_status(message: dict):

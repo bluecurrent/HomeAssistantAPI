@@ -105,21 +105,32 @@ def test_handle_status():
     assert len(message["data"]) == 17
 
 
-def test_get_error_message():
+def test_get_exception():
     message = {
         "object": "ERROR",
         "error": 0,
         "message": "Test error"
     }
 
-    assert get_error_message(message) == "Unknown command"
+    error = get_exception(message)
+    assert isinstance(error, WebsocketException)
+    assert str(error) == "Unknown command"
 
     message = {
         "object": "ERROR",
         "error": 99,
         "message": "Test error"
     }
-    assert get_error_message(message) == "Test error"
+    error = get_exception(message)
+    assert isinstance(error, WebsocketException)
+    assert str(error) == "Test error"
+
+    message = {
+        "object": "ERROR",
+        "error": 42,
+        "message": "Test error"
+    }
+    assert get_exception(message) == RequestLimitReached
 
 
 def test_handle_grid():

@@ -7,7 +7,7 @@ from websockets.exceptions import ConnectionClosed, InvalidStatusCode
 from .exceptions import InvalidApiToken, WebsocketException, NoCardsFound
 from .utils import (
     handle_status, handle_grid, handle_setting_change, handle_session_messages,
-    get_dummy_message, get_error_message
+    get_dummy_message, get_exception
 )
 # URL = "wss://bo.bluecurrent.nl/appserver/2.0"
 # URL = "wss://bo-acct001.bluecurrent.nl/appserver/2.0"
@@ -45,7 +45,7 @@ class Websocket:
         await self.disconnect()
 
         if res['object'] == 'ERROR':
-            raise WebsocketException(get_error_message(res))
+            raise get_exception(res)
 
         if not res.get("success"):
             raise InvalidApiToken
@@ -63,7 +63,7 @@ class Websocket:
         cards = res.get("cards")
 
         if res['object'] == 'ERROR':
-            raise WebsocketException(get_error_message(res))
+            raise get_exception(res)
 
         if len(cards) == 0:
             raise NoCardsFound
@@ -123,7 +123,7 @@ class Websocket:
 
         # handle ERROR object
         if object_name == "ERROR":
-            raise WebsocketException(get_error_message(message))
+            raise get_exception(message)
 
         # if object other than ERROR has an error key it will be send to the receiver.
         error = message.get("error")

@@ -1,7 +1,7 @@
 from unittest.mock import AsyncMock
 
 from src.bluecurrent_api.websocket import Websocket
-from src.bluecurrent_api.exceptions import WebsocketException, InvalidApiToken, NoCardsFound
+from src.bluecurrent_api.exceptions import WebsocketException, InvalidApiToken, NoCardsFound, RequestLimitReached
 from asyncio.exceptions import TimeoutError
 import pytest
 from pytest_mock import MockerFixture
@@ -52,9 +52,8 @@ async def test_validate_token(mocker: MockerFixture):
         return_value={"object": "ERROR",
                       "error": 42, 'message': "Request limit reached"}
     )
-    with pytest.raises(WebsocketException) as err:
+    with pytest.raises(RequestLimitReached) as err:
         await websocket.validate_api_token(api_token)
-        assert err.value.message == "Request limit reached"
 
 
 @pytest.mark.asyncio
@@ -88,9 +87,8 @@ async def test_get_charge_cards(mocker: MockerFixture):
         return_value={"object": "ERROR",
                       "error": 42, 'message': "Request limit reached"}
     )
-    with pytest.raises(WebsocketException) as err:
+    with pytest.raises(RequestLimitReached) as err:
         await websocket.get_charge_cards()
-        assert err.value.message == "Request limit reached"
 
 
 @pytest.mark.asyncio
@@ -272,7 +270,7 @@ async def test_message_handler(mocker: MockerFixture):
     message = {"error": 42, "object": "ERROR",
                "message": "Request limit reached"}
     mocker.patch.object(Websocket, '_recv', return_value=message)
-    with pytest.raises(WebsocketException):
+    with pytest.raises(RequestLimitReached):
         await websocket._message_handler()
 
     # success false
