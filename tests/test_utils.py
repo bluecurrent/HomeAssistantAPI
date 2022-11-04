@@ -105,6 +105,23 @@ def test_handle_status():
     assert len(message["data"]) == 17
 
 
+def test_get_error_message():
+    message = {
+        "object": "ERROR",
+        "error": 0,
+        "message": "Test error"
+    }
+
+    assert get_error_message(message) == "Unknown command"
+
+    message = {
+        "object": "ERROR",
+        "error": 99,
+        "message": "Test error"
+    }
+    assert get_error_message(message) == "Test error"
+
+
 def test_handle_grid():
     message = {
         "data": {

@@ -4,6 +4,14 @@ import pytz
 
 TZ = pytz.timezone('Europe/Amsterdam')
 
+ERRORS = {
+    0: "Unknown command",
+    1: "Invalid Auth Token",
+    2: "Not authorized",
+    9: "Unknown error",
+    42: "Request limit reached"
+}
+
 
 def calculate_average_usage_from_phases(phases: tuple):
     """Get the average of the phases that are not 0."""
@@ -44,6 +52,16 @@ def get_vehicle_status(vehicle_status_key: str):
     }
 
     return statuses[vehicle_status_key]
+
+
+def get_error_message(message: dict):
+    """Return a defined error message or one from the server"""
+    error = message["error"]
+    message = message["message"]
+
+    if error in ERRORS:
+        return ERRORS[error]
+    return message
 
 
 def handle_status(message: dict):

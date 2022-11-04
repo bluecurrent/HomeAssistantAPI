@@ -39,15 +39,22 @@ async def test_validate_token(mocker: MockerFixture):
     assert result == True
     assert websocket.auth_token == "Token abc"
 
-    error = 'this is an error'
     mocker.patch(
         'src.bluecurrent_api.websocket.Websocket._recv',
         return_value={"object": "STATUS_API_TOKEN",
-                      "success": False, 'error': error}
+                      "success": False, 'error': ""}
     )
-    with pytest.raises(InvalidApiToken) as err:
+    with pytest.raises(InvalidApiToken):
         await websocket.validate_api_token(api_token)
-        assert err.value.message == error
+
+    mocker.patch(
+        'src.bluecurrent_api.websocket.Websocket._recv',
+        return_value={"object": "ERROR",
+                      "error": 42, 'message': "Request limit reached"}
+    )
+    with pytest.raises(WebsocketException) as err:
+        await websocket.validate_api_token(api_token)
+        assert err.value.message == "Request limit reached"
 
 
 @pytest.mark.asyncio
@@ -75,6 +82,15 @@ async def test_get_charge_cards(mocker: MockerFixture):
     )
     result = await websocket.get_charge_cards()
     assert result == cards
+
+    mocker.patch(
+        'src.bluecurrent_api.websocket.Websocket._recv',
+        return_value={"object": "ERROR",
+                      "error": 42, 'message': "Request limit reached"}
+    )
+    with pytest.raises(WebsocketException) as err:
+        await websocket.get_charge_cards()
+        assert err.value.message == "Request limit reached"
 
 
 @pytest.mark.asyncio
@@ -229,25 +245,32 @@ async def test_message_handler(mocker: MockerFixture):
         await websocket._message_handler()
 
     # unknown command
-    message = {"error": 0, "object": "CH_STATUS"}
+    message = {"error": 0, "object": "ERROR", "message": "Unknown command"}
     mocker.patch.object(Websocket, '_recv', return_value=message)
     with pytest.raises(WebsocketException):
         await websocket._message_handler()
 
     # unknown token
-    message = {"error": 1, "object": "CH_STATUS"}
+    message = {"error": 1, "object": "ERROR", "message": "Invalid Auth Token"}
     mocker.patch.object(Websocket, '_recv', return_value=message)
     with pytest.raises(WebsocketException):
         await websocket._message_handler()
 
     # token not autorized
-    message = {"error": 2, "object": "CH_STATUS"}
+    message = {"error": 2, "object": "ERROR", "message": "Not authorized"}
     mocker.patch.object(Websocket, '_recv', return_value=message)
     with pytest.raises(WebsocketException):
         await websocket._message_handler()
 
     # unknown error
-    message = {"error": 9, "object": "CH_STATUS"}
+    message = {"error": 9, "object": "ERROR", "message": "Unknown error"}
+    mocker.patch.object(Websocket, '_recv', return_value=message)
+    with pytest.raises(WebsocketException):
+        await websocket._message_handler()
+
+    # limit reached
+    message = {"error": 42, "object": "ERROR",
+               "message": "Request limit reached"}
     mocker.patch.object(Websocket, '_recv', return_value=message)
     with pytest.raises(WebsocketException):
         await websocket._message_handler()

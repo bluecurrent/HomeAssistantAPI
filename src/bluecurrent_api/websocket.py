@@ -7,9 +7,12 @@ from websockets.exceptions import ConnectionClosed, InvalidStatusCode
 from .exceptions import InvalidApiToken, WebsocketException, NoCardsFound
 from .utils import (
     handle_status, handle_grid, handle_setting_change, handle_session_messages,
-    get_dummy_message
+    get_dummy_message, get_error_message
 )
-URL = "wss://bo.bluecurrent.nl/appserver/2.0"
+# URL = "wss://bo.bluecurrent.nl/appserver/2.0"
+# URL = "wss://bo-acct001.bluecurrent.nl/appserver/2.0"
+# URL = "wss://bo.bluecurrent.nl/haserver"
+URL = "wss://bo-acct001.bluecurrent.nl/haserver"
 
 
 class Websocket:
@@ -40,7 +43,11 @@ class Websocket:
         await self._send({"command": "VALIDATE_API_TOKEN", "token": api_token})
         res = await self._recv()
         await self.disconnect()
-        if not res["success"]:
+
+        if res['object'] == 'ERROR':
+            raise WebsocketException(get_error_message(res))
+
+        if not res.get("success"):
             raise InvalidApiToken
         self.auth_token = "Token " + res["token"]
         return True
@@ -52,8 +59,12 @@ class Websocket:
         await self._connect()
         await self._send({"command": "GET_CHARGE_CARDS", "Authorization": self.auth_token})
         res = await self._recv()
-        cards = res["cards"]
         await self.disconnect()
+        cards = res.get("cards")
+
+        if res['object'] == 'ERROR':
+            raise WebsocketException(get_error_message(res))
+
         if len(cards) == 0:
             raise NoCardsFound
         return cards
@@ -98,12 +109,6 @@ class Websocket:
 
     async def _message_handler(self):
         """Wait for a message and give it to the receiver."""
-        errors = {
-            0: "Unknown command",
-            1: "Invalid Auth Token",
-            2: "Not authorized",
-            9: "Unknown error"
-        }
 
         message: dict = await self._recv()
 
@@ -112,19 +117,21 @@ class Websocket:
             return True
 
         object_name = message.get("object")
-        error = message.get("error")
 
         if not object_name:
             raise WebsocketException("Received message has no object.")
+
+        # handle ERROR object
+        if object_name == "ERROR":
+            raise WebsocketException(get_error_message(message))
+
+        # if object other than ERROR has an error key it will be send to the receiver.
+        error = message.get("error")
 
         # ignored objects
         if (("RECEIVED" in object_name and not error)
                 or object_name == "HELLO" or "OPERATIVE" in object_name):
             return False
-
-        # handle errors
-        if error in errors:
-            raise WebsocketException(errors[error])
 
         if object_name == "CH_STATUS":
             handle_status(message)
