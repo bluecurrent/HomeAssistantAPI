@@ -1,5 +1,5 @@
 """Define a functions for modifying incoming data."""
-from datetime import datetime, timezone
+from datetime import datetime, timedelta
 import pytz
 
 TZ = pytz.timezone('Europe/Amsterdam')
@@ -118,5 +118,15 @@ def get_dummy_message(evse_id):
     """Return a CH_STATUS message with the current time as start_datetime"""
     return {
         'object': 'CH_STATUS',
-        'data': {'start_datetime': datetime.now(timezone.utc), 'evse_id': evse_id, }
+        'data': {'start_datetime': datetime.now(TZ), 'evse_id': evse_id, }
     }
+
+
+def get_next_reset_delta():
+    """Returns the timedelta to the next midnight"""
+    now = datetime.now(TZ)
+    return now.replace(
+        hour=0,
+        minute=0,
+        second=30
+    ) + timedelta(days=1) - now

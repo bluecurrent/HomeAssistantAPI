@@ -1,5 +1,6 @@
 """Define an object to interact with the BlueCurrent websocket api."""
 from typing import Callable
+from .utils import get_next_reset_delta
 from .websocket import Websocket
 
 
@@ -9,6 +10,10 @@ class Client:
     def __init__(self):
         """Initialize the Client."""
         self.websocket = Websocket()
+
+    def get_next_reset_delta(self):
+        """Returns the next reset delta"""
+        return get_next_reset_delta()
 
     async def wait_for_response(self):
         """Wait for next response."""

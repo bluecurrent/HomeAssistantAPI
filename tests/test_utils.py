@@ -176,3 +176,10 @@ def test_get_dummy_message(mocker: MockerFixture):
     datetime_mock.now = mock.Mock(return_value=time)
     assert get_dummy_message('BCU101') == {'object': 'CH_STATUS', 'data': {
         'start_datetime': time, 'evse_id': 'BCU101'}}
+
+
+def test_get_next_reset_delta(mocker: MockerFixture):
+    time = datetime(1901, 12, 21, 10, 30, 0)
+    datetime_mock = mocker.patch('src.bluecurrent_api.utils.datetime')
+    datetime_mock.now = mock.Mock(return_value=time)
+    assert get_next_reset_delta() == timedelta(hours=13, minutes=30, seconds=30)
