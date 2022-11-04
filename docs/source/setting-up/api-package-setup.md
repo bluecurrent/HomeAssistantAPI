@@ -10,6 +10,7 @@ to develop on the API package, the following tools are needed:
 1. Python >= 3.8
 2. python modules (no need to install these manually):
    - websockets
+   - pyzt
    - pylint
    - pytest
    - pytest-mock

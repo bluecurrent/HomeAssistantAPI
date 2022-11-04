@@ -62,7 +62,13 @@ The Client class has all the 'public' methods of the package.
 
 ### await start_loop(receiver)
 
-- Starts the loop and routes the incoming messages to the given receiver method 
+- Starts the loop and routes the incoming messages to the given receiver method
+
+### get_next_reset_delta()
+
+- Returns the timedelta to the next request limit reset (00:00 Europe/Amsterdam).
+
+Used in Home Assistant for knowing when to reconnect again.
 
 ### await wait_for_response()
 
@@ -152,13 +158,15 @@ The Websocket class does all the work of sending and receiving messages.
 
 - Returns True when the token is correct or throws an InvalidApiToken error.
 
+Also throws error when an `ERROR` object is received.
+
 - Stores the received `auth_token` in the Websocket class.
 
 ### await get_charge_cards() -> list
 
 - Returns the charge cards or an NoCardsFound exception.
 
-Also throws WebsocketException if `auth_token` is not set with `validate_api_token`.
+Also throws WebsocketException if `auth_token` is not set with `validate_api_token` or if an `ERROR` object is received.
 
 ### await connect(api_token)
 
@@ -196,11 +204,11 @@ If the websocket has disconnected and `_recv` returns None return True to so tha
 
 Throws WebsocketException if object_name is None.
 
+Throws WebsocketException if message is an ERROR object.
+
 Ignore messages with "RECEIVED" in object_name and no error and HELLO.
 
 Operative is ignored because if it is successful ch_status will also be received.
-
-Throws WebsocketException if message has an error code.
 
 Call util methods based on object_name.
 
@@ -275,6 +283,10 @@ Adds CEST timezone if not already in timestamp.
 
 - Returns the vehicle status.
 
+### get_error_message(message: dict) -> str
+
+- Returns a defined error message or the one received.
+
 ### handle_status(message: dict)
 
 - Transforms key, value pairs to the given messages and modifies others.
@@ -293,5 +305,10 @@ Adds CEST timezone if not already in timestamp.
 
 Changes the error to a better readable form.
 
-### get_dummy_message(evse_id: str)
+### get_dummy_message(evse_id: str) -> dict
+
 - Returns a `CH_STATUS` object with the current timestamp as start_datetime. See [](../notes.md)
+
+### get_next_reset_delta() -> timedelta
+
+- Returns the timedelta to 00:00:30 Europe/Amsterdam.

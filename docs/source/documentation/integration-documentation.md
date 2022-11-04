@@ -67,7 +67,8 @@ Routes the received message to the correct function based on the object.
 ### start_loop()
 
 - Tries to start the loop for listening to the API.
-- If the websocket disconnects, a warning is logged and the reconnect method is called after 1 second.
+- If an error happens, a warning is logged and the reconnect method is called after 1 second.
+- If the error was `request limit reached`, the reconnect method is called after the next limit reset.
 
 ```{note}
 The reason for the one second delay is that the connection closes quite frequently so with this it 'immediately' reconnects.

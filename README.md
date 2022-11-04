@@ -2,10 +2,9 @@
 
 [![Documentation Status](https://readthedocs.com/projects/blue-current-homeassistantapi/badge/?version=latest&token=00ce4a850aedc0993b7075a8b2d5f8de98251adcdb4eada1f1fb3c02fee80039)](https://blue-current-homeassistantapi.readthedocs-hosted.com/en/latest/?badge=latest)
 
-
 Python wrapper for the blue current api
 
-The library is a asyncio-driven library that interfaces with the Websocket API provided by Blue Current. This was made for the Blue Current Home Assistant integration.
+The library is an asyncio-driven library that interfaces with the Websocket API provided by Blue Current. This was made for the Blue Current Home Assistant integration.
 
 ## Usage
 
@@ -82,11 +81,15 @@ asyncio.run(main())
 
 #### await start_loop(receiver)
 
-- Starts the loop and routes the incoming messages to the given receiver method 
+- Starts the loop and routes the incoming messages to the given receiver method
 
 #### await wait_for_response()
 
 - Waits until the next message is received.
+
+#### get_next_reset_delta()
+
+- Returns the timedelta to the next request limit reset (00:00 Europe/Amsterdam).
 
 #### await disconnect()
 
