@@ -68,7 +68,6 @@ Routes the received message to the correct function based on the object.
 
 - Tries to start the loop for listening to the API.
 - If an error happens, a warning is logged and the reconnect method is called after 1 second.
-- If the error was `request limit reached`, the reconnect method is called after the next limit reset.
 
 ```{note}
 The reason for the one second delay is that the connection closes quite frequently so with this it 'immediately' reconnects.
@@ -78,6 +77,7 @@ The reason for the one second delay is that the connection closes quite frequent
 
 - Tries to reconnect the API, starts the loop again and requests the charge points.
 - If the reconnection fails the entities will be set unavailable and the reconnect method will be called again in 20 seconds.
+- If the error was `request limit reached`, the reconnect method is called after the next limit reset.
 
 ### disconnect()
 

@@ -138,8 +138,6 @@ The `set_operative' setting request is different from the other to setting reque
 
 - Stops a charge session.
 
-The `stop_session` request uses `evseid` instead of `evse_id` in the request.
-
 ---
 
 ### \_create_request(self, command, evse_id=None, value=None, card_uid=None) -> dict
@@ -178,7 +176,7 @@ If there already is a connection an WebsocketException is thrown.
 
 Tries to connect to websocket and stores the connection in a variable. Also sets \_has_connection to True.
 
-Throws WebsocketException if connecting has failed.
+Throws WebsocketException if connecting has failed, a `RequestLimitReached` when the limit is reached or an `AlreadyConnected` if the IP is already connected to the server.
 
 ### await send_request(request: dict)
 
@@ -239,7 +237,7 @@ Checks connection with `_check_connection`.
 
 Tries to send JSON message to websocket and calls `handle_connection_errors()` on errors.
 
-### handle_connection_errors()
+### handle_connection_errors(err)
 
 - Handles connection errors.
 
@@ -260,6 +258,10 @@ Throws an WebsocketException if connection is None.
 ### handle_receive_event():
 
 - Sets receive_event if it exists.
+
+### check_for_server_reject(err)
+
+- Checks if a `RequestLimitReached` or an `AlreadyConnected` exception should be thrown.
 
 ## Utils
 
@@ -312,3 +314,29 @@ Changes the error to a better readable form.
 ### get_next_reset_delta() -> timedelta
 
 - Returns the timedelta to 00:00:30 Europe/Amsterdam.
+
+## Exceptions
+
+### BlueCurrentException
+
+- Base exception class.
+
+### WebsocketException
+
+- Used for errors with the connection or requests.
+
+### RequestLimitReached
+
+- For when the server rejects or closes the connection because the request limit is reached.
+
+### AlreadyConnected
+
+- For when the server rejects the connection because the IP is already connected.
+
+### InvalidApiToken
+
+- For when the api token is invalid
+
+### NoCardsFound
+
+- For when the server returns no cards after `GET_CHARGE_CARDS`
