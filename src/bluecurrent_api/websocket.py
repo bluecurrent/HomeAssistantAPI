@@ -89,7 +89,7 @@ class Websocket:
     async def send_request(self, request: dict):
         """Add authorization and send request."""
         if not self.auth_token:
-            raise WebsocketException("auth token not set")
+            raise WebsocketException("Token not set")
 
         request["Authorization"] = self.auth_token
         await self._send(request)
@@ -182,7 +182,7 @@ class Websocket:
             self._has_connection = False
             self.handle_receive_event()
             self.check_for_request_limit_reached(err)
-            raise WebsocketException("connection was closed.")
+            raise WebsocketException("Connection was closed.")
 
     async def disconnect(self):
         """Disconnect from de websocket."""
@@ -205,8 +205,8 @@ class Websocket:
 
     def check_for_request_limit_reached(self, err):
         """Check if the the request limit is reached"""
-        if (isinstance(err, InvalidStatusCode) and
-                'Request limit reached' in err.headers['x-websocket-reject-reason']):
-            raise RequestLimitReached from err
+        if (isinstance(err, InvalidStatusCode) and err.headers.get('x-websocket-reject-reason') and
+                'Request limit reached' in err.headers.get('x-websocket-reject-reason')):
+            raise RequestLimitReached("Request limit reached") from err
         if isinstance(err, ConnectionClosedError) and err.code == 4001:
-            raise RequestLimitReached from err
+            raise RequestLimitReached("Request limit reached") from err

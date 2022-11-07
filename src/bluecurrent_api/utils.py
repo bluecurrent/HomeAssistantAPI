@@ -10,7 +10,7 @@ ERRORS = {
     1: WebsocketException("Invalid Auth Token"),
     2: WebsocketException("Not authorized"),
     9: WebsocketException("Unknown error"),
-    42: RequestLimitReached
+    42: RequestLimitReached("Request limit reached")
 }
 
 

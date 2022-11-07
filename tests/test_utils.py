@@ -130,7 +130,9 @@ def test_get_exception():
         "error": 42,
         "message": "Test error"
     }
-    assert get_exception(message) == RequestLimitReached
+    error = get_exception(message)
+    assert isinstance(error, RequestLimitReached)
+    assert str(error) == "Request limit reached"
 
 
 def test_handle_grid():
