@@ -3,7 +3,7 @@ from websockets.exceptions import InvalidStatusCode, ConnectionClosedError
 from websockets.frames import Close
 
 from src.bluecurrent_api.websocket import Websocket
-from src.bluecurrent_api.exceptions import WebsocketException, InvalidApiToken, NoCardsFound, RequestLimitReached
+from src.bluecurrent_api.exceptions import WebsocketException, InvalidApiToken, NoCardsFound, RequestLimitReached, AlreadyConnected
 from asyncio.exceptions import TimeoutError
 import pytest
 from pytest_mock import MockerFixture
@@ -132,6 +132,15 @@ async def test__connect(mocker: MockerFixture):
             403, {'x-websocket-reject-reason': 'Request limit reached'})
     )
     with pytest.raises(RequestLimitReached):
+        await websocket._connect()
+
+    mocker.patch(
+        'src.bluecurrent_api.websocket.connect',
+        create=True,
+        side_effect=InvalidStatusCode(
+            403, {'x-websocket-reject-reason': 'Already connected'})
+    )
+    with pytest.raises(AlreadyConnected):
         await websocket._connect()
 
 
@@ -350,7 +359,7 @@ async def test_handle_connection_errors(mocker: MockerFixture):
         Websocket, 'handle_receive_event')
 
     mocker.patch.object(
-        Websocket, 'check_for_request_limit_reached')
+        Websocket, 'check_for_server_reject')
 
     websocket = Websocket()
 
@@ -373,12 +382,17 @@ async def test_handle_receive_event():
     assert websocket.receive_event.is_set()
 
 
-def test_check_for_request_limit_reached():
+def test_check_for_server_reject():
     websocket = Websocket()
+
     with pytest.raises(RequestLimitReached):
-        websocket.check_for_request_limit_reached(InvalidStatusCode(
+        websocket.check_for_server_reject(InvalidStatusCode(
             403, {'x-websocket-reject-reason': 'Request limit reached'}))
 
     with pytest.raises(RequestLimitReached):
-        websocket.check_for_request_limit_reached(
+        websocket.check_for_server_reject(
             ConnectionClosedError(Close(4001, "Request limit reached"), None, None))
+
+    with pytest.raises(AlreadyConnected):
+        websocket.check_for_server_reject(InvalidStatusCode(
+            403, {'x-websocket-reject-reason': 'Already connected'}))

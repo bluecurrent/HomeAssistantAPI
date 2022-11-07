@@ -13,6 +13,10 @@ class RequestLimitReached(BlueCurrentException):
     """Define an error for when the request limit is reached."""
 
 
+class AlreadyConnected(BlueCurrentException):
+    """Define an error for when the ip is already connected."""
+
+
 class InvalidApiToken(BlueCurrentException):
     """Define an error related to an invalid token."""
 

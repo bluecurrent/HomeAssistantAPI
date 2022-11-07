@@ -4,7 +4,9 @@ import json
 from typing import Callable
 from websockets.client import connect
 from websockets.exceptions import ConnectionClosed, InvalidStatusCode, ConnectionClosedError
-from .exceptions import InvalidApiToken, WebsocketException, NoCardsFound, RequestLimitReached
+from .exceptions import (
+    InvalidApiToken, WebsocketException, NoCardsFound, RequestLimitReached, AlreadyConnected
+)
 from .utils import (
     handle_status, handle_grid, handle_setting_change, handle_session_messages,
     get_dummy_message, get_exception
@@ -82,7 +84,7 @@ class Websocket:
             self._connection = await connect(URL)
             self._has_connection = True
         except Exception as err:
-            self.check_for_request_limit_reached(err)
+            self.check_for_server_reject(err)
             raise WebsocketException(
                 "Cannot connect to the websocket.") from err
 
@@ -181,7 +183,7 @@ class Websocket:
         if self._has_connection:
             self._has_connection = False
             self.handle_receive_event()
-            self.check_for_request_limit_reached(err)
+            self.check_for_server_reject(err)
             raise WebsocketException("Connection was closed.")
 
     async def disconnect(self):
@@ -203,10 +205,12 @@ class Websocket:
         if self.receive_event is not None:
             self.receive_event.set()
 
-    def check_for_request_limit_reached(self, err):
-        """Check if the the request limit is reached"""
-        if (isinstance(err, InvalidStatusCode) and err.headers.get('x-websocket-reject-reason') and
-                'Request limit reached' in err.headers.get('x-websocket-reject-reason')):
-            raise RequestLimitReached("Request limit reached") from err
+    def check_for_server_reject(self, err):
+        """Check if the client was rejected by the server"""
+        if isinstance(err, InvalidStatusCode) and err.headers.get('x-websocket-reject-reason'):
+            if 'Request limit reached' in err.headers.get('x-websocket-reject-reason'):
+                raise RequestLimitReached("Request limit reached") from err
+            if 'Already connected' in err.headers.get('x-websocket-reject-reason'):
+                raise AlreadyConnected("Already connected")
         if isinstance(err, ConnectionClosedError) and err.code == 4001:
             raise RequestLimitReached("Request limit reached") from err
