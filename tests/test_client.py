@@ -79,4 +79,4 @@ async def test_requests(mocker: MockerFixture):
 
     await client.stop_session('101')
     test_send_request.assert_called_with(
-        {'command': 'STOP_SESSION', 'evseid': '101'})
+        {'command': 'STOP_SESSION', 'evse_id': '101'})

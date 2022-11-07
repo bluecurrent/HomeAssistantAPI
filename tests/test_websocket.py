@@ -1,4 +1,6 @@
 from unittest.mock import AsyncMock
+from websockets.exceptions import InvalidStatusCode, ConnectionClosedError
+from websockets.frames import Close
 
 from src.bluecurrent_api.websocket import Websocket
 from src.bluecurrent_api.exceptions import WebsocketException, InvalidApiToken, NoCardsFound, RequestLimitReached
@@ -114,12 +116,22 @@ async def test__connect(mocker: MockerFixture):
     )
     with pytest.raises(WebsocketException):
         await websocket._connect()
+
     mocker.patch(
         'src.bluecurrent_api.websocket.connect',
         create=True,
         side_effect=TimeoutError
     )
     with pytest.raises(WebsocketException):
+        await websocket._connect()
+
+    mocker.patch(
+        'src.bluecurrent_api.websocket.connect',
+        create=True,
+        side_effect=InvalidStatusCode(
+            403, {'x-websocket-reject-reason': 'Request limit reached'})
+    )
+    with pytest.raises(RequestLimitReached):
         await websocket._connect()
 
 
@@ -337,13 +349,16 @@ async def test_handle_connection_errors(mocker: MockerFixture):
     test_handle_receive_event = mocker.patch.object(
         Websocket, 'handle_receive_event')
 
+    mocker.patch.object(
+        Websocket, 'check_for_request_limit_reached')
+
     websocket = Websocket()
 
     websocket._has_connection = True
     websocket.receive_event = asyncio.Event()
 
     with pytest.raises(WebsocketException):
-        websocket.handle_connection_errors()
+        websocket.handle_connection_errors(None)
 
     assert websocket._has_connection == False
     test_handle_receive_event.assert_called_once()
@@ -356,3 +371,14 @@ async def test_handle_receive_event():
     websocket.receive_event = asyncio.Event()
     websocket.handle_receive_event()
     assert websocket.receive_event.is_set()
+
+
+def test_check_for_request_limit_reached():
+    websocket = Websocket()
+    with pytest.raises(RequestLimitReached):
+        websocket.check_for_request_limit_reached(InvalidStatusCode(
+            403, {'x-websocket-reject-reason': 'Request limit reached'}))
+
+    with pytest.raises(RequestLimitReached):
+        websocket.check_for_request_limit_reached(
+            ConnectionClosedError(Close(4001, "Request limit reached"), None, None))

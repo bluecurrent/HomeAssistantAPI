@@ -3,8 +3,8 @@ import asyncio
 import json
 from typing import Callable
 from websockets.client import connect
-from websockets.exceptions import ConnectionClosed, InvalidStatusCode
-from .exceptions import InvalidApiToken, WebsocketException, NoCardsFound
+from websockets.exceptions import ConnectionClosed, InvalidStatusCode, ConnectionClosedError
+from .exceptions import InvalidApiToken, WebsocketException, NoCardsFound, RequestLimitReached
 from .utils import (
     handle_status, handle_grid, handle_setting_change, handle_session_messages,
     get_dummy_message, get_exception
@@ -82,6 +82,7 @@ class Websocket:
             self._connection = await connect(URL)
             self._has_connection = True
         except Exception as err:
+            self.check_for_request_limit_reached(err)
             raise WebsocketException(
                 "Cannot connect to the websocket.") from err
 
@@ -163,8 +164,8 @@ class Websocket:
         try:
             data_str = json.dumps(data)
             await self._connection.send(data_str)
-        except (ConnectionClosed, InvalidStatusCode):
-            self.handle_connection_errors()
+        except (ConnectionClosed, InvalidStatusCode) as err:
+            self.handle_connection_errors(err)
 
     async def _recv(self):
         """Receive data from de websocket."""
@@ -172,14 +173,15 @@ class Websocket:
         try:
             data = await self._connection.recv()
             return json.loads(data)
-        except (ConnectionClosed, InvalidStatusCode):
-            self.handle_connection_errors()
+        except (ConnectionClosed, InvalidStatusCode) as err:
+            self.handle_connection_errors(err)
 
-    def handle_connection_errors(self):
+    def handle_connection_errors(self, err):
         """Handle connection errors."""
         if self._has_connection:
             self._has_connection = False
             self.handle_receive_event()
+            self.check_for_request_limit_reached(err)
             raise WebsocketException("connection was closed.")
 
     async def disconnect(self):
@@ -200,3 +202,11 @@ class Websocket:
         "Set receive_event if it exists"
         if self.receive_event is not None:
             self.receive_event.set()
+
+    def check_for_request_limit_reached(self, err):
+        """Check if the the request limit is reached"""
+        if (isinstance(err, InvalidStatusCode) and
+                'Request limit reached' in err.headers['x-websocket-reject-reason']):
+            raise RequestLimitReached from err
+        if isinstance(err, ConnectionClosedError) and err.code == 4001:
+            raise RequestLimitReached from err
