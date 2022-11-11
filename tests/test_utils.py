@@ -82,7 +82,10 @@ def test_handle_status():
             'total_cost': 10.52,
             'vehicle_status': "A",
             'actual_kwh': 10,
-            'evse_id': 'BCU101'
+            'evse_id': 'BCU101',
+            'max_usage': 10,
+            'max_offline': 7,
+            'smartcharging_max_usage': 6
         },
         "evse_id": 'BCU101'
     }
@@ -102,7 +105,7 @@ def test_handle_status():
         2021, 11, 18, 14, 32, 23))
     assert message["data"]["vehicle_status"] == "standby"
 
-    assert len(message["data"]) == 17
+    assert len(message["data"]) == 20
 
 
 def test_get_exception():
