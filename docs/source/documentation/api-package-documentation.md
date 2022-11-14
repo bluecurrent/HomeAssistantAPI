@@ -285,13 +285,29 @@ Adds CEST timezone if not already in timestamp.
 
 - Returns the vehicle status.
 
-### get_error_message(message: dict) -> str
+### get_exception(message: dict) -> str
 
 - Returns a defined error message or the one received.
+
+### set_smart_charging(evse_id, smart_charging)
+
+- Adds or removes the given evse_id to / from `SMART_CHARGING`.
+
+### handle_charge_points(message: dict)
+
+- Calls `set_smart_charging` for each charge point.
+
+### set_current_left(message: dict, c_avg)
+
+- Sets the how much current the charge point has left.
 
 ### handle_status(message: dict)
 
 - Transforms key, value pairs to the given messages and modifies others.
+
+### handle_settings(message: dict)
+
+- Transforms the value of the settings.
 
 ### handle_grid(message: dict)
 

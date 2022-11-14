@@ -41,9 +41,9 @@ def test_calculate_total_kW():
 
 
 def test_set_to_smart_charging():
-    set_to_smart_charging('bcu101', True)
+    set_smart_charging('bcu101', True)
     assert SMART_CHARGING == {'bcu101'}
-    set_to_smart_charging('bcu101', False)
+    set_smart_charging('bcu101', False)
     assert SMART_CHARGING == set()
 
 

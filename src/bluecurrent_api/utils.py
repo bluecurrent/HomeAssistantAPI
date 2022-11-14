@@ -69,7 +69,7 @@ def get_exception(message: dict):
     return WebsocketException(message)
 
 
-def set_to_smart_charging(evse_id, smart_charging):
+def set_smart_charging(evse_id, smart_charging):
     """Add or discard evse_id in SMART_CHARGING"""
     if smart_charging:
         SMART_CHARGING.add(evse_id)
@@ -80,7 +80,7 @@ def set_to_smart_charging(evse_id, smart_charging):
 def handle_charge_points(message: dict):
     """Store the evse_id if it has smart charging enabled"""
     for charge_point in message["data"]:
-        set_to_smart_charging(
+        set_smart_charging(
             charge_point["evse_id"], charge_point["smart_charging"])
 
 
@@ -138,7 +138,7 @@ def handle_settings(message: dict):
     for key in SETTINGS:
         message["data"][key] = message["data"][key]["value"]
 
-    set_to_smart_charging(
+    set_smart_charging(
         message['data']['evse_id'], message["smart_charging"])
 
 
