@@ -8,7 +8,7 @@ from .exceptions import (
     InvalidApiToken, WebsocketException, NoCardsFound, RequestLimitReached, AlreadyConnected
 )
 from .utils import (
-    handle_status, handle_grid, handle_setting_change, handle_session_messages,
+    handle_settings, handle_status, handle_grid, handle_setting_change, handle_session_messages,
     get_dummy_message, get_exception
 )
 # URL = "wss://bo.bluecurrent.nl/appserver/2.0"
@@ -138,6 +138,8 @@ class Websocket:
 
         if object_name == "CH_STATUS":
             handle_status(message)
+        elif object_name == "CH_SETTINGS":
+            handle_settings(message)
         elif object_name == "GRID_STATUS":
             handle_grid(message)
         elif "STATUS_SET_P" in object_name:

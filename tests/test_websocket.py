@@ -196,7 +196,8 @@ async def test_message_handler(mocker: MockerFixture):
         'src.bluecurrent_api.websocket.handle_status')
     mock_handle_grid = mocker.patch(
         'src.bluecurrent_api.websocket.handle_grid')
-
+    mock_handle_settings = mocker.patch(
+        'src.bluecurrent_api.websocket.handle_settings')
     mock_handle_setting_change = mocker.patch(
         'src.bluecurrent_api.websocket.handle_setting_change')
 
@@ -231,6 +232,13 @@ async def test_message_handler(mocker: MockerFixture):
     mocker.patch.object(Websocket, '_recv', return_value=message)
     await websocket._message_handler()
     mock_handle_grid.assert_called_with(message)
+    mock_send_to_receiver.assert_called_with(message)
+
+    # ch_settings flow
+    message = {"object": "CH_SETTINGS"}
+    mocker.patch.object(Websocket, '_recv', return_value=message)
+    await websocket._message_handler()
+    mock_handle_settings.assert_called_with(message)
     mock_send_to_receiver.assert_called_with(message)
 
     # setting change flow

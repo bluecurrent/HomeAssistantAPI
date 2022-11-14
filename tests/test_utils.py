@@ -108,6 +108,25 @@ def test_handle_status():
     assert len(message["data"]) == 20
 
 
+def test_handle_settings():
+    message = {
+        'data': {
+            'evse_id': 'BCU102728',
+            'plug_and_charge': {
+                'value': False,
+                'permission': 'write'
+            },
+            'public_charging': {
+                'value': True,
+                'permission': 'write'
+            },
+        }
+    }
+    handle_settings(message)
+    assert message['data']['plug_and_charge'] == False
+    assert message['data']['public_charging'] == True
+
+
 def test_get_exception():
     message = {
         "object": "ERROR",

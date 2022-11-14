@@ -13,6 +13,8 @@ ERRORS = {
     42: RequestLimitReached("Request limit reached")
 }
 
+SETTINGS = ['plug_and_charge', 'public_charging']
+
 
 def calculate_average_usage_from_phases(phases: tuple):
     """Get the average of the phases that are not 0."""
@@ -99,6 +101,12 @@ def handle_status(message: dict):
 
     offline_since = message["data"]["offline_since"]
     message["data"]["offline_since"] = create_datetime(offline_since)
+
+
+def handle_settings(message: dict):
+    """Transform settings object"""
+    for key in SETTINGS:
+        message["data"][key] = message["data"][key]["value"]
 
 
 def handle_grid(message: dict):
