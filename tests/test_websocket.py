@@ -59,6 +59,38 @@ async def test_validate_token(mocker: MockerFixture):
 
 
 @pytest.mark.asyncio
+async def test_get_email(mocker: MockerFixture):
+    websocket = Websocket()
+    mocker.patch('src.bluecurrent_api.websocket.Websocket._connect')
+    mocker.patch('src.bluecurrent_api.websocket.Websocket._send')
+    mocker.patch('src.bluecurrent_api.websocket.Websocket.disconnect')
+    mocker.patch(
+        'src.bluecurrent_api.websocket.Websocket._recv',
+        return_value={"object": "ACCOUNT", "email": 'test'}
+    )
+
+    with pytest.raises(WebsocketException):
+        await websocket.get_email()
+    websocket.auth_token = 'abc'
+    assert await websocket.get_email() == 'test'
+
+    mocker.patch(
+        'src.bluecurrent_api.websocket.Websocket._recv',
+        return_value={"object": "ACCOUNT"}
+    )
+    with pytest.raises(WebsocketException):
+        await websocket.get_email()
+
+    mocker.patch(
+        'src.bluecurrent_api.websocket.Websocket._recv',
+        return_value={"object": "ERROR",
+                      "error": 42, 'message': "Request limit reached"}
+    )
+    with pytest.raises(RequestLimitReached) as err:
+        await websocket.get_email()
+
+
+@pytest.mark.asyncio
 async def test_get_charge_cards(mocker: MockerFixture):
     websocket = Websocket()
     mocker.patch('src.bluecurrent_api.websocket.Websocket._connect')

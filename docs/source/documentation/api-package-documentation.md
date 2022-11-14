@@ -48,11 +48,17 @@ The Client class has all the 'public' methods of the package.
 
 - Validates the given token.
 
+### await get_email() -> str
+
+- Returns the user's email.
+
+- Used as the unique id in Home Assistant.
+
 ### await get_charge_cards(auth_token) -> list
 
 - Returns the users charge cards.
 
-<b>The methods validate_token and get_charge_cards are stand-alone and to be used <u>before</u> connecting to the websocket with connect().</b>
+<b>The methods validate_token, get_email and get_charge_cards are stand-alone and to be used <u>before</u> connecting to the websocket with connect().</b>
 
 ---
 
@@ -159,6 +165,12 @@ The Websocket class does all the work of sending and receiving messages.
 Also throws error when an `ERROR` object is received.
 
 - Stores the received `auth_token` in the Websocket class.
+
+### await get_email() -> str
+
+- Returns the user's email.
+
+- Throws an error when an `ERROR` object is received and when the email is not given.
 
 ### await get_charge_cards() -> list
 

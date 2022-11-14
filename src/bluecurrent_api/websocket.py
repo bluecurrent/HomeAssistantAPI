@@ -60,6 +60,20 @@ class Websocket:
         self.auth_token = "Token " + res["token"]
         return True
 
+    async def get_email(self):
+        """Return the user email"""
+        if not self.auth_token:
+            raise WebsocketException("token not set")
+        await self._send({"command": "GET_ACCOUNT"})
+        res = await self._recv()
+
+        if res['object'] == 'ERROR':
+            raise get_exception(res)
+
+        if not res.get("email"):
+            raise WebsocketException('No email found')
+        return res['email']
+
     async def get_charge_cards(self):
         """Get the charge cards."""
         if not self.auth_token:

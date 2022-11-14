@@ -23,6 +23,10 @@ class Client:
         """Validate an api_token."""
         return await self.websocket.validate_api_token(api_token)
 
+    async def get_email(self):
+        """Get user email."""
+        return await self.websocket.get_email()
+
     async def get_charge_cards(self):
         """Get the charge cards."""
         return await self.websocket.get_charge_cards()
