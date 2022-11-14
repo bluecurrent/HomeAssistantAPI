@@ -13,6 +13,10 @@ ERRORS = {
     42: RequestLimitReached("Request limit reached")
 }
 
+SETTINGS = ['plug_and_charge', 'public_charging']
+
+SMART_CHARGING = set()
+
 
 def calculate_average_usage_from_phases(phases: tuple):
     """Get the average of the phases that are not 0."""
@@ -65,6 +69,32 @@ def get_exception(message: dict):
     return WebsocketException(message)
 
 
+def set_to_smart_charging(evse_id, smart_charging):
+    """Add or discard evse_id in SMART_CHARGING"""
+    if smart_charging:
+        SMART_CHARGING.add(evse_id)
+    else:
+        SMART_CHARGING.discard(evse_id)
+
+
+def handle_charge_points(message: dict):
+    """Store the evse_id if it has smart charging enabled"""
+    for charge_point in message["data"]:
+        set_to_smart_charging(
+            charge_point["evse_id"], charge_point["smart_charging"])
+
+
+def set_current_left(message: dict, c_avg):
+    """Set current_left"""
+    max_usage = message["data"]["max_usage"]
+    smart_charging_max_usage = message["data"]["smartcharging_max_usage"]
+
+    if message["evse_id"] in SMART_CHARGING:
+        message["data"]["current_left"] = smart_charging_max_usage - c_avg
+    else:
+        message["data"]["current_left"] = max_usage - c_avg
+
+
 def handle_status(message: dict):
     """Transform status values and add others."""
     voltage1 = message["data"]["actual_v1"]
@@ -81,6 +111,8 @@ def handle_status(message: dict):
     c_avg = calculate_average_usage_from_phases(
         (current1, current2, current3))
     message["data"]["avg_current"] = c_avg
+
+    set_current_left(message, c_avg)
 
     message["data"]["total_kw"] = calculate_total_kw((
         current1, current2, current3), v_avg)
@@ -99,6 +131,15 @@ def handle_status(message: dict):
 
     offline_since = message["data"]["offline_since"]
     message["data"]["offline_since"] = create_datetime(offline_since)
+
+
+def handle_settings(message: dict):
+    """Transform settings object"""
+    for key in SETTINGS:
+        message["data"][key] = message["data"][key]["value"]
+
+    set_to_smart_charging(
+        message['data']['evse_id'], message["smart_charging"])
 
 
 def handle_grid(message: dict):

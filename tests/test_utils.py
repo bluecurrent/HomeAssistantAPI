@@ -40,6 +40,13 @@ def test_calculate_total_kW():
     assert total == 9.43
 
 
+def test_set_to_smart_charging():
+    set_to_smart_charging('bcu101', True)
+    assert SMART_CHARGING == {'bcu101'}
+    set_to_smart_charging('bcu101', False)
+    assert SMART_CHARGING == set()
+
+
 def test_get_vehicle_status():
     assert get_vehicle_status("A") == "standby"
     assert get_vehicle_status("B") == "vehicle_detected"
@@ -66,15 +73,48 @@ def test_create_datetime():
     assert create_datetime("") == None
 
 
+def test_handle_charge_points():
+    message = {
+        "data": [
+            {
+                "evse_id": 'BCU101',
+                "smart_charging": False
+            },
+            {
+                "evse_id": 'BCU102',
+                "smart_charging": True
+            },
+        ]
+    }
+
+    handle_charge_points(message)
+    assert SMART_CHARGING == {'BCU102'}
+
+
+def test_handle_set_current_left():
+    message = {
+        "data": {"max_usage": 10, "smartcharging_max_usage": 6, },
+        "evse_id": "bcu101"
+    }
+
+    SMART_CHARGING.add("bcu101")
+    set_current_left(message, 5)
+    assert message['data']['current_left'] == 1
+
+    SMART_CHARGING.remove("bcu101")
+    set_current_left(message, 5)
+    assert message['data']['current_left'] == 5
+
+
 def test_handle_status():
     message = {
         "data": {
             'actual_v1': 220,
             'actual_v2': 221,
             'actual_v3': 219,
-            'actual_p1': 12,
-            'actual_p2': 10,
-            'actual_p3': 15,
+            'actual_p1': 8,
+            'actual_p2': 8,
+            'actual_p3': 8,
             'activity': "available",
             'start_datetime': "20211118 14:12:23",
             'stop_datetime': "20211118 14:32:23",
@@ -95,8 +135,8 @@ def test_handle_status():
     handle_status(message)
 
     assert message["data"]["avg_voltage"] == 220.0
-    assert message["data"]["avg_current"] == 12.3
-    assert message["data"]["total_kw"] == 8.14
+    assert message["data"]["avg_current"] == 8.0
+    assert message["data"]["total_kw"] == 5.28
     assert message["data"]["start_datetime"] == TZ.localize(datetime(
         2021, 11, 18, 14, 12, 23))
     assert message["data"]["stop_datetime"] == TZ.localize(datetime(
@@ -104,8 +144,43 @@ def test_handle_status():
     assert message["data"]["offline_since"] == TZ.localize(datetime(
         2021, 11, 18, 14, 32, 23))
     assert message["data"]["vehicle_status"] == "standby"
+    assert message["data"]["current_left"] == 2.0
 
-    assert len(message["data"]) == 20
+    assert len(message["data"]) == 21
+
+
+def test_handle_settings():
+    message = {
+        'data': {
+            'evse_id': 'BCU102',
+            'plug_and_charge': {
+                'value': False,
+            },
+            'public_charging': {
+                'value': True,
+            },
+        },
+        'smart_charging': False
+    }
+    handle_settings(message)
+    assert message['data']['plug_and_charge'] == False
+    assert message['data']['public_charging'] == True
+    assert SMART_CHARGING == set()
+
+    message = {
+        'data': {
+            'evse_id': 'BCU102',
+            'plug_and_charge': {
+                'value': False,
+            },
+            'public_charging': {
+                'value': True,
+            },
+        },
+        'smart_charging': True
+    }
+    handle_settings(message)
+    assert SMART_CHARGING == {'BCU102'}
 
 
 def test_get_exception():
