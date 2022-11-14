@@ -12,6 +12,8 @@ For the documentation of all the functions see [](documentation).
 
 For documentation on testing see [](testing).
 
+For examples of objects received from the api package see [](data-models)
+
 ## Complementary documentation
 
 - [Home Assistant](https://developers.home-assistant.io/)
@@ -28,6 +30,7 @@ setting-up
 file-overview
 flow
 documentation
+data-models
 testing
 notes
 ```

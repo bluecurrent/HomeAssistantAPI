@@ -192,6 +192,8 @@ async def test_loop(mocker: MockerFixture):
 @pytest.mark.asyncio
 async def test_message_handler(mocker: MockerFixture):
 
+    mock_handle_charge_points = mocker.patch(
+        'src.bluecurrent_api.websocket.handle_charge_points')
     mock_handle_status = mocker.patch(
         'src.bluecurrent_api.websocket.handle_status')
     mock_handle_grid = mocker.patch(
@@ -214,10 +216,11 @@ async def test_message_handler(mocker: MockerFixture):
 
     websocket = Websocket()
 
-    # normal flow
+    # CHARGE_POINTS flow
     message = {"object": "CHARGE_POINTS"}
     mocker.patch.object(Websocket, '_recv', return_value=message)
     await websocket._message_handler()
+    mock_handle_charge_points.assert_called_with(message)
     mock_send_to_receiver.assert_called_with(message)
 
     # ch_status flow

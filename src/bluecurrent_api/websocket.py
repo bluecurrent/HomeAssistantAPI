@@ -8,8 +8,14 @@ from .exceptions import (
     InvalidApiToken, WebsocketException, NoCardsFound, RequestLimitReached, AlreadyConnected
 )
 from .utils import (
-    handle_settings, handle_status, handle_grid, handle_setting_change, handle_session_messages,
-    get_dummy_message, get_exception
+    handle_settings,
+    handle_charge_points,
+    handle_status,
+    handle_grid,
+    handle_setting_change,
+    handle_session_messages,
+    get_dummy_message,
+    get_exception
 )
 # URL = "wss://bo.bluecurrent.nl/appserver/2.0"
 # URL = "wss://bo-acct001.bluecurrent.nl/appserver/2.0"
@@ -135,8 +141,9 @@ class Websocket:
         if (("RECEIVED" in object_name and not error)
                 or object_name == "HELLO" or "OPERATIVE" in object_name):
             return False
-
-        if object_name == "CH_STATUS":
+        if object_name == "CHARGE_POINTS":
+            handle_charge_points(message)
+        elif object_name == "CH_STATUS":
             handle_status(message)
         elif object_name == "CH_SETTINGS":
             handle_settings(message)
