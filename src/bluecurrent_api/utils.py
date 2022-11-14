@@ -139,7 +139,7 @@ def handle_settings(message: dict):
         message["data"][key] = message["data"][key]["value"]
 
     set_smart_charging(
-        message['data']['evse_id'], message["smart_charging"])
+        message['data']['evse_id'], message["data"]["smart_charging"])
 
 
 def handle_grid(message: dict):

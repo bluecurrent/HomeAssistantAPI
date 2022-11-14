@@ -159,8 +159,8 @@ def test_handle_settings():
             'public_charging': {
                 'value': True,
             },
-        },
-        'smart_charging': False
+            'smart_charging': False
+        }
     }
     handle_settings(message)
     assert message['data']['plug_and_charge'] == False
@@ -176,8 +176,8 @@ def test_handle_settings():
             'public_charging': {
                 'value': True,
             },
-        },
-        'smart_charging': True
+            'smart_charging': True
+        }
     }
     handle_settings(message)
     assert SMART_CHARGING == {'BCU102'}
