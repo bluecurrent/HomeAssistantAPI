@@ -19,8 +19,8 @@ from .utils import (
 )
 # URL = "wss://bo.bluecurrent.nl/appserver/2.0"
 # URL = "wss://bo-acct001.bluecurrent.nl/appserver/2.0"
-# URL = "wss://bo.bluecurrent.nl/haserver"
-URL = "wss://bo-acct001.bluecurrent.nl/haserver"
+URL = "wss://bo.bluecurrent.nl/haserver"
+# URL = "wss://bo-acct001.bluecurrent.nl/haserver"
 
 
 class Websocket:
@@ -64,22 +64,24 @@ class Websocket:
         """Return the user email"""
         if not self.auth_token:
             raise WebsocketException("token not set")
-        await self._send({"command": "GET_ACCOUNT"})
+        await self._connect()
+        await self.send_request({"command": "GET_ACCOUNT"})
         res = await self._recv()
+        await self.disconnect()
 
         if res['object'] == 'ERROR':
             raise get_exception(res)
 
-        if not res.get("email"):
+        if not res.get("login"):
             raise WebsocketException('No email found')
-        return res['email']
+        return res['login']
 
     async def get_charge_cards(self):
         """Get the charge cards."""
         if not self.auth_token:
             raise WebsocketException("token not set")
         await self._connect()
-        await self._send({"command": "GET_CHARGE_CARDS", "Authorization": self.auth_token})
+        await self.send_request({"command": "GET_CHARGE_CARDS"})
         res = await self._recv()
         await self.disconnect()
         cards = res.get("cards")

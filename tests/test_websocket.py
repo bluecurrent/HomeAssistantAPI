@@ -66,7 +66,7 @@ async def test_get_email(mocker: MockerFixture):
     mocker.patch('src.bluecurrent_api.websocket.Websocket.disconnect')
     mocker.patch(
         'src.bluecurrent_api.websocket.Websocket._recv',
-        return_value={"object": "ACCOUNT", "email": 'test'}
+        return_value={"object": "ACCOUNT", "login": 'test'}
     )
 
     with pytest.raises(WebsocketException):
