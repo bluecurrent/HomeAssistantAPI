@@ -17,10 +17,8 @@ from .utils import (
     get_dummy_message,
     get_exception
 )
-# URL = "wss://bo.bluecurrent.nl/appserver/2.0"
-# URL = "wss://bo-acct001.bluecurrent.nl/appserver/2.0"
+
 URL = "wss://bo.bluecurrent.nl/haserver"
-# URL = "wss://bo-acct001.bluecurrent.nl/haserver"
 
 
 class Websocket:
