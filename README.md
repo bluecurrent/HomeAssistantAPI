@@ -1,8 +1,10 @@
 # Blue Current Api
 
+[![Documentation Status](https://readthedocs.com/projects/blue-current-homeassistantapi/badge/?version=latest&token=00ce4a850aedc0993b7075a8b2d5f8de98251adcdb4eada1f1fb3c02fee80039)](https://blue-current-homeassistantapi.readthedocs-hosted.com/en/latest/?badge=latest)
+
 Python wrapper for the blue current api
 
-The library is a asyncio-driven library that interfaces with the Websocket API provided by Blue Current. This was made for the Blue Current Home Assistant integration.
+The library is an asyncio-driven library that interfaces with the Websocket API provided by Blue Current. This was made for the Blue Current Home Assistant integration.
 
 ## Usage
 
@@ -20,7 +22,7 @@ pip install bluecurrent_api
 
 ### Api token
 
-using this library requires a Blue Current api token. You can generate one in your Blue Current dashboard.
+Using this library requires a Blue Current api token. You can generate one in the Blue Current driver portal.
 
 ## Example
 
@@ -37,9 +39,6 @@ async def main():
     def on_data(data):
         print('received: ', data)
 
-    # set the receiver
-    client.set_receiver(on_data)
-
     # connect to the websocket
     await client.connect(api_token)
 
@@ -51,7 +50,7 @@ async def main():
 
     # start the loop and send requests
     await asyncio.gather(
-        client.start_loop(),
+        client.start_loop(on_data),
         requests()
     )
 
@@ -62,7 +61,7 @@ asyncio.run(main())
 
 ---
 
-<b>The methods validate_token and get_charge_cards are stand-alone and to be used <u>before</u> connecting to the websocket with connect().</b>
+<b>The methods validate_token, get_account and get_charge_cards are stand-alone and to be used <u>before</u> connecting to the websocket with connect().</b>
 
 <br>
 
@@ -70,9 +69,13 @@ asyncio.run(main())
 
 - Validates the given token.
 
+#### await get_account() -> bool
+
+- Returns the account's email.
+
 #### await get_charge_cards(auth_token) -> list
 
-- returns the users charge cards.
+- Returns the users charge cards.
 
 ---
 
@@ -80,17 +83,17 @@ asyncio.run(main())
 
 - Connects to the websocket.
 
-#### set_receiver(receiver)
+#### await start_loop(receiver)
 
-- Sets the receiver method.
-
-#### await start_loop()
-
-- Starts the receiver loop.
+- Starts the loop and routes the incoming messages to the given receiver method
 
 #### await wait_for_response()
 
 - Waits until the next message is received.
+
+#### get_next_reset_delta()
+
+- Returns the timedelta to the next request limit reset (00:00 Europe/Amsterdam).
 
 #### await disconnect()
 

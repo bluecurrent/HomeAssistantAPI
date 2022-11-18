@@ -1,13 +1,24 @@
-"""Define an object with all public methods."""
+"""Define an object that handles the connection to the Websocket"""
 import asyncio
 import json
 from typing import Callable
 from websockets.client import connect
-from websockets.exceptions import ConnectionClosed, InvalidStatusCode
-from .exceptions import InvalidApiToken, WebsocketException, NoCardsFound
-from .utils import handle_status, handle_grid, handle_setting_change, handle_session_messages
+from websockets.exceptions import ConnectionClosed, InvalidStatusCode, ConnectionClosedError
+from .exceptions import (
+    InvalidApiToken, WebsocketException, NoCardsFound, RequestLimitReached, AlreadyConnected
+)
+from .utils import (
+    handle_settings,
+    handle_charge_points,
+    handle_status,
+    handle_grid,
+    handle_setting_change,
+    handle_session_messages,
+    get_dummy_message,
+    get_exception
+)
 
-URL = "wss://bo-acct001.bluecurrent.nl/appserver/2.0"
+URL = "wss://bo.bluecurrent.nl/haserver"
 
 
 class Websocket:
@@ -23,7 +34,7 @@ class Websocket:
         pass
 
     def get_receiver_event(self):
-        """Returns cleared receive_event when connected."""
+        """Return cleared receive_event when connected."""
 
         self._check_connection()
         if self.receive_event is None:
@@ -38,28 +49,47 @@ class Websocket:
         await self._send({"command": "VALIDATE_API_TOKEN", "token": api_token})
         res = await self._recv()
         await self.disconnect()
-        if not res["success"]:
+
+        if res['object'] == 'ERROR':
+            raise get_exception(res)
+
+        if not res.get("success"):
             raise InvalidApiToken
         self.auth_token = "Token " + res["token"]
         return True
+
+    async def get_email(self):
+        """Return the user email"""
+        if not self.auth_token:
+            raise WebsocketException("token not set")
+        await self._connect()
+        await self.send_request({"command": "GET_ACCOUNT"})
+        res = await self._recv()
+        await self.disconnect()
+
+        if res['object'] == 'ERROR':
+            raise get_exception(res)
+
+        if not res.get("login"):
+            raise WebsocketException('No email found')
+        return res['login']
 
     async def get_charge_cards(self):
         """Get the charge cards."""
         if not self.auth_token:
             raise WebsocketException("token not set")
         await self._connect()
-        await self._send({"command": "GET_CHARGE_CARDS", "Authorization": self.auth_token})
+        await self.send_request({"command": "GET_CHARGE_CARDS"})
         res = await self._recv()
-        cards = res["cards"]
         await self.disconnect()
+        cards = res.get("cards")
+
+        if res['object'] == 'ERROR':
+            raise get_exception(res)
+
         if len(cards) == 0:
             raise NoCardsFound
         return cards
-
-    def set_receiver(self, receiver: Callable):
-        """Set a receiver."""
-        self.receiver = receiver
-        self.receiver_is_coroutine = asyncio.iscoroutinefunction(receiver)
 
     async def connect(self, api_token: str):
         """Validate api_token and connect to the websocket."""
@@ -74,24 +104,25 @@ class Websocket:
             self._connection = await connect(URL)
             self._has_connection = True
         except Exception as err:
+            self.check_for_server_reject(err)
             raise WebsocketException(
                 "Cannot connect to the websocket.") from err
 
     async def send_request(self, request: dict):
         """Add authorization and send request."""
-        if not self.receiver:
-            raise WebsocketException("receiver method not set")
         if not self.auth_token:
-            raise WebsocketException("auth token not set")
+            raise WebsocketException("Token not set")
 
         request["Authorization"] = self.auth_token
         await self._send(request)
 
-    async def loop(self):
+    async def loop(self, receiver: Callable):
         """Loop the message_handler."""
-        if not self.receiver:
-            raise WebsocketException("receiver method not set")
 
+        self.receiver = receiver
+        self.receiver_is_coroutine = asyncio.iscoroutinefunction(receiver)
+
+        # Needed for receiving updates
         await self._send({"command": "HELLO", "Authorization": self.auth_token})
 
         while True:
@@ -101,12 +132,6 @@ class Websocket:
 
     async def _message_handler(self):
         """Wait for a message and give it to the receiver."""
-        errors = {
-            0: "Unknown command",
-            1: "Invalid Auth Token",
-            2: "Not authorized",
-            9: "Unknown error"
-        }
 
         message: dict = await self._recv()
 
@@ -115,21 +140,27 @@ class Websocket:
             return True
 
         object_name = message.get("object")
-        error = message.get("error")
 
         if not object_name:
             raise WebsocketException("Received message has no object.")
 
-        # ignore RECEIVED objects without error
-        if "RECEIVED" in object_name and not error:
+        # handle ERROR object
+        if object_name == "ERROR":
+            raise get_exception(message)
+
+        # if object other than ERROR has an error key it will be send to the receiver.
+        error = message.get("error")
+
+        # ignored objects
+        if (("RECEIVED" in object_name and not error)
+                or object_name == "HELLO" or "OPERATIVE" in object_name):
             return False
-
-        # handle errors
-        if error in errors:
-            raise WebsocketException(errors[error])
-
-        if object_name == "CH_STATUS":
+        if object_name == "CHARGE_POINTS":
+            handle_charge_points(message)
+        elif object_name == "CH_STATUS":
             handle_status(message)
+        elif object_name == "CH_SETTINGS":
+            handle_settings(message)
         elif object_name == "GRID_STATUS":
             handle_grid(message)
         elif "STATUS_SET_P" in object_name:
@@ -137,9 +168,16 @@ class Websocket:
         elif "STATUS" in object_name or "RECEIVED" in object_name:
             handle_session_messages(message)
 
-        if object_name != "HELLO":
-            self.handle_receive_event()
+        self.handle_receive_event()
 
+        await self.send_to_receiver(message)
+
+        # Fix for api sending old start_datetime
+        if object_name == 'STATUS_START_SESSION' and not error:
+            await self.send_to_receiver(get_dummy_message(message['evse_id']))
+
+    async def send_to_receiver(self, message):
+        """Send data to the given receiver."""
         if self.receiver_is_coroutine:
             await self.receiver(message)
         else:
@@ -151,8 +189,8 @@ class Websocket:
         try:
             data_str = json.dumps(data)
             await self._connection.send(data_str)
-        except (ConnectionClosed, InvalidStatusCode):
-            self.handle_connection_errors()
+        except (ConnectionClosed, InvalidStatusCode) as err:
+            self.handle_connection_errors(err)
 
     async def _recv(self):
         """Receive data from de websocket."""
@@ -160,15 +198,16 @@ class Websocket:
         try:
             data = await self._connection.recv()
             return json.loads(data)
-        except (ConnectionClosed, InvalidStatusCode):
-            self.handle_connection_errors()
+        except (ConnectionClosed, InvalidStatusCode) as err:
+            self.handle_connection_errors(err)
 
-    def handle_connection_errors(self):
+    def handle_connection_errors(self, err):
         """Handle connection errors."""
         if self._has_connection:
             self._has_connection = False
             self.handle_receive_event()
-            raise WebsocketException("connection was closed.")
+            self.check_for_server_reject(err)
+            raise WebsocketException("Connection was closed.")
 
     async def disconnect(self):
         """Disconnect from de websocket."""
@@ -188,3 +227,13 @@ class Websocket:
         "Set receive_event if it exists"
         if self.receive_event is not None:
             self.receive_event.set()
+
+    def check_for_server_reject(self, err):
+        """Check if the client was rejected by the server"""
+        if isinstance(err, InvalidStatusCode) and err.headers.get('x-websocket-reject-reason'):
+            if 'Request limit reached' in err.headers.get('x-websocket-reject-reason'):
+                raise RequestLimitReached("Request limit reached") from err
+            if 'Already connected' in err.headers.get('x-websocket-reject-reason'):
+                raise AlreadyConnected("Already connected")
+        if isinstance(err, ConnectionClosedError) and err.code == 4001:
+            raise RequestLimitReached("Request limit reached") from err

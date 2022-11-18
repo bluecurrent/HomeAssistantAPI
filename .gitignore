@@ -7,4 +7,8 @@ bluecurrent_api.egg-info
 
 packagemanager.bat
 
-connect.py
+ha_package_installer*
+!ha_package_installer_sample.bat
+venv
+build/
+

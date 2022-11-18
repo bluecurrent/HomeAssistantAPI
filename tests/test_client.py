@@ -26,12 +26,6 @@ def test_create_request():
                        'evse_id': '101', 'session_token': '1234'}
 
 
-def test_set_receiver():
-    client = Client()
-    client.set_receiver(print)
-    assert client.websocket.receiver == print
-
-
 @pytest.mark.asyncio
 async def test_requests(mocker: MockerFixture):
 
@@ -85,4 +79,4 @@ async def test_requests(mocker: MockerFixture):
 
     await client.stop_session('101')
     test_send_request.assert_called_with(
-        {'command': 'STOP_SESSION', 'evseid': '101'})
+        {'command': 'STOP_SESSION', 'evse_id': '101'})

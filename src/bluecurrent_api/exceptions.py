@@ -6,7 +6,15 @@ class BlueCurrentException(Exception):
 
 
 class WebsocketException(BlueCurrentException):
-    """Define a base error."""
+    """Define an error related to the websocket connection."""
+
+
+class RequestLimitReached(BlueCurrentException):
+    """Define an error for when the request limit is reached."""
+
+
+class AlreadyConnected(BlueCurrentException):
+    """Define an error for when the ip is already connected."""
 
 
 class InvalidApiToken(BlueCurrentException):

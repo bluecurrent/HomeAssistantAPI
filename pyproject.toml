@@ -19,7 +19,8 @@ classifiers = [
 ]
 dependencies = [
     "websockets >= 10.0",
-    "asyncio >= 3.4.3"
+    "asyncio >= 3.4.3",
+    "pytz >= 2021.3"
 ]
 
 [project.urls]

@@ -1,5 +1,6 @@
 """Define an object to interact with the BlueCurrent websocket api."""
 from typing import Callable
+from .utils import get_next_reset_delta
 from .websocket import Websocket
 
 
@@ -10,6 +11,10 @@ class Client:
         """Initialize the Client."""
         self.websocket = Websocket()
 
+    def get_next_reset_delta(self):
+        """Returns the next reset delta"""
+        return get_next_reset_delta()
+
     async def wait_for_response(self):
         """Wait for next response."""
         await self.websocket.get_receiver_event().wait()
@@ -17,6 +22,10 @@ class Client:
     async def validate_api_token(self, api_token: str):
         """Validate an api_token."""
         return await self.websocket.validate_api_token(api_token)
+
+    async def get_email(self):
+        """Get user email."""
+        return await self.websocket.get_email()
 
     async def get_charge_cards(self):
         """Get the charge cards."""
@@ -26,17 +35,13 @@ class Client:
         """Connect to the websocket."""
         await self.websocket.connect(api_token)
 
-    async def start_loop(self):
+    async def start_loop(self, receiver: Callable):
         """Start the receive loop."""
-        await self.websocket.loop()
+        await self.websocket.loop(receiver)
 
     async def disconnect(self):
         """Disconnect the websocket."""
         await self.websocket.disconnect()
-
-    def set_receiver(self, receiver: Callable):
-        """Set the receiver."""
-        self.websocket.set_receiver(receiver)
 
     async def get_charge_points(self):
         """Get the charge points."""
@@ -95,7 +100,6 @@ class Client:
     async def stop_session(self, evse_id: str):
         """Stop a charge session at a charge point."""
         request = self._create_request("STOP_SESSION", evse_id)
-        request["evseid"] = request.pop("evse_id")
         await self.websocket.send_request(request)
 
     def _create_request(self, command, evse_id=None, value=None, card_uid=None):
