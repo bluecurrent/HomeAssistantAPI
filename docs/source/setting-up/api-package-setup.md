@@ -42,7 +42,7 @@ to develop on the API package, the following tools are needed:
 ### Using an updated API package (without publishing it).
 
 1. `make build`
-2. `pip install bluecurrent_api-<VERSION>-py3-none-any.whl`
+2. `pip install bluecurrent-api-<VERSION>-py3-none-any.whl`
 
 ### Using newer build of the API package in HA container (without publishing it).
 
