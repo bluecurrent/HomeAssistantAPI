@@ -22,7 +22,7 @@ pip install bluecurrent_api
 
 ### Api token
 
-using this library requires a Blue Current api token. You can generate one in your Blue Current dashboard.
+Using this library requires a Blue Current api token. You can generate one in the Blue Current driver portal.
 
 ## Example
 
@@ -61,13 +61,17 @@ asyncio.run(main())
 
 ---
 
-<b>The methods validate_token and get_charge_cards are stand-alone and to be used <u>before</u> connecting to the websocket with connect().</b>
+<b>The methods validate_token, get_account and get_charge_cards are stand-alone and to be used <u>before</u> connecting to the websocket with connect().</b>
 
 <br>
 
 #### await validate_token(api_token) -> bool
 
 - Validates the given token.
+
+#### await get_account() -> bool
+
+- Returns the account's email.
 
 #### await get_charge_cards(auth_token) -> list
 
