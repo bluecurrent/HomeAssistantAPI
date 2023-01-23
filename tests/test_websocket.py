@@ -269,6 +269,14 @@ async def test_message_handler(mocker: MockerFixture):
     mock_handle_grid.assert_called_with(message)
     mock_send_to_receiver.assert_called_with(message)
 
+    # grid_current flow
+    message = {"object": "GRID_CURRENT"}
+    mocker.patch.object(Websocket, '_recv', return_value=message)
+    await websocket._message_handler()
+    mock_handle_grid.assert_called_with(message)
+    mock_send_to_receiver.assert_called_with(message)
+
+
     # ch_settings flow
     message = {"object": "CH_SETTINGS"}
     mocker.patch.object(Websocket, '_recv', return_value=message)

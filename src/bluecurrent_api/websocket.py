@@ -161,7 +161,7 @@ class Websocket:
             handle_status(message)
         elif object_name == "CH_SETTINGS":
             handle_settings(message)
-        elif object_name == "GRID_STATUS":
+        elif "GRID" in object_name:
             handle_grid(message)
         elif "STATUS_SET_P" in object_name:
             handle_setting_change(message)

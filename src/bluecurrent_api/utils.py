@@ -144,6 +144,12 @@ def handle_settings(message: dict):
 
 def handle_grid(message: dict):
     """Add grid total and avg to a message."""
+    if "CURRENT" in message.get('object'):
+        message["data"] = {}
+        message["data"]["grid_actual_p1"] = message.pop('grid_actual_p1')
+        message["data"]["grid_actual_p2"] = message.pop('grid_actual_p2')
+        message["data"]["grid_actual_p3"] = message.pop('grid_actual_p3')
+
     current1 = message["data"]["grid_actual_p1"]
     current2 = message["data"]["grid_actual_p2"]
     current3 = message["data"]["grid_actual_p3"]
