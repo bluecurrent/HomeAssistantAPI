@@ -19,7 +19,7 @@ from .utils import (
 )
 
 URL = "wss://bo.bluecurrent.nl/haserver"
-
+BUTTONS = ("START_SESSION", "STOP_SESSION", "SOFT_RESET", "REBOOT")
 
 class Websocket:
     """Class for handling requests and responses for the BlueCurrent Websocket Api."""
@@ -163,10 +163,12 @@ class Websocket:
             handle_settings(message)
         elif "GRID" in object_name:
             handle_grid(message)
-        elif "STATUS_SET_P" in object_name:
+        elif object_name in ('STATUS_SET_PUBLIC_CHARGING', 'STATUS_SET_PLUG_AND_CHARGE'):
             handle_setting_change(message)
-        elif "STATUS" in object_name or "RECEIVED" in object_name:
+        elif any(button in object_name for button in BUTTONS):
             handle_session_messages(message)
+        else:
+            return False
 
         self.handle_receive_event()
 

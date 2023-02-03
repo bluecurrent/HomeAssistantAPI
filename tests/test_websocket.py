@@ -356,6 +356,11 @@ async def test_message_handler(mocker: MockerFixture):
     mocker.patch.object(Websocket, '_recv', return_value=message)
     assert await websocket._message_handler() == True
 
+    # Ignore status
+    message = {"object": "STATUS"}
+    mocker.patch.object(Websocket, '_recv', return_value=message)
+    assert await websocket._message_handler() == False
+
     # RECEIVED without error
     message = {'object': "RECEIVED_START_SESSION", 'error': ''}
     mocker.patch.object(Websocket, '_recv', return_value=message)
