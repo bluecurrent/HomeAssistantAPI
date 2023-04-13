@@ -18,7 +18,7 @@ from .utils import (
     get_exception
 )
 
-URL = "wss://bo.bluecurrent.nl/haserver"
+URL = "wss://motown.bluecurrent.nl/haserver"
 BUTTONS = ("START_SESSION", "STOP_SESSION", "SOFT_RESET", "REBOOT")
 
 class Websocket:
