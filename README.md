@@ -17,7 +17,7 @@ The library is an asyncio-driven library that interfaces with the Websocket API 
 ### Installation
 
 ```python
-pip install bluecurrent_api
+pip install bluecurrent-api
 ```
 
 ### Api token

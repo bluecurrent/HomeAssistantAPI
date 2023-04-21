@@ -219,7 +219,19 @@ def test_handle_grid():
             'grid_actual_p1': 12,
             'grid_actual_p2': 14,
             'grid_actual_p3': 15,
-        }
+        },
+        "object": 'GRID_STATUS'
+    }
+
+    handle_grid(message)
+    assert message["data"]["grid_avg_current"] == 13.7
+    assert message["data"]["grid_max_current"] == 15
+
+    message = {
+        'grid_actual_p1': 12,
+        'grid_actual_p2': 14,
+        'grid_actual_p3': 15,
+        "object": 'GRID_CURRENT'
     }
 
     handle_grid(message)
