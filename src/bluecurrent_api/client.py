@@ -63,9 +63,10 @@ class Client:
         request = self._create_request("GET_GRID_STATUS", evse_id)
         await self.websocket.send_request(request)
 
-    async def set_public_charging(self, evse_id: str, value: bool):
+    async def set_linked_charge_cards_only(self, evse_id: str, value: bool):
         """Set public_charging of a charge point to a value."""
-        request = self._create_request("SET_PUBLIC_CHARGING", evse_id, value)
+        request = self._create_request(
+            "SET_PUBLIC_CHARGING", evse_id, not value)
         await self.websocket.send_request(request)
 
     async def set_plug_and_charge(self, evse_id: str, value: bool):
@@ -73,10 +74,10 @@ class Client:
         request = self._create_request("SET_PLUG_AND_CHARGE", evse_id, value)
         await self.websocket.send_request(request)
 
-    async def set_operative(self, evse_id: str, value: bool):
+    async def block(self, evse_id: str, value: bool):
         """Set available of a charge point to a value."""
         command = "SET_OPERATIVE"
-        if value is False:
+        if value is True:
             command = "SET_INOPERATIVE"
         request = self._create_request(command, evse_id)
         await self.websocket.send_request(request)

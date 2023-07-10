@@ -123,7 +123,7 @@ class Websocket:
         self.receiver_is_coroutine = asyncio.iscoroutinefunction(receiver)
 
         # Needed for receiving updates
-        await self._send({"command": "HELLO", "Authorization": self.auth_token})
+        await self._send({"command": "HELLO", "Authorization": self.auth_token, "header": "homeassistant"})
 
         while True:
             stop = await self._message_handler()

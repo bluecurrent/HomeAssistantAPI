@@ -13,8 +13,6 @@ ERRORS = {
     42: RequestLimitReached("Request limit reached")
 }
 
-SETTINGS = ['plug_and_charge', 'public_charging']
-
 SMART_CHARGING = set()
 
 
@@ -26,9 +24,9 @@ def calculate_average_usage_from_phases(phases: tuple):
     return 0
 
 
-def calculate_total_kw(current: tuple, v_avg):
+def calculate_total_kw(c_avg, v_avg):
     """Calculate the total kW."""
-    return round((sum(current) * v_avg / 1000), 2)
+    return round((c_avg * v_avg * 1.732 / 1000), 2)
 
 
 def create_datetime(timestamp: str):
@@ -114,8 +112,7 @@ def handle_status(message: dict):
 
     set_current_left(message, c_avg)
 
-    message["data"]["total_kw"] = calculate_total_kw((
-        current1, current2, current3), v_avg)
+    message["data"]["total_kw"] = calculate_total_kw(c_avg, v_avg)
 
     vehicle_status_key = message["data"]["vehicle_status"]
     message["data"]["vehicle_status"] = get_vehicle_status(vehicle_status_key)
@@ -135,8 +132,9 @@ def handle_status(message: dict):
 
 def handle_settings(message: dict):
     """Transform settings object"""
-    for key in SETTINGS:
-        message["data"][key] = message["data"][key]["value"]
+
+    message["data"]['plug_and_charge'] = message["data"]['plug_and_charge']["value"]
+    message["data"]['linked_charge_cards_only'] = not message["data"]['public_charging']["value"]
 
     set_smart_charging(
         message['data']['evse_id'], message["data"]["smart_charging"])
@@ -163,8 +161,11 @@ def handle_grid(message: dict):
 def handle_setting_change(message: dict):
     """Change result to a boolean."""
     message["result"] = "true" in message["result"]["setting"]
-    message["object"] = message["object"].replace("STATUS_SET_", "")
 
+    if message["object"] == 'STATUS_SET_PUBLIC_CHARGING':
+        message["object"] = 'LINKED_CHARGE_CARDS_ONLY'
+    else:
+        message["object"] = message["object"].replace("STATUS_SET_", "")
 
 def handle_session_messages(message: dict):
     """handle session messages."""

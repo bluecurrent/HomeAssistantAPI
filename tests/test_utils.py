@@ -36,8 +36,8 @@ def test_calculate_total_from_phases():
 
 
 def test_calculate_total_kW():
-    total = calculate_total_kw((14, 12, 15), 230)
-    assert total == 9.43
+    total = calculate_total_kw(14, 230)
+    assert total == 5.58
 
 
 def test_set_to_smart_charging():
@@ -136,7 +136,7 @@ def test_handle_status():
 
     assert message["data"]["avg_voltage"] == 220.0
     assert message["data"]["avg_current"] == 8.0
-    assert message["data"]["total_kw"] == 5.28
+    assert message["data"]["total_kw"] == 3.05
     assert message["data"]["start_datetime"] == TZ.localize(datetime(
         2021, 11, 18, 14, 12, 23))
     assert message["data"]["stop_datetime"] == TZ.localize(datetime(
@@ -164,7 +164,7 @@ def test_handle_settings():
     }
     handle_settings(message)
     assert message['data']['plug_and_charge'] == False
-    assert message['data']['public_charging'] == True
+    assert message['data']['linked_charge_cards_only'] == False
     assert SMART_CHARGING == set()
 
     message = {
@@ -242,18 +242,18 @@ def test_handle_grid():
 
 
 def test_handle_setting_change():
-    message = {'object': 'STATUS_SET_PUBLIC_CHARGING',
+    message = {'object': 'STATUS_SET_PLUG_AND_CHARGE',
                'result': {'setting': 'set true'}}
 
     handle_setting_change(message)
-    assert message == {'object': 'PUBLIC_CHARGING',
+    assert message == {'object': 'PLUG_AND_CHARGE',
                        'result': True}
 
     message = {'object': 'STATUS_SET_PUBLIC_CHARGING',
                'result': {'setting': 'set false'}}
 
     handle_setting_change(message)
-    assert message == {'object': 'PUBLIC_CHARGING',
+    assert message == {'object': 'LINKED_CHARGE_CARDS_ONLY',
                        'result': False}
 
 
