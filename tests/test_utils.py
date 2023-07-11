@@ -191,7 +191,7 @@ def test_get_exception():
     }
 
     error = get_exception(message)
-    assert isinstance(error, WebsocketException)
+    assert isinstance(error, WebsocketError)
     assert str(error) == "Unknown command"
 
     message = {
@@ -200,7 +200,7 @@ def test_get_exception():
         "message": "Test error"
     }
     error = get_exception(message)
-    assert isinstance(error, WebsocketException)
+    assert isinstance(error, WebsocketError)
     assert str(error) == "Test error"
 
     message = {
