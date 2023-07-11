@@ -6,6 +6,7 @@ maxdepth: 1
 glob:
 ---
 documentation/class-diagram
+documentation/api-package-example
 documentation/api-package-documentation
 documentation/integration-documentation
 documentation/platforms-documentation
