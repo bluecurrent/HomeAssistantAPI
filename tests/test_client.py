@@ -49,19 +49,19 @@ async def test_requests(mocker: MockerFixture):
     test_send_request.assert_called_with(
         {'command': 'GET_GRID_STATUS', 'evse_id': '101'})
 
-    await client.set_public_charging('101', True)
+    await client.set_linked_charge_cards_only('101', True)
     test_send_request.assert_called_with(
-        {'command': 'SET_PUBLIC_CHARGING', 'evse_id': '101', 'value': True})
+        {'command': 'SET_PUBLIC_CHARGING', 'evse_id': '101', 'value': False})
 
     await client.set_plug_and_charge('101', True)
     test_send_request.assert_called_with(
         {'command': 'SET_PLUG_AND_CHARGE', 'evse_id': '101', 'value': True})
 
-    await client.set_operative('101', True)
+    await client.block('101', False)
     test_send_request.assert_called_with(
         {'command': 'SET_OPERATIVE', 'evse_id': '101'})
 
-    await client.set_operative('101', False)
+    await client.block('101', True)
     test_send_request.assert_called_with(
         {'command': 'SET_INOPERATIVE', 'evse_id': '101'})
 

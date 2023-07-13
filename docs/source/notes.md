@@ -24,7 +24,7 @@ This does mean that the start_datetime value is not accurate but most of the tim
 
 ## Error handling
 
-If something goes wrong server side an `ERROR` object is sent and an `WebsocketException` is raised in the api package. Setting and Action request can also have an error in their `RECEIVED_` or `STATUS_` messages, but this is sent to HA and logged.
+If something goes wrong server side an `ERROR` object is sent and an `WebsocketError` is raised in the api package. Setting and Action request can also have an error in their `RECEIVED_` or `STATUS_` messages, but this is sent to HA and logged.
 
 ## API and AUTH token
 

@@ -5,7 +5,7 @@ class BlueCurrentException(Exception):
     """Define a base error."""
 
 
-class WebsocketException(BlueCurrentException):
+class WebsocketError(BlueCurrentException):
     """Define an error related to the websocket connection."""
 
 

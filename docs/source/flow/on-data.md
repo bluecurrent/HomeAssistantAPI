@@ -17,7 +17,7 @@ If the object name is `GRID_STATUS` the data is stored in `grid` and the `grid_u
 
 ## SETTINGS
 
-If the object name is `PUBLIC_CHARGING` or `PLUG_AND_CHARGE` the new state gets logged, updated in `charge_points` and the `value_update` signal is dispatched with the evse_id.
+If the object name is `LINKED_CHARGE_CARDS_ONLY` or `PLUG_AND_CHARGE` the new state gets logged, updated in `charge_points` and the `value_update` signal is dispatched with the evse_id.
 
 ## SERVICES
 

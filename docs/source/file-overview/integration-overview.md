@@ -3,21 +3,19 @@
 ```
 homeassistant/components/bluecurrent
  ┣ translations
- ┃ ┣ en.json
+ ┃ ┗ en.json
  ┃ ┣ nl.json
- ┃ ┣ sensor.en.json
- ┃ ┗ sensor.nl.json
  ┣ __init__.py
  ┣ button.py
  ┣ config_flow.py
  ┣ const.py
  ┣ device_condition.py
  ┣ device_trigger.py
+ ┣ entity.py
  ┣ manifest.json
  ┣ sensor.py
  ┣ services.yaml
  ┣ strings.json
- ┣ strings.sensor.json
  ┗ switch.py
 
 tests/components/bluecurrent
@@ -38,10 +36,6 @@ tests/components/bluecurrent
 Contains the strings for the config_flow that the user sees when adding the integration to Home Assistant.
 `[%key:common]` means that it uses the string from `homeassistant/strings.json`. It also has the strings for the device_automations.
 
-### strings.sensor.json
-
-Contains the strings for the activity and vehicle status sensors.
-
 ### translations
 
 Contains the strings for all languages.
@@ -56,19 +50,19 @@ Defines all services.
 
 ### const.py
 
-Contains all the constants of the integration. All entities are defined here.
+Contains constants used in the integration.
 
 ### sensor.py
 
-Contains the setup and class for sensor platform.
+Defines all sensors and contains the setup and class for sensor platform.
 
 ### switch.py
 
-Contains the setup and class for the switch platform.
+Defines all switches and contains the setup and class for the switch platform.
 
 ### button
 
-Contains the setup and class for the button platform.
+Defines all buttons and contains the setup and class for the button platform.
 
 ### config_flow.py
 
@@ -76,7 +70,11 @@ Defines the setup flow of the integration. Contains two steps. One for the api t
 
 ### \_\_init\_\_.py
 
-Contains the setup method, the Connector Class that handles all incoming data from the api and the BlueCurrentEntity class that all the platforms inherit. It also adds device info to the entities and connects the dispatcher to listen for data updates.
+Contains the setup method, the Connector Class that handles all incoming data from the api.
+
+### entity.py
+
+Contains the BlueCurrentEntity class that all the platforms inherit. It also adds device info to the entities and connects the dispatcher to listen for data updates.
 
 ## Tests
 

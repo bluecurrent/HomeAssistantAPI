@@ -13,7 +13,7 @@
             'name': '',
             'model_type': 'U:MOVE22',
             'chargepoint_type': 'UMOVE',
-            'public_charging': False,
+            'linked_charge_cards_only': False,
             'default_card': {
                 'uid': 'BCU-APP',
                 'id': 'BCU-APP',
@@ -84,7 +84,7 @@
     "data": {
         "evse_id": "BCU102728",
         "plug_and_charge": False,
-        "public_charging": False,
+        "linked_charge_cards_only": False,
         "default_card": {
             "uid": "BCU-APP",
             "id": "BCU-APP",
@@ -124,11 +124,11 @@
 
 ## Settings
 
-### await set_public_charging(evse_id, value)
+### await set_linked_charge_cards_only(evse_id, value)
 
 ```python
 {
-    "object": "PUBLIC_CHARGING",
+    "object": "LINKED_CHARGE_CARDS_ONLY",
     "success": True,
     "flow_id": "",
     "evse_id": "BCU102728",
@@ -150,7 +150,7 @@
 }
 ```
 
-### await set_operative(evse_id, value)
+### await block(evse_id, value)
 
 - If the value changes, CH_STATUS is sent.
 
