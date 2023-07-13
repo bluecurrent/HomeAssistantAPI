@@ -1,13 +1,12 @@
 # Platforms
 
-## BlueCurrentSensor(BlueCurrentEntity, SensorEntity)
+## ChargePointSensor(BlueCurrentEntity, SensorEntity)
 
 \_attr_should_poll = False
 
-### \_\_init\_\_(connector: Connector, sensor: SensorEntityDescription, evse_id: str | None = None)
+### \_\_init\_\_(connector: Connector, sensor: SensorEntityDescription, evse_id: str)
 
 - Passes the connector and the evse_id to BlueCurrentEntity.
-- Sets the \_key, entity_description, unique_id and entity_id, and adds the evse_id to the last 2 if the entity is part of a charge point.
 
 ### update_from_latest_data()
 
@@ -17,6 +16,22 @@
 - Else set the entity to unavailable except when the entity is a timestamp entity.
 
 See [](../notes.md)
+
+## GridSensor(SensorEntity)
+
+\_attr_should_poll = False
+
+### \_\_init\_\_(connector: Connector, sensor: SensorEntityDescription)
+
+- Initializes a grid sensor.
+
+### async_added_to_hass(self)
+- Connects the dispatcher to a signal to call `update` when triggered.
+Update method calls `update_from_latest_data()` and writes the state to HA.
+
+### update_from_latest_data()
+- Updates the sensor value.
+- If the value is None, it sets the sensor to unavailable.
 
 ## ChargePointButton(BlueCurrentEntity, ButtonEntity):
 

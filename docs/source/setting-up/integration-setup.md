@@ -61,3 +61,12 @@ The important ones are:
 ## Rebasing
 
 Follow [catching up with reality](https://developers.home-assistant.io/docs/development_catching_up)
+
+
+## ha-bluecurrent
+
+A new repo called ha-bluecurrent was added because the pr to the official Home Assistant repo is still in the review phase.
+
+With this repo the integration could be added to Home Assistant with [HACS](https://hacs.xyz/).
+
+Right now the [url](https://github.com/bluecurrent/ha-bluecurrent) of the repo can be added as a custom integration to HACS. In the future it could also be added to hacs itself.

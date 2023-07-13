@@ -38,7 +38,7 @@ mocker.patch('src.bluecurrent_api.websocket.Websocket._connect')
 ### Checking if exception is raised
 
 ```python
-with pytest.raises(WebsocketException):
+with pytest.raises(WebsockerError):
         await websocket.get_charge_cards()
 ```
 
@@ -53,7 +53,7 @@ mock_send = mocker.patch.object(Websocket, '_send')
 
 ### AsyncMock
 
-When a test needs to check if a async function is called an AsyncMock is used.
+When a test needs to check if an async function is called an AsyncMock is used.
 
 ```python
 test_close = mocker.patch(

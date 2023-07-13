@@ -48,7 +48,7 @@ Routes the received message to the correct function based on the object.
 
 - Requests the status and settings of the charge point with the given evse_id.
 
-### add_charge_point(self, evse_id: str, model: str)
+### add_charge_point(self, evse_id: str, model: str, name: str)
 
 - Adds the charge point to `charge_points`
 
@@ -58,11 +58,13 @@ Routes the received message to the correct function based on the object.
 
 #### handle_activity(data: dict)
 
-- The state of the availability / operative switch is not returned with `CH_STATUS`, But the state is related to the state of the `activity` sensor. So this function sets the state of `availability` based on the state of `activity`.
+- The state of the block / operative switch is not returned with `CH_STATUS`, But the state is related to the state of the `activity` sensor. So this function sets the state of `block` switch based on the state of `activity`.
 
-### dispatch_signal(self, evse_id: str | None = None)
+### dispatch_value_update_signal(self, evse_id: str)
+- Dispatches a `value_update`
 
-- Dispatches a `value_update` or `grid_update` signal based on if a `evse_id` is given.
+### dispatch_grid_update_signal(self) -> None:
+- Dispatches a `grid_update`
 
 ### start_loop()
 
@@ -81,7 +83,7 @@ The reason for the one second delay is that the connection closes quite frequent
 
 ### disconnect()
 
-- Disconnects with the API, if the connection was already closed and a `WebsocketException` is thrown, ignore it.
+- Disconnects with the API, if the connection was already closed and a `WebsocketError` is thrown, ignore it.
 
 ## BlueCurrentEntity(Entity)
 
@@ -89,11 +91,10 @@ The reason for the one second delay is that the connection closes quite frequent
 
 - Stores connector
 - If evse_id is given, device info is added to entity.
-- Is_grid boolean is set.
 
 ### async_added_to_hass()
 
-- Connects the dispatcher to a signal based on `is_grid` to call `update` when triggered.
+- Connects the dispatcher to a signal to call `update` when triggered.
 
 Update method calls `update_from_latest_data()` and writes the state to HA.
 
