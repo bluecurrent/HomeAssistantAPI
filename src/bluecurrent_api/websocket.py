@@ -70,7 +70,7 @@ class Websocket:
         if not res.get("success"):
             raise InvalidApiToken
         self.auth_token = "Token " + res["token"]
-        return True
+        return res["customer_id"]
 
     async def get_email(self) -> str:
         """Return the user email"""

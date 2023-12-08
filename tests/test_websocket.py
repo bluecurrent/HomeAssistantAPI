@@ -35,10 +35,10 @@ async def test_validate_token(mocker: MockerFixture):
     mocker.patch(
         'src.bluecurrent_api.websocket.Websocket._recv',
         return_value={"object": "STATUS_API_TOKEN",
-                      "success": True, "token": "abc"}
+                      "success": True, "token": "abc", "customer_id": '123'}
     )
     result = await websocket.validate_api_token(api_token)
-    assert result == True
+    assert result == '123'
     assert websocket.auth_token == "Token abc"
 
     mocker.patch(
