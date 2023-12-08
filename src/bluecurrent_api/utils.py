@@ -166,6 +166,7 @@ def handle_setting_change(message: dict[str, Any]) -> None:
 
     if message["object"] == "STATUS_SET_PUBLIC_CHARGING":
         message["object"] = "LINKED_CHARGE_CARDS_ONLY"
+        message["result"] = not message["result"]
     else:
         message["object"] = message["object"].replace("STATUS_SET_", "")
 

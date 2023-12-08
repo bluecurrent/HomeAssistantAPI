@@ -254,7 +254,7 @@ def test_handle_setting_change():
 
     handle_setting_change(message)
     assert message == {'object': 'LINKED_CHARGE_CARDS_ONLY',
-                       'result': False}
+                       'result': True}
 
 
 def test_handle_session_messages():
