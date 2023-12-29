@@ -57,7 +57,7 @@ class Websocket:
         self.receive_event.clear()
         return self.receive_event
 
-    async def validate_api_token(self, api_token: str) -> bool:
+    async def validate_api_token(self, api_token: str) -> str:
         """Validate an api token."""
         await self._connect()
         await self._send({"command": "VALIDATE_API_TOKEN", "token": api_token})
@@ -70,7 +70,7 @@ class Websocket:
         if not res.get("success"):
             raise InvalidApiToken
         self.auth_token = "Token " + res["token"]
-        return res["customer_id"]
+        return cast(str, res["customer_id"])
 
     async def get_email(self) -> str:
         """Return the user email"""

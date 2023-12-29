@@ -21,7 +21,7 @@ class Client:
         """Wait for next response."""
         await self.websocket.get_receiver_event().wait()
 
-    async def validate_api_token(self, api_token: str) -> bool:
+    async def validate_api_token(self, api_token: str) -> str:
         """Validate an api_token."""
         return await self.websocket.validate_api_token(api_token)
 
