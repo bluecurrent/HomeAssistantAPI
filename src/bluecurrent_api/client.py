@@ -29,10 +29,6 @@ class Client:
         """Get user email."""
         return await self.websocket.get_email()
 
-    async def get_charge_cards(self) -> list[dict[str, Any]]:
-        """Get the charge cards."""
-        return await self.websocket.get_charge_cards()
-
     async def connect(self, api_token: str) -> None:
         """Connect to the websocket."""
         await self.websocket.connect(api_token)
@@ -44,6 +40,10 @@ class Client:
     async def disconnect(self) -> None:
         """Disconnect the websocket."""
         await self.websocket.disconnect()
+
+    async def get_charge_cards(self) -> None:
+        """Get the charge cards."""
+        await self.websocket.send_request({"command": "GET_CHARGE_CARDS"})
 
     async def get_charge_points(self) -> None:
         """Get the charge points."""

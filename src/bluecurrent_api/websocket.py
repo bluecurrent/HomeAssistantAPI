@@ -15,7 +15,6 @@ from websockets.exceptions import (
 from .exceptions import (
     AlreadyConnected,
     InvalidApiToken,
-    NoCardsFound,
     RequestLimitReached,
     WebsocketError,
 )
@@ -37,15 +36,14 @@ BUTTONS = ("START_SESSION", "STOP_SESSION", "SOFT_RESET", "REBOOT")
 class Websocket:
     """Class for handling requests and responses for the BlueCurrent Websocket Api."""
 
-    _connection: Optional[WebSocketClientProtocol] = None
-    _has_connection: bool = False
-    auth_token: Optional[str] = None
-    receiver: Callable
-    receive_event: Optional[Event] = None
-    receiver_is_coroutine: bool
-
     def __init__(self) -> None:
-        pass
+        self.receiver_is_set = Event()
+        self._connection: Optional[WebSocketClientProtocol] = None
+        self._has_connection: bool = False
+        self.auth_token: Optional[str] = None
+        self.receiver: Optional[Callable] = None
+        self.receive_event: Optional[Event] = None
+        self.receiver_is_coroutine: bool = False
 
     def get_receiver_event(self) -> Event:
         """Return cleared receive_event when connected."""
@@ -77,7 +75,7 @@ class Websocket:
         if not self.auth_token:
             raise WebsocketError("token not set")
         await self._connect()
-        await self.send_request({"command": "GET_ACCOUNT"})
+        await self.send_request({"command": "GET_ACCOUNT"}, True)
         res = await self._recv()
         await self.disconnect()
 
@@ -87,23 +85,6 @@ class Websocket:
         if not res.get("login"):
             raise WebsocketError("No email found")
         return cast(str, res["login"])
-
-    async def get_charge_cards(self) -> list[dict[str, Any]]:
-        """Get the charge cards."""
-        if not self.auth_token:
-            raise WebsocketError("token not set")
-        await self._connect()
-        await self.send_request({"command": "GET_CHARGE_CARDS"})
-        res: dict[str, Any] = await self._recv()
-        await self.disconnect()
-        cards = cast(list[dict[str, Any]], res.get("cards"))
-
-        if res["object"] == "ERROR":
-            raise get_exception(res)
-
-        if len(cards) == 0:
-            raise NoCardsFound
-        return cards
 
     async def connect(self, api_token: str) -> None:
         """Validate api_token and connect to the websocket."""
@@ -121,8 +102,12 @@ class Websocket:
             self.check_for_server_reject(err)
             raise WebsocketError("Cannot connect to the websocket.") from err
 
-    async def send_request(self, request: dict[str, Any]) -> None:
+    async def send_request(self, request: dict[str, Any], is_standalone=False) -> None:
         """Add authorization and send request."""
+
+        if not is_standalone:
+            await self.receiver_is_set.wait()
+
         if not self.auth_token:
             raise WebsocketError("Token not set")
 
@@ -134,7 +119,7 @@ class Websocket:
 
         self.receiver = receiver
         self.receiver_is_coroutine = asyncio.iscoroutinefunction(receiver)
-
+        self.receiver_is_set.set()
         # Needed for receiving updates
         await self._send(
             {
@@ -183,6 +168,8 @@ class Websocket:
             handle_status(message)
         elif object_name == "CH_SETTINGS":
             handle_settings(message)
+        elif object_name == "CHARGE_CARDS":
+            pass
         elif "GRID" in object_name:
             handle_grid(message)
         elif object_name in (
