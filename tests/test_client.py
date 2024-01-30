@@ -1,11 +1,11 @@
-from src.bluecurrent_api.client import Client
+from datetime import timedelta
+from src.bluecurrent_api.client import Client, RequestLimitReached, WebsocketError
 import pytest
 from pytest_mock import MockerFixture
 
 
 def test_create_request():
     client = Client()
-    client.websocket.auth_token = "123"
 
     # command
     request = client._create_request("GET_CHARGE_POINTS")
@@ -34,7 +34,6 @@ def test_create_request():
 
 @pytest.mark.asyncio
 async def test_requests(mocker: MockerFixture):
-
     test_send_request = mocker.patch(
         "src.bluecurrent_api.client.Websocket.send_request"
     )
@@ -90,3 +89,53 @@ async def test_requests(mocker: MockerFixture):
 
     await client.stop_session("101")
     test_send_request.assert_called_with({"command": "STOP_SESSION", "evse_id": "101"})
+
+
+@pytest.mark.asyncio
+async def test_on_open(mocker: MockerFixture):
+    test_send_request = mocker.patch(
+        "src.bluecurrent_api.client.Websocket.send_request"
+    )
+    client = Client()
+
+    await client._on_open()
+    test_send_request.assert_has_calls(
+        [
+            mocker.call(
+                {
+                    "command": "HELLO",
+                    "header": "homeassistant",
+                }
+            ),
+            mocker.call({"command": "GET_CHARGE_CARDS"}),
+            mocker.call({"command": "GET_CHARGE_POINTS"}),
+        ]
+    )
+
+
+@pytest.mark.asyncio
+async def test_connect(mocker: MockerFixture):
+    test_get_next_reset_delta = mocker.patch(
+        "src.bluecurrent_api.client.get_next_reset_delta",
+        return_value=timedelta(seconds=0),
+    )
+    mocker.patch("src.bluecurrent_api.client.DELAY", 0)
+    test_start = mocker.patch(
+        "src.bluecurrent_api.client.Websocket.start",
+        side_effect=[WebsocketError, None, RequestLimitReached, None],
+    )
+
+    client = Client()
+
+    test_on_disconnect = mocker.AsyncMock()
+
+    await client.connect("123", mocker.Mock, test_on_disconnect)
+
+    assert test_on_disconnect.call_count == 1
+    assert test_start.call_count == 2
+
+    await client.connect("123", mocker.Mock, test_on_disconnect)
+
+    test_get_next_reset_delta.assert_called_once()
+    assert test_on_disconnect.call_count == 2
+    assert test_start.call_count == 4

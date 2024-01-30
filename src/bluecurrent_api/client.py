@@ -1,9 +1,16 @@
 """Define an object to interact with the BlueCurrent websocket api."""
-from datetime import timedelta
-from typing import Any, Callable, Optional
+import asyncio
+import logging
+from typing import Any, Optional
+from collections.abc import Callable, Coroutine
+
+from .exceptions import RequestLimitReached, WebsocketError
 
 from .utils import get_next_reset_delta
 from .websocket import Websocket
+
+LOGGER = logging.getLogger(__package__)
+DELAY = 10
 
 
 class Client:
@@ -13,29 +20,55 @@ class Client:
         """Initialize the Client."""
         self.websocket = Websocket()
 
-    def get_next_reset_delta(self) -> timedelta:
-        """Returns the next reset delta"""
-        return get_next_reset_delta()
+    def is_connected(self) -> bool:
+        """Return the connection status"""
+        return self.websocket.connected.is_set()
 
-    async def wait_for_response(self) -> None:
+    async def wait_for_charge_points(self) -> None:
         """Wait for next response."""
-        await self.websocket.get_receiver_event().wait()
+        await self.websocket.received_charge_points.wait()
 
     async def validate_api_token(self, api_token: str) -> str:
-        """Validate an api_token."""
+        """Validate an api_token and return customer id."""
         return await self.websocket.validate_api_token(api_token)
 
     async def get_email(self) -> str:
         """Get user email."""
         return await self.websocket.get_email()
 
-    async def connect(self, api_token: str) -> None:
-        """Connect to the websocket."""
-        await self.websocket.connect(api_token)
+    async def _on_open(self) -> None:
+        """Send requests when connected."""
+        await self.websocket.send_request(
+            {
+                "command": "HELLO",
+                "header": "homeassistant",
+            }
+        )
+        await self.get_charge_cards()
+        await self.get_charge_points()
 
-    async def start_loop(self, receiver: Callable[[dict[str, Any]], None]) -> None:
-        """Start the receive loop."""
-        await self.websocket.loop(receiver)
+    async def connect(
+        self,
+        token: str,
+        receiver: Callable[[dict[str, Any]], Coroutine[Any, Any, None]],
+        on_disconnect: Callable[[], Coroutine[Any, Any, None]],
+    ) -> None:
+        """Connect to the websocket."""
+        try:
+            await self.websocket.start(token, receiver, self._on_open)
+        except RequestLimitReached:
+            LOGGER.warning(
+                "Request limit reached. reconnecting at 00:00 (Europe/Amsterdam)."
+            )
+            await on_disconnect()
+            delay = get_next_reset_delta()
+            await asyncio.sleep(delay.seconds)
+            await self.connect(token, receiver, on_disconnect)
+        except WebsocketError:
+            LOGGER.debug("Disconnected, retrying in background.")
+            await on_disconnect()
+            await asyncio.sleep(DELAY)
+            await self.connect(token, receiver, on_disconnect)
 
     async def disconnect(self) -> None:
         """Disconnect the websocket."""

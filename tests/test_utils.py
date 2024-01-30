@@ -74,7 +74,6 @@ def test_get_vehicle_status():
 
 
 def test_create_datetime():
-
     TZ = pytz.timezone("Europe/Amsterdam")
 
     test_time = TZ.localize(datetime(2001, 1, 1, 0, 0, 0))
@@ -263,7 +262,6 @@ def test_handle_setting_change():
 
 
 def test_handle_session_messages():
-
     message = {
         "object": "RECEIVED_STOP_SESSION",
         "success": False,
