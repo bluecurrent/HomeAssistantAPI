@@ -71,13 +71,10 @@ async def test__send_recv_single_message(mocker: MockerFixture):
 
     assert await websocket._send_recv_single_message({}) == {"a": 1}
 
-    mock_check_for_server_reject = mocker.patch(
-        "src.bluecurrent_api.websocket.Websocket.check_for_server_reject"
-    )
     err = WebSocketException()
     mock_ws.recv.side_effect = err
-    await websocket._send_recv_single_message({})
-    mock_check_for_server_reject.assert_called_once_with(err)
+    with pytest.raises(WebsocketError): 
+        await websocket._send_recv_single_message({})
 
 
 @pytest.mark.asyncio

@@ -84,9 +84,9 @@ class Websocket:
             async with connect(URL) as websocket:
                 await websocket.send(message)
                 res = await websocket.recv()
-                return cast(dict, json.loads(res))
         except WebSocketException as err:
             self.check_for_server_reject(err)
+        return cast(dict, json.loads(res))
 
     async def validate_api_token(self, api_token: str) -> str:
         """Validate an api token."""
