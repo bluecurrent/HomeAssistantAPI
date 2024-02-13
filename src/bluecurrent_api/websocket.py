@@ -1,6 +1,6 @@
 """Define an object that handles the connection to the Websocket"""
 import json
-from asyncio import Event
+from asyncio import Event, timeout
 import logging
 from typing import Any, cast
 from collections.abc import Callable, Coroutine
@@ -54,7 +54,7 @@ class Websocket:
         try:
             await self._loop(receiver, on_open)
         except WebSocketException as err:
-            self.check_for_server_reject(err)
+            self.raise_correct_exception(err)
 
     async def _loop(
         self,
@@ -75,7 +75,7 @@ class Websocket:
                 self.connected.clear()
                 self.received_charge_points.set()
                 self.received_charge_points.clear()
-                self.check_for_server_reject(err)
+                self.raise_correct_exception(err)
 
     async def _send_recv_single_message(self, message_object: dict) -> dict:
         """Send and recv single message."""
@@ -83,10 +83,14 @@ class Websocket:
         try:
             async with connect(URL) as websocket:
                 await websocket.send(message)
-                res = await websocket.recv()
+                async with timeout(5):
+                    res = await websocket.recv()
+                    return cast(dict, json.loads(res))
         except WebSocketException as err:
-            self.check_for_server_reject(err)
-        return cast(dict, json.loads(res))
+            self.raise_correct_exception(err)
+            # unreachable since raise_correct_exception will always return an error
+            # added for type hints.
+            return {}
 
     async def validate_api_token(self, api_token: str) -> str:
         """Validate an api token."""
@@ -197,7 +201,7 @@ class Websocket:
             raise WebsocketError("Connection is already closed.")
         await self.conn.close()
 
-    def check_for_server_reject(self, err: Exception) -> None:
+    def raise_correct_exception(self, err: Exception) -> None:
         """Check if the client was rejected by the server"""
 
         if isinstance(err, InvalidStatusCode):

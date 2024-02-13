@@ -30,14 +30,14 @@ async def test_start(mocker: MockerFixture):
 
     mock__loop.assert_called_once_with(mock_receiver, mock_on_open)
 
-    mock_check_for_server_reject = mocker.patch(
-        "src.bluecurrent_api.websocket.Websocket.check_for_server_reject"
+    mock_raise_correct_exception = mocker.patch(
+        "src.bluecurrent_api.websocket.Websocket.raise_correct_exception"
     )
     err = WebSocketException()
     mock__loop.side_effect = err
 
     await websocket.start("123", mock_receiver, mock_on_open)
-    mock_check_for_server_reject.assert_called_once_with(err)
+    mock_raise_correct_exception.assert_called_once_with(err)
 
 
 @pytest.mark.asyncio
@@ -45,8 +45,8 @@ async def test__loop(mocker: MockerFixture):
     websocket = Websocket()
     mock_connect = MagicMock(spec=Connect)
     mocker.patch("src.bluecurrent_api.websocket.connect", return_value=mock_connect)
-    mock_check_for_server_reject = mocker.patch(
-        "src.bluecurrent_api.websocket.Websocket.check_for_server_reject"
+    mock_raise_correct_exception = mocker.patch(
+        "src.bluecurrent_api.websocket.Websocket.raise_correct_exception"
     )
 
     mock_receiver = mocker.AsyncMock()
@@ -57,7 +57,7 @@ async def test__loop(mocker: MockerFixture):
     assert websocket.conn is None
     assert websocket.connected.is_set() is False
     assert websocket.received_charge_points.is_set() is False
-    mock_check_for_server_reject.assert_called_once()
+    mock_raise_correct_exception.assert_called_once()
 
 
 @pytest.mark.asyncio
@@ -308,25 +308,25 @@ async def test_disconnect(mocker: MockerFixture):
     websocket.conn.close.assert_called_once()
 
 
-def test_check_for_server_reject():
+def test_raise_correct_exception():
     websocket = Websocket()
 
     with pytest.raises(RequestLimitReached):
-        websocket.check_for_server_reject(
+        websocket.raise_correct_exception(
             InvalidStatusCode(
                 403, {"x-websocket-reject-reason": "Request limit reached"}
             )
         )
 
     with pytest.raises(RequestLimitReached):
-        websocket.check_for_server_reject(
+        websocket.raise_correct_exception(
             ConnectionClosedError(Close(4001, "Request limit reached"), None, None)
         )
 
     with pytest.raises(AlreadyConnected):
-        websocket.check_for_server_reject(
+        websocket.raise_correct_exception(
             InvalidStatusCode(403, {"x-websocket-reject-reason": "Already connected"})
         )
 
     with pytest.raises(WebsocketError):
-        websocket.check_for_server_reject(Exception)
+        websocket.raise_correct_exception(Exception)
