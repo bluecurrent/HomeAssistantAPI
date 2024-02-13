@@ -1,12 +1,12 @@
 """Define an object that handles the connection to the Websocket"""
-import asyncio
 import json
-from asyncio import Event
-from typing import Any, Callable, Optional, cast
+from asyncio import Event, timeout
+import logging
+from typing import Any, cast
+from collections.abc import Callable, Coroutine
 
-from websockets.client import WebSocketClientProtocol, connect
+from websockets.client import connect, WebSocketClientProtocol
 from websockets.exceptions import (
-    ConnectionClosed,
     ConnectionClosedError,
     InvalidStatusCode,
     WebSocketException,
@@ -15,12 +15,10 @@ from websockets.exceptions import (
 from .exceptions import (
     AlreadyConnected,
     InvalidApiToken,
-    NoCardsFound,
     RequestLimitReached,
     WebsocketError,
 )
 from .utils import (
-    get_dummy_message,
     get_exception,
     handle_charge_points,
     handle_grid,
@@ -32,54 +30,92 @@ from .utils import (
 
 URL = "wss://motown.bluecurrent.nl/haserver"
 BUTTONS = ("START_SESSION", "STOP_SESSION", "SOFT_RESET", "REBOOT")
+LOGGER = logging.getLogger(__package__)
 
 
 class Websocket:
     """Class for handling requests and responses for the BlueCurrent Websocket Api."""
 
-    _connection: Optional[WebSocketClientProtocol] = None
-    _has_connection: bool = False
-    auth_token: Optional[str] = None
-    receiver: Callable
-    receive_event: Optional[Event] = None
-    receiver_is_coroutine: bool
-
     def __init__(self) -> None:
-        pass
+        self.conn: WebSocketClientProtocol | None = None
+        self.auth_token: str | None = None
+        self.connected = Event()
+        self.received_charge_points = Event()
 
-    def get_receiver_event(self) -> Event:
-        """Return cleared receive_event when connected."""
+    async def start(
+        self,
+        receiver: Callable[[dict[str, Any]], Coroutine[Any, Any, None]],
+        on_open: Callable[[], Coroutine[Any, Any, None]],
+    ) -> None:
+        """Opens the connection"""
 
-        self._check_connection()
-        if self.receive_event is None:
-            self.receive_event = Event()
+        if not self.auth_token:
+            raise WebsocketError("token not validated.")
 
-        self.receive_event.clear()
-        return self.receive_event
+        try:
+            await self._loop(receiver, on_open)
+        except WebSocketException as err:
+            self.raise_correct_exception(err)
 
-    async def validate_api_token(self, api_token: str) -> bool:
+    async def _loop(
+        self,
+        receiver: Callable[[dict[str, Any]], Coroutine[Any, Any, None]],
+        on_open: Callable[[], Coroutine[Any, Any, None]],
+    ) -> None:
+        """listens for incomming messages"""
+        async with connect(URL) as websocket:
+            try:
+                LOGGER.debug("connected")
+                self.conn = websocket
+                self.connected.set()
+                await on_open()
+                async for message in websocket:
+                    await self._message_handler(json.loads(message), receiver)
+            except WebSocketException as err:
+                self.conn = None
+                self.connected.clear()
+                self.received_charge_points.set()
+                self.received_charge_points.clear()
+                self.raise_correct_exception(err)
+
+    async def _send_recv_single_message(self, message_object: dict) -> dict:
+        """Send and recv single message."""
+        message = json.dumps(message_object)
+        try:
+            async with connect(URL) as websocket:
+                await websocket.send(message)
+                async with timeout(5):
+                    res = await websocket.recv()
+                    return cast(dict, json.loads(res))
+        except WebSocketException as err:
+            self.raise_correct_exception(err)
+            # unreachable since raise_correct_exception will always return an error
+            # added for type hints.
+            return {}
+
+    async def validate_api_token(self, api_token: str) -> str:
         """Validate an api token."""
-        await self._connect()
-        await self._send({"command": "VALIDATE_API_TOKEN", "token": api_token})
-        res = await self._recv()
-        await self.disconnect()
+        res = await self._send_recv_single_message(
+            {"command": "VALIDATE_API_TOKEN", "token": api_token}
+        )
 
         if res["object"] == "ERROR":
             raise get_exception(res)
 
         if not res.get("success"):
-            raise InvalidApiToken
+            raise InvalidApiToken()
+
         self.auth_token = "Token " + res["token"]
-        return res["customer_id"]
+        return cast(str, res["customer_id"])
 
     async def get_email(self) -> str:
         """Return the user email"""
         if not self.auth_token:
             raise WebsocketError("token not set")
-        await self._connect()
-        await self.send_request({"command": "GET_ACCOUNT"})
-        res = await self._recv()
-        await self.disconnect()
+
+        res = await self._send_recv_single_message(
+            {"command": "GET_ACCOUNT", "Authorization": self.auth_token}
+        )
 
         if res["object"] == "ERROR":
             raise get_exception(res)
@@ -88,80 +124,30 @@ class Websocket:
             raise WebsocketError("No email found")
         return cast(str, res["login"])
 
-    async def get_charge_cards(self) -> list[dict[str, Any]]:
-        """Get the charge cards."""
-        if not self.auth_token:
-            raise WebsocketError("token not set")
-        await self._connect()
-        await self.send_request({"command": "GET_CHARGE_CARDS"})
-        res: dict[str, Any] = await self._recv()
-        await self.disconnect()
-        cards = cast(list[dict[str, Any]], res.get("cards"))
-
-        if res["object"] == "ERROR":
-            raise get_exception(res)
-
-        if len(cards) == 0:
-            raise NoCardsFound
-        return cards
-
-    async def connect(self, api_token: str) -> None:
-        """Validate api_token and connect to the websocket."""
-        if self._has_connection:
-            raise WebsocketError("Connection already started.")
-        await self.validate_api_token(api_token)
-        await self._connect()
-
-    async def _connect(self) -> None:
-        """Connect to the websocket."""
-        try:
-            self._connection = await connect(URL)
-            self._has_connection = True
-        except Exception as err:
-            self.check_for_server_reject(err)
-            raise WebsocketError("Cannot connect to the websocket.") from err
-
     async def send_request(self, request: dict[str, Any]) -> None:
         """Add authorization and send request."""
+
         if not self.auth_token:
             raise WebsocketError("Token not set")
+
+        await self.connected.wait()
 
         request["Authorization"] = self.auth_token
         await self._send(request)
 
-    async def loop(self, receiver: Callable) -> None:
-        """Loop the message_handler."""
-
-        self.receiver = receiver
-        self.receiver_is_coroutine = asyncio.iscoroutinefunction(receiver)
-
-        # Needed for receiving updates
-        await self._send(
-            {
-                "command": "HELLO",
-                "Authorization": self.auth_token,
-                "header": "homeassistant",
-            }
-        )
-
-        while True:
-            stop = await self._message_handler()
-            if stop:
-                break
-
-    async def _message_handler(self) -> bool:
-        """Wait for a message and give it to the receiver."""
-
-        message: dict[str, Any] = await self._recv()
-
-        # websocket has disconnected
-        if not message:
-            return True
+    async def _message_handler(
+        self,
+        message: dict[str, Any],
+        receiver: Callable[[dict[str, Any]], Coroutine[Any, Any, None]],
+    ) -> None:
+        """Handle message and pass to receiver."""
 
         object_name = message.get("object")
 
         if not object_name:
             raise WebsocketError("Received message has no object.")
+
+        LOGGER.debug("Received %s", object_name)
 
         # handle ERROR object
         if object_name == "ERROR":
@@ -176,13 +162,17 @@ class Websocket:
             or object_name == "HELLO"
             or "OPERATIVE" in object_name
         ):
-            return False
+            return
+
         if object_name == "CHARGE_POINTS":
+            self.received_charge_points.set()
             handle_charge_points(message)
         elif object_name == "CH_STATUS":
             handle_status(message)
         elif object_name == "CH_SETTINGS":
             handle_settings(message)
+        elif object_name == "CHARGE_CARDS":
+            pass
         elif "GRID" in object_name:
             handle_grid(message)
         elif object_name in (
@@ -193,75 +183,26 @@ class Websocket:
         elif any(button in object_name for button in BUTTONS):
             handle_session_messages(message)
         else:
-            return False
+            return
 
-        self.handle_receive_event()
-
-        await self.send_to_receiver(message)
-
-        # Fix for api sending old start_datetime
-        if object_name == "STATUS_START_SESSION" and not error:
-            await self.send_to_receiver(get_dummy_message(message["evse_id"]))
-
-        return False
-
-    async def send_to_receiver(self, message: dict[str, Any]) -> None:
-        """Send data to the given receiver."""
-        if self.receiver_is_coroutine:
-            await self.receiver(message)
-        else:
-            self.receiver(message)
+        await receiver(message)
 
     async def _send(self, data: dict[str, Any]) -> None:
         """Send data to the websocket."""
-        self._check_connection()
-        try:
+        if self.conn:
+            LOGGER.debug("Sending %s.", data["command"])
             data_str = json.dumps(data)
-            assert self._connection is not None
-            await self._connection.send(data_str)
-        except (ConnectionClosed, InvalidStatusCode) as err:
-            self.handle_connection_errors(err)
-
-    async def _recv(self) -> Any:
-        """Receive data from de websocket."""
-        self._check_connection()
-        assert self._connection is not None
-        try:
-            data = await self._connection.recv()
-            return json.loads(data)
-        except (ConnectionClosed, InvalidStatusCode) as err:
-            self.handle_connection_errors(err)
-            return None
-
-    def handle_connection_errors(self, err: WebSocketException) -> None:
-        """Handle connection errors."""
-        if self._has_connection:
-            self._has_connection = False
-            self.handle_receive_event()
-            self.check_for_server_reject(err)
-            raise WebsocketError("Connection was closed.")
+            await self.conn.send(data_str)
+        else:
+            raise WebsocketError("Connection is closed.")
 
     async def disconnect(self) -> None:
         """Disconnect from de websocket."""
-        self._check_connection()
-        assert self._connection is not None
-        if not self._has_connection:
+        if not self.conn:
             raise WebsocketError("Connection is already closed.")
-        self._has_connection = False
-        self.handle_receive_event()
-        await self._connection.close()
+        await self.conn.close()
 
-    def _check_connection(self) -> None:
-        """Throw error if there is no connection."""
-        if self._connection is None:
-            raise WebsocketError("No connection with the api.")
-
-    def handle_receive_event(self) -> None:
-        "Set receive_event if it exists"
-        if self.receive_event is not None:
-            self.receive_event.set()
-
-    def check_for_server_reject(self, err: Exception) -> None:
+    def raise_correct_exception(self, err: Exception) -> None:
         """Check if the client was rejected by the server"""
 
         if isinstance(err, InvalidStatusCode):
@@ -273,3 +214,5 @@ class Websocket:
                     raise AlreadyConnected("Already connected")
         if isinstance(err, ConnectionClosedError) and err.code == 4001:
             raise RequestLimitReached("Request limit reached") from err
+
+        raise WebsocketError from err
