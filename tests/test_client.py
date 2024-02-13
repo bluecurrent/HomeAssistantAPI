@@ -1,3 +1,4 @@
+from datetime import timedelta
 from src.bluecurrent_api.client import Client
 import pytest
 from pytest_mock import MockerFixture
@@ -5,7 +6,6 @@ from pytest_mock import MockerFixture
 
 def test_create_request():
     client = Client()
-    client.websocket.auth_token = "123"
 
     # command
     request = client._create_request("GET_CHARGE_POINTS")
@@ -34,14 +34,13 @@ def test_create_request():
 
 @pytest.mark.asyncio
 async def test_requests(mocker: MockerFixture):
-
     test_send_request = mocker.patch(
         "src.bluecurrent_api.client.Websocket.send_request"
     )
     client = Client()
 
     await client.get_charge_cards()
-    test_send_request.assert_called_with({"command": "GET_CHARGE_CARDS"})
+    test_send_request.assert_called_with({"command": "GET_CHARGE_CARDS", "limit": 100})
 
     await client.get_charge_points()
     test_send_request.assert_called_with({"command": "GET_CHARGE_POINTS"})
@@ -90,3 +89,25 @@ async def test_requests(mocker: MockerFixture):
 
     await client.stop_session("101")
     test_send_request.assert_called_with({"command": "STOP_SESSION", "evse_id": "101"})
+
+
+@pytest.mark.asyncio
+async def test_on_open(mocker: MockerFixture):
+    test_send_request = mocker.patch(
+        "src.bluecurrent_api.client.Websocket.send_request"
+    )
+    client = Client()
+
+    await client._on_open()
+    test_send_request.assert_has_calls(
+        [
+            mocker.call(
+                {
+                    "command": "HELLO",
+                    "header": "homeassistant",
+                }
+            ),
+            mocker.call({"command": "GET_CHARGE_CARDS", "limit": 100}),
+            mocker.call({"command": "GET_CHARGE_POINTS"}),
+        ]
+    )
