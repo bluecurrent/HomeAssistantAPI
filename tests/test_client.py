@@ -40,7 +40,7 @@ async def test_requests(mocker: MockerFixture):
     client = Client()
 
     await client.get_charge_cards()
-    test_send_request.assert_called_with({"command": "GET_CHARGE_CARDS"})
+    test_send_request.assert_called_with({"command": "GET_CHARGE_CARDS", "limit": 100})
 
     await client.get_charge_points()
     test_send_request.assert_called_with({"command": "GET_CHARGE_POINTS"})
@@ -107,7 +107,7 @@ async def test_on_open(mocker: MockerFixture):
                     "header": "homeassistant",
                 }
             ),
-            mocker.call({"command": "GET_CHARGE_CARDS"}),
+            mocker.call({"command": "GET_CHARGE_CARDS", "limit": 100}),
             mocker.call({"command": "GET_CHARGE_POINTS"}),
         ]
     )
