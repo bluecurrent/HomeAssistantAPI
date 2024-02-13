@@ -44,12 +44,13 @@ class Websocket:
 
     async def start(
         self,
-        token: str,
         receiver: Callable[[dict[str, Any]], Coroutine[Any, Any, None]],
         on_open: Callable[[], Coroutine[Any, Any, None]],
     ) -> None:
         """Opens the connection"""
-        await self.validate_api_token(token)
+
+        if not self.auth_token:
+            raise WebsocketError("token not validated.")
 
         try:
             await self._loop(receiver, on_open)

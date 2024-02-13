@@ -26,8 +26,11 @@ async def test_start(mocker: MockerFixture):
     mock_receiver = mocker.AsyncMock()
     mock_on_open = mocker.AsyncMock()
 
-    await websocket.start("123", mock_receiver, mock_on_open)
+    with pytest.raises(WebsocketError):
+        await websocket.start(mock_receiver, mock_on_open)
 
+    websocket.auth_token = '123'
+    await websocket.start(mock_receiver, mock_on_open)
     mock__loop.assert_called_once_with(mock_receiver, mock_on_open)
 
     mock_raise_correct_exception = mocker.patch(
@@ -36,7 +39,7 @@ async def test_start(mocker: MockerFixture):
     err = WebSocketException()
     mock__loop.side_effect = err
 
-    await websocket.start("123", mock_receiver, mock_on_open)
+    await websocket.start(mock_receiver, mock_on_open)
     mock_raise_correct_exception.assert_called_once_with(err)
 
 

@@ -1,10 +1,8 @@
 """Define an object to interact with the BlueCurrent websocket api."""
-import asyncio
 import logging
+from datetime import timedelta
 from typing import Any, Optional
 from collections.abc import Callable, Coroutine
-
-from .exceptions import RequestLimitReached, WebsocketError
 
 from .utils import get_next_reset_delta
 from .websocket import Websocket
@@ -47,28 +45,16 @@ class Client:
         await self.get_charge_cards()
         await self.get_charge_points()
 
+    def get_next_reset_delta(self) -> timedelta:
+        """Returns the timedelta until the websocket limits are reset."""
+        return get_next_reset_delta()
+
     async def connect(
         self,
-        token: str,
         receiver: Callable[[dict[str, Any]], Coroutine[Any, Any, None]],
-        on_disconnect: Callable[[], Coroutine[Any, Any, None]],
     ) -> None:
         """Connect to the websocket."""
-        try:
-            await self.websocket.start(token, receiver, self._on_open)
-        except RequestLimitReached:
-            LOGGER.warning(
-                "Request limit reached. reconnecting at 00:00 (Europe/Amsterdam)."
-            )
-            await on_disconnect()
-            delay = get_next_reset_delta()
-            await asyncio.sleep(delay.seconds)
-            await self.connect(token, receiver, on_disconnect)
-        except WebsocketError:
-            LOGGER.debug("Disconnected, retrying in background.")
-            await on_disconnect()
-            await asyncio.sleep(DELAY)
-            await self.connect(token, receiver, on_disconnect)
+        await self.websocket.start(receiver, self._on_open)
 
     async def disconnect(self) -> None:
         """Disconnect the websocket."""

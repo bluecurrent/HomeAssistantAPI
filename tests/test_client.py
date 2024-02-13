@@ -1,5 +1,5 @@
 from datetime import timedelta
-from src.bluecurrent_api.client import Client, RequestLimitReached, WebsocketError
+from src.bluecurrent_api.client import Client
 import pytest
 from pytest_mock import MockerFixture
 
@@ -111,31 +111,3 @@ async def test_on_open(mocker: MockerFixture):
             mocker.call({"command": "GET_CHARGE_POINTS"}),
         ]
     )
-
-
-@pytest.mark.asyncio
-async def test_connect(mocker: MockerFixture):
-    test_get_next_reset_delta = mocker.patch(
-        "src.bluecurrent_api.client.get_next_reset_delta",
-        return_value=timedelta(seconds=0),
-    )
-    mocker.patch("src.bluecurrent_api.client.DELAY", 0)
-    test_start = mocker.patch(
-        "src.bluecurrent_api.client.Websocket.start",
-        side_effect=[WebsocketError, None, RequestLimitReached, None],
-    )
-
-    client = Client()
-
-    test_on_disconnect = mocker.AsyncMock()
-
-    await client.connect("123", mocker.Mock, test_on_disconnect)
-
-    assert test_on_disconnect.call_count == 1
-    assert test_start.call_count == 2
-
-    await client.connect("123", mocker.Mock, test_on_disconnect)
-
-    test_get_next_reset_delta.assert_called_once()
-    assert test_on_disconnect.call_count == 2
-    assert test_start.call_count == 4
