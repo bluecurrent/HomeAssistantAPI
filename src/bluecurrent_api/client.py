@@ -62,7 +62,7 @@ class Client:
 
     async def get_charge_cards(self) -> None:
         """Get the charge cards."""
-        await self.websocket.send_request({"command": "GET_CHARGE_CARDS"})
+        await self.websocket.send_request({"command": "GET_CHARGE_CARDS", "limit": 100})
 
     async def get_charge_points(self) -> None:
         """Get the charge points."""
