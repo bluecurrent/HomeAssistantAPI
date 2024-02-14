@@ -1,2 +1,3 @@
 [MASTER]
 ignore-patterns=test_*.py
+disable=useless-import-alias
