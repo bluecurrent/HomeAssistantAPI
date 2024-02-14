@@ -1,2 +1,2 @@
 """Define module exports."""
-from .client import Client
+from .client import Client as Client

@@ -10,9 +10,9 @@ The library is an asyncio-driven library that interfaces with the Websocket API 
 
 ### Requirements
 
-- Python 3.9 or newer
+- Python 3.11 or newer
 - websockets
-- asyncio
+- pytz
 
 ### Installation
 
@@ -32,25 +32,25 @@ import asyncio
 
 
 async def main():
-    api_token = 'api_token'
+    api_token = 'VDLAU17BLVKNNK6X2MBUD007MWNHN9R2'
     client = Client()
 
     # data receiver
-    def on_data(data):
+    async def on_data(data):
         print('received: ', data)
 
-    # connect to the websocket
-    await client.connect(api_token)
+    # validate and set token.
+    await client.validate_api_token(api_token)
 
     # example requests
     async def requests():
         await client.get_charge_points()
-        await client.wait_for_response()
+        await asyncio.sleep(10)
         await client.disconnect()
 
-    # start the loop and send requests
+    # connect and send requests
     await asyncio.gather(
-        client.start_loop(on_data),
+        client.connect(on_data),
         requests()
     )
 
@@ -61,37 +61,33 @@ asyncio.run(main())
 
 ---
 
-<b>The methods validate_token, get_account and get_charge_cards are stand-alone and to be used <u>before</u> connecting to the websocket with connect().</b>
+<b>The methods validate_token and get_email are stand-alone and are to be used <u>before</u> connecting to the websocket with connect().</b>
 
 <br>
 
-#### await validate_token(api_token) -> bool
+#### await validate_token(api_token) -> str
 
 - Validates the given token.
 
-#### await get_account() -> bool
+#### await get_email() -> str
 
 - Returns the account's email.
 
-#### await get_charge_cards(auth_token) -> list
-
-- Returns the users charge cards.
-
 ---
 
-#### await connect(auth_token)
+#### await connect(receiver)
 
 - Connects to the websocket.
+- Calls get_charge_points and get_charge_cards when connection is established.
 
-#### await start_loop(receiver)
+#### is_connected() -> bool
+- Returns if the client is connected
 
-- Starts the loop and routes the incoming messages to the given receiver method
+#### await wait_for_charge_points()
+- Waits until chargepoints are received.
 
-#### await wait_for_response()
 
-- Waits until the next message is received.
-
-#### get_next_reset_delta()
+#### get_next_reset_delta() -> TimeDelta
 
 - Returns the timedelta to the next request limit reset (00:00 Europe/Amsterdam).
 
@@ -108,6 +104,10 @@ asyncio.run(main())
 #### await get_charge_points()
 
 - Gets the chargepoints
+
+#### await get_charge_cards()
+
+- Returns the users charge cards.
 
 #### await get_status(evse_id)
 
@@ -127,17 +127,17 @@ asyncio.run(main())
 
 ---
 
-#### await set_public_charging(evse_id, value)
+#### await set_linked_charge_cards_only(evse_id, value)
 
-- Sets public charging to True or False.
+- Sets set_linked_charge_cards_only.
 
 #### await set_plug_and_charge(evse_id, value)
 
-- Sets plug and charge to True or False.
+- Sets set_plug_and_charge.
 
-#### await set_operative(evse_id, value)
+#### await block(evse_id, value)
 
-- Sets operative to True or False.
+- Blocks or unblocks a charge point.
 
 <br>
 
