@@ -1,5 +1,8 @@
 install:
-	pip install -r requirements.txt && pip install -r docs/requirements.txt
+	pip install -r requirements.txt
+
+install-docs:
+	pip install -r docs/requirements.txt
 
 lint:
 	pylint src

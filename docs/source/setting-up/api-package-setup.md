@@ -45,6 +45,7 @@ Make commands can be used on Windows with GnuWin or just running the commands de
 
 ### build documentation
 
+- `make install-docs`
 - `make html`
 
 ### Using an updated API package (without publishing it).
