@@ -32,7 +32,7 @@ import asyncio
 
 
 async def main():
-    api_token = 'VDLAU17BLVKNNK6X2MBUD007MWNHN9R2'
+    api_token = 'api_token'
     client = Client()
 
     # data receiver
