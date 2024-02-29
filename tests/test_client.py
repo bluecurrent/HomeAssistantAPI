@@ -1,4 +1,3 @@
-from datetime import timedelta
 from src.bluecurrent_api.client import Client
 import pytest
 from pytest_mock import MockerFixture

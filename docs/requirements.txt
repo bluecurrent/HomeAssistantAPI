@@ -1,3 +1,7 @@
+# autodoc
+homeassistant
+bluecurrent-api
+
 # readthedocs dependencies
 alabaster==0.7.12
 attrs==21.2.0

@@ -1,7 +1,7 @@
-# Exceptions
+# Init
 
 ```{eval-rst}
-.. automodule:: src.bluecurrent_api.exceptions
+.. automodule:: homeassistant.components.blue_current.__init__
    :members:
    :private-members:
    :special-members:

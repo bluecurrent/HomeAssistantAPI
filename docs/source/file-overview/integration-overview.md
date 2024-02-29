@@ -3,30 +3,22 @@
 ```
 homeassistant/components/bluecurrent
  ┣ translations
- ┃ ┗ en.json
- ┃ ┣ nl.json
  ┣ __init__.py
  ┣ button.py
  ┣ config_flow.py
  ┣ const.py
- ┣ device_condition.py
- ┣ device_trigger.py
  ┣ entity.py
  ┣ manifest.json
  ┣ sensor.py
- ┣ services.yaml
  ┣ strings.json
- ┗ switch.py
 
 tests/components/bluecurrent
  ┣ __init__.py
+ ┣ conftest.py
  ┣ test_button.py
  ┣ test_config_flow.py
- ┣ test_device_condition.py
- ┣ test_device_trigger.py
  ┣ test_init.py
  ┣ test_sensor.py
- ┗ test_switch.py
 ```
 
 ## Code
@@ -38,15 +30,11 @@ Contains the strings for the config_flow that the user sees when adding the inte
 
 ### translations
 
-Contains the strings for all languages.
+Contains the strings for all languages. (Is generated from strings.json)
 
 ### manifest.json
 
 Defines information about the integration.
-
-### services.json
-
-Defines all services.
 
 ### const.py
 
@@ -80,10 +68,13 @@ Contains the BlueCurrentEntity class that all the platforms inherit. It also add
 
 ### \_\_init\_\_.py
 
-Contains the method `init_integration` which starts the BlueCurrent integration with a single platform (sensor, switch or button) and test data.
+Contains the method `init_integration` which starts the BlueCurrent integration with a single platform (sensor, switch or button), test data, and a mocked client.
 
-### Other test files
+### conftest.py
+Used to store test fixtures.
 
-The other test files contain tests for the file referenced in the name.
+### test_config_flow
+Tests for form and reauth
 
-See [](../testing/integration-testing.md)
+### test_sensor, test_button
+tests for the specific platforms.

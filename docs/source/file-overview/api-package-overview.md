@@ -6,6 +6,7 @@ HomeAssistantAPI
  ┃ ┣ bluecurrent_api
  ┃ ┃ ┣ client.py
  ┃ ┃ ┣ exceptions.py
+ ┃ ┃ ┣ py.typed
  ┃ ┃ ┣ utils.py
  ┃ ┃ ┣ websocket.py
  ┃ ┃ ┗ __init__.py
@@ -25,6 +26,9 @@ Defines the module export.
 
 Defines the exceptions used in the API package.
 
+### py.typed
+Marker file used to tell Mypy (type checker) that this package has type hints.
+
 ### client.py
 
 Contains the Client class that has all the 'public' methods of the API package.
@@ -36,9 +40,3 @@ Defines the Websocket Class that handles the connection to the Websocket.
 ### utils.py
 
 Contains methods for modifying incoming data.
-
-## Tests
-
-The test files contain tests for the file referenced in the name.
-
-See [](../testing/api-package-testing.md)

@@ -1,8 +1,17 @@
 install:
-	pip install -r requirements.txt
+	pip install -r requirements.txt && pip install -r docs/requirements.txt
 
 lint:
 	pylint src
+
+mypy:
+	mypy src
+
+black:
+	black src tests
+
+ruff:
+	ruff --fix src tests && ruff format src tests
 
 test:
 	python -m pytest
