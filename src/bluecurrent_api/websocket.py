@@ -165,7 +165,6 @@ class Websocket:
             return
 
         if object_name == "CHARGE_POINTS":
-            self.received_charge_points.set()
             handle_charge_points(message)
         elif object_name == "CH_STATUS":
             handle_status(message)
@@ -186,6 +185,9 @@ class Websocket:
             return
 
         await receiver(message)
+
+        if object_name == "CHARGE_POINTS":
+            self.received_charge_points.set()
 
     async def _send(self, data: dict[str, Any]) -> None:
         """Send data to the websocket."""
