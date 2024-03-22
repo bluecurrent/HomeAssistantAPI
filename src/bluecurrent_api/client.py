@@ -34,7 +34,7 @@ class Client:
         """Get user email."""
         return await self.websocket.get_email()
 
-    async def _on_open(self) -> None:
+    async def _on_open(self, on_open: Callable[[], Coroutine[Any, Any, None]],) -> None:
         """Send requests when connected."""
         await self.websocket.send_request(
             {
@@ -42,8 +42,7 @@ class Client:
                 "header": "homeassistant",
             }
         )
-        await self.get_charge_cards()
-        await self.get_charge_points()
+        await on_open()
 
     def get_next_reset_delta(self) -> timedelta:
         """Returns the timedelta until the websocket limits are reset."""
@@ -52,9 +51,10 @@ class Client:
     async def connect(
         self,
         receiver: Callable[[dict[str, Any]], Coroutine[Any, Any, None]],
+        on_open: Callable[[], Coroutine[Any, Any, None]],
     ) -> None:
         """Connect to the websocket."""
-        await self.websocket.start(receiver, self._on_open)
+        await self.websocket.start(receiver, lambda : self._on_open(on_open))
 
     async def disconnect(self) -> None:
         """Disconnect the websocket."""

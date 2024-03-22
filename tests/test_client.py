@@ -98,7 +98,11 @@ async def test_on_open(mocker: MockerFixture):
     )
     client = Client()
 
-    await client._on_open()
+    async def on_open():
+        await client.get_charge_cards()
+        await client.get_charge_points()
+
+    await client._on_open(on_open)
     test_send_request.assert_has_calls(
         [
             mocker.call(
