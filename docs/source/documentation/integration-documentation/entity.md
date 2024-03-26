@@ -1,7 +1,7 @@
-# Exceptions
+# Entity
 
 ```{eval-rst}
-.. automodule:: src.bluecurrent_api.exceptions
+.. automodule:: homeassistant.components.blue_current.entity
    :members:
    :private-members:
    :special-members:

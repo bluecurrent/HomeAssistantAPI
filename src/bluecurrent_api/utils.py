@@ -19,7 +19,7 @@ ERRORS: dict[int, BlueCurrentException] = {
 SMART_CHARGING: set[str] = set()
 
 
-def calculate_average_usage_from_phases(phases: list[float]) -> float:
+def calculate_average_usage_from_phases(phases: list[float | None]) -> float:
     """Get the average of the phases that are not 0."""
     used_phases = [p for p in phases if p]
     if len(used_phases):

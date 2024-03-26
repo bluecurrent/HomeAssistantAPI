@@ -24,31 +24,31 @@ import pytz
 
 
 def test_calculate_total_from_phases():
-    total = calculate_average_usage_from_phases((10, 10, 10))
+    total = calculate_average_usage_from_phases([10, 10, 10])
     assert total == 10
 
-    total = calculate_average_usage_from_phases((0, 0, 0))
+    total = calculate_average_usage_from_phases([0, 0, 0])
     assert total == 0
 
-    total = calculate_average_usage_from_phases((10, None, 20))
+    total = calculate_average_usage_from_phases([10, None, 20])
     assert total == 15
 
-    total = calculate_average_usage_from_phases((10, 6, 10))
+    total = calculate_average_usage_from_phases([10, 6, 10])
     assert total == 8.7
 
-    total = calculate_average_usage_from_phases((10, 8, 1))
+    total = calculate_average_usage_from_phases([10, 8, 1])
     assert total == 6.3
 
-    total = calculate_average_usage_from_phases((10, 0, 20))
+    total = calculate_average_usage_from_phases([10, 0, 20])
     assert total == 15
 
-    total = calculate_average_usage_from_phases((5, 0, 0))
+    total = calculate_average_usage_from_phases([5, 0, 0])
     assert total == 5
 
-    total = calculate_average_usage_from_phases((6, None, None))
+    total = calculate_average_usage_from_phases([6, None, None])
     assert total == 6
 
-    total = calculate_average_usage_from_phases((None, None, None))
+    total = calculate_average_usage_from_phases([None, None, None])
     assert total == 0
 
 

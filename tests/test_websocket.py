@@ -1,7 +1,11 @@
 from unittest.mock import MagicMock
 from websockets.client import WebSocketClientProtocol
 from websockets.legacy.client import Connect
-from websockets.exceptions import InvalidStatusCode, ConnectionClosedError, WebSocketException
+from websockets.exceptions import (
+    InvalidStatusCode,
+    ConnectionClosedError,
+    WebSocketException,
+)
 from websockets.frames import Close
 
 from src.bluecurrent_api.websocket import (
@@ -29,7 +33,7 @@ async def test_start(mocker: MockerFixture):
     with pytest.raises(WebsocketError):
         await websocket.start(mock_receiver, mock_on_open)
 
-    websocket.auth_token = '123'
+    websocket.auth_token = "123"
     await websocket.start(mock_receiver, mock_on_open)
     mock__loop.assert_called_once_with(mock_receiver, mock_on_open)
 
@@ -76,7 +80,7 @@ async def test__send_recv_single_message(mocker: MockerFixture):
 
     err = WebSocketException()
     mock_ws.recv.side_effect = err
-    with pytest.raises(WebsocketError): 
+    with pytest.raises(WebsocketError):
         await websocket._send_recv_single_message({})
 
 
