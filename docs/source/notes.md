@@ -14,18 +14,17 @@ In the dev docs Home Assistant uses the word 'platform' for different things.
 
 Device info is added to entities and not the other way around.
 
-## Dummy Message
-
-When the message `STATUS_START_SESSION` is received a dummy `CH_STATUS` message is send to the receiver method. This is because the value of start_datetime send with the next pushed `CH_STATUS` is the timestamp of the session before.
-
-In Home Assistant the value of the start_datetime sensor is only updated when the new timestamp is newer than its value.
-
-This does mean that the start_datetime value is not accurate but most of the time the difference is under 10 seconds.
-
 ## Error handling
 
 If something goes wrong server side an `ERROR` object is sent and an `WebsocketError` is raised in the api package. Setting and Action request can also have an error in their `RECEIVED_` or `STATUS_` messages, but this is sent to HA and logged.
 
 ## API and AUTH token
 
-To use this the api package the user first validates his api token with `VALIDATE_API_TOKEN` (token can be generated in driver portal -> developer mode -> home assistant api token). If the token is used, the auth token is returned and stored in `auth_token` in `websocket.py` all other requests add this token for authentication.
+To use this the api package the user first validates his api token with `VALIDATE_API_TOKEN` (token can be generated in my.bluecurrent.nl -> advanced -> home assistant api token). If the token is used, the auth token is returned and stored in `auth_token` in `websocket.py` all other requests add this token for authentication.
+
+## HA-Bluecurrent and official integration
+As of 2024 bluecurrent has been added to Home Assistant. [link](https://www.home-assistant.io/integrations/blue_current/). This version currently only has the sensors and cannot start a session for example. 
+
+It has changed quite compared to ha-bluecurrent. the idea is deprecate ha-bluecurrent after a session can be started. 
+
+One of the many changes is that a start session will become a select instead of a button so that the charge card can be selected when starting the session instead of at the installation of the integration.

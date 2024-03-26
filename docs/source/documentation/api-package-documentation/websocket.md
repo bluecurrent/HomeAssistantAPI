@@ -1,7 +1,7 @@
 # Websocket
 
 ```{eval-rst}
-.. automodule:: bluecurrent_api.websocket
+.. automodule:: src.bluecurrent_api.websocket
    :members:
    :private-members:
    :special-members:

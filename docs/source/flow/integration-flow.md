@@ -2,28 +2,12 @@
 
 ## Config Flow
 
-The config flow gets started when a user adds the integration in Home Assistant.
+The config flow gets started when a user adds the integration in Home Assistant from the integrations tab and entering their api token.
 
-The user will first see a field for their API token and a checkbox for if they would like to use a charge cards.
-
-```{image} /_static/img/step_user.png
-:alt: the config flow form
-:align: center
-:scale: 80%
-```
-
-If the box is checked another form will be shown where the user can select one of their charge cards.
-
-```{image} /_static/img/step_card.png
-:alt: the card form
-:align: center
-:scale: 80%
-```
 
 ## Setup
-
 After the config flow in completed the method `async_setup_entry` in \_\_init\_\_.py gets called by Home Assistant.
-Here it retrieves the API token from the config_entry. And tries to connect to the API. If the connection is successful the `loop` gets started, then it waits until `CHARGE_POINTS` is received from the API and tells Home Assistant to start the platform setups with `async_setup_platforms`.
+Here it retrieves the API token from the config_entry. And validates it. If the validation is successful a background task to connect and listen to the websocket is started, then the function waits until `CHARGE_POINTS` is received from the API and tells Home Assistant to start the platform setups with `async_setup_platforms`.
 
 ## Platforms
 

@@ -1,7 +1,7 @@
-# Exceptions
+# Sensor
 
 ```{eval-rst}
-.. automodule:: src.bluecurrent_api.exceptions
+.. automodule:: homeassistant.components.blue_current.sensor
    :members:
    :private-members:
    :special-members:
