@@ -1,8 +1,8 @@
 from unittest.mock import MagicMock
-from websockets.client import WebSocketClientProtocol
-from websockets.legacy.client import Connect
+from websockets.asyncio.client import ClientConnection
+from websockets.asyncio.client import connect
 from websockets.exceptions import (
-    InvalidStatusCode,
+    InvalidStatus,
     ConnectionClosedError,
     WebSocketException,
 )
@@ -50,7 +50,7 @@ async def test_start(mocker: MockerFixture):
 @pytest.mark.asyncio
 async def test__loop(mocker: MockerFixture):
     websocket = Websocket()
-    mock_connect = MagicMock(spec=Connect)
+    mock_connect = MagicMock(spec=connect)
     mocker.patch("src.bluecurrent_api.websocket.connect", return_value=mock_connect)
     mock_raise_correct_exception = mocker.patch(
         "src.bluecurrent_api.websocket.Websocket.raise_correct_exception"
@@ -70,8 +70,8 @@ async def test__loop(mocker: MockerFixture):
 @pytest.mark.asyncio
 async def test__send_recv_single_message(mocker: MockerFixture):
     websocket = Websocket()
-    mock_connect = MagicMock(spec=Connect)
-    mock_ws = MagicMock(spec=WebSocketClientProtocol)
+    mock_connect = MagicMock(spec=connect)
+    mock_ws = MagicMock(spec=ClientConnection)
     mocker.patch("src.bluecurrent_api.websocket.connect", return_value=mock_connect)
     mock_connect.__aenter__.return_value = mock_ws
     mock_ws.recv.return_value = '{"a": 1}'
@@ -259,7 +259,7 @@ async def test_message_handler(mocker: MockerFixture):
     with pytest.raises(WebsocketError):
         await websocket._message_handler(message, mock_receiver)
 
-    # token not autorized
+    # token not authorized
     message = {"error": 2, "object": "ERROR", "message": "Not authorized"}
     with pytest.raises(WebsocketError):
         await websocket._message_handler(message, mock_receiver)
@@ -297,7 +297,7 @@ async def test__send(mocker: MockerFixture):
     with pytest.raises(WebsocketError):
         await websocket._send({"command": "test"})
 
-    websocket.conn = mocker.MagicMock(spec=WebSocketClientProtocol)
+    websocket.conn = mocker.MagicMock(spec=ClientConnection)
 
     await websocket._send({"command": 1})
     websocket.conn.send.assert_called_with('{"command": 1}')
@@ -310,9 +310,16 @@ async def test_disconnect(mocker: MockerFixture):
     with pytest.raises(WebsocketError):
         await websocket.disconnect()
 
-    websocket.conn = mocker.MagicMock(spec=WebSocketClientProtocol)
+    websocket.conn = mocker.MagicMock(spec=ClientConnection)
     await websocket.disconnect()
     websocket.conn.close.assert_called_once()
+
+
+def make_mock_response(status_code, reason):
+    mock_response = MagicMock()
+    mock_response.status_code = status_code
+    mock_response.headers = {"x-websocket-reject-reason": reason}
+    return mock_response
 
 
 def test_raise_correct_exception():
@@ -320,8 +327,8 @@ def test_raise_correct_exception():
 
     with pytest.raises(RequestLimitReached):
         websocket.raise_correct_exception(
-            InvalidStatusCode(
-                403, {"x-websocket-reject-reason": "Request limit reached"}
+            InvalidStatus(
+                make_mock_response(403, "Request limit reached")
             )
         )
 
@@ -332,8 +339,8 @@ def test_raise_correct_exception():
 
     with pytest.raises(AlreadyConnected):
         websocket.raise_correct_exception(
-            InvalidStatusCode(403, {"x-websocket-reject-reason": "Already connected"})
+            InvalidStatus(make_mock_response(403, "Already connected"))
         )
 
     with pytest.raises(WebsocketError):
-        websocket.raise_correct_exception(Exception)
+        websocket.raise_correct_exception(Exception("Some unexpected error"))
