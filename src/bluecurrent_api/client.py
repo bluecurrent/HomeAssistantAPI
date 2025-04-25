@@ -1,4 +1,5 @@
 """Define an object to interact with the BlueCurrent websocket api."""
+
 import logging
 from datetime import timedelta
 from typing import Any, Optional
@@ -34,7 +35,10 @@ class Client:
         """Get user email."""
         return await self.websocket.get_email()
 
-    async def _on_open(self, on_open: Callable[[], Coroutine[Any, Any, None]],) -> None:
+    async def _on_open(
+        self,
+        on_open: Callable[[], Coroutine[Any, Any, None]],
+    ) -> None:
         """Send requests when connected."""
         await self.websocket.send_request(
             {
@@ -54,7 +58,7 @@ class Client:
         on_open: Callable[[], Coroutine[Any, Any, None]],
     ) -> None:
         """Connect to the websocket."""
-        await self.websocket.start(receiver, lambda : self._on_open(on_open))
+        await self.websocket.start(receiver, lambda: self._on_open(on_open))
 
     async def disconnect(self) -> None:
         """Disconnect the websocket."""

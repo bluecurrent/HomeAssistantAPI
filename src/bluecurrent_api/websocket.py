@@ -1,4 +1,5 @@
 """Define an object that handles the connection to the Websocket"""
+
 import json
 from asyncio import Event, timeout
 import logging
@@ -9,7 +10,8 @@ from websockets.asyncio.client import ClientConnection, connect
 from websockets.exceptions import (
     ConnectionClosedError,
     InvalidStatus,
-    WebSocketException)
+    WebSocketException,
+)
 
 from .exceptions import (
     AlreadyConnected,

@@ -16,7 +16,7 @@ The library is an asyncio-driven library that interfaces with the Websocket API 
 
 ### Installation
 
-```python
+```bash
 pip install bluecurrent-api
 ```
 
@@ -26,7 +26,7 @@ Using this library requires a Blue Current api token. You can generate one in th
 
 ## Example
 
-```python
+```bash
 from bluecurrent_api import Client
 import asyncio
 
@@ -43,16 +43,13 @@ async def main():
     await client.validate_api_token(api_token)
 
     # example requests
-    async def requests():
+    async def on_open():
         await client.get_charge_points()
         await asyncio.sleep(10)
         await client.disconnect()
 
     # connect and send requests
-    await asyncio.gather(
-        client.connect(on_data),
-        requests()
-    )
+    await client.connect(on_data, on_open)
 
 asyncio.run(main())
 ```

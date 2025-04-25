@@ -327,9 +327,7 @@ def test_raise_correct_exception():
 
     with pytest.raises(RequestLimitReached):
         websocket.raise_correct_exception(
-            InvalidStatus(
-                make_mock_response(403, "Request limit reached")
-            )
+            InvalidStatus(make_mock_response(403, "Request limit reached"))
         )
 
     with pytest.raises(RequestLimitReached):
