@@ -154,7 +154,7 @@
 
 ### await get_status(evse_id)
 
-```bash
+```python
 {
     'object': 'CH_STATUS',
     'evse_id': 'BCU102728',
@@ -186,7 +186,7 @@
 
 ### await get_settings(evse_id)
 
-```bash
+```python
 {
     "data": {
         "evse_id": "BCU102728",
@@ -211,7 +211,7 @@
 
 ### await get_grid_status(evse_id)
 
-```bash
+```python
 {
     "object": "GRID_STATUS",
     "data": {
@@ -233,7 +233,7 @@
 
 ### await set_linked_charge_cards_only(evse_id, value)
 
-```bash
+```python
 {
     "object": "LINKED_CHARGE_CARDS_ONLY",
     "success": True,
@@ -246,7 +246,7 @@
 
 ### await set_plug_and_charge(evse_id, value)
 
-```bash
+```python
 {
     "object": "PLUG_AND_CHARGE",
     "success": True,
@@ -267,7 +267,7 @@
 
 ### await reset(evse_id)
 
-```bash
+```python
 {
     "object": "SOFT_RESET",
     "success": True,
@@ -280,7 +280,7 @@
 
 ### await reboot(evse_id)
 
-```bash
+```python
 {
     "object": "REBOOT",
     "success": True,
@@ -293,7 +293,7 @@
 
 ### await start_session(evse_id, card_uid)
 
-```bash
+```python
 {
     'object': 'START_SESSION',
     'success': True,
@@ -306,7 +306,7 @@
 
 ### await stop_session(evse_id)
 
-```bash
+```python
 {
     'object': 'STOP_SESSION',
     'success': True,
