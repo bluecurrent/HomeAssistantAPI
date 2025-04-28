@@ -1,4 +1,5 @@
 """Define a functions for modifying incoming data."""
+
 from datetime import datetime, timedelta
 from typing import Any, Optional, Union
 

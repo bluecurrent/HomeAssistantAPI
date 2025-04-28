@@ -4,97 +4,114 @@
 
 ### description
 
-object CHARGE_POINTS
-====================
-Generieke velden:
-evse_id                       String:   De identifier van het laadpunt                    -- bijvoorbeeld BCU100186
-name                          String:   De naam zoals de eigenaar eraan gegeven heeft     -- bijvoorbeeld Mijn Laadpunt  
-model_type                    String:   De model naam van het laadpunt                    -- bijvoorveeld U:MOVE22
-chargepoint_type              String:   De type naam van het laadpunt                     -- bijvoorbeeld UMOVE
-activity                      String:   Status van het laadpunt (available, charging, offline, error)
-x_coord                       Float:    GPS x-coordinaat van het laadpunt                 -- bijvoorbeeld 50.824811
-y_coord                       Float:    GPS y-coordinaat van het laadpunt                 -- bijvoorbeeld 4.342838
-linked_charge_cards_only      Boolean:  Mag hier alleen maar met toegevoegde passen geladen worden (True) of met alle publieke passen (False)
-plug_and_charge_notification  Boolean:  Wordt er een pushnotificatie naar de mobile app gestuurd als het laadpunt start met laden als plug en charge aanstaat?
-plug_and_charge               Boolean:  Start het laadpunt zodra er een kabel ingestoken wordt, of moet er eerst een pas voor gehouden worden?
-smart_charging                Boolean:  Wordt er gebruik gemaakt van slim laden
+# CHARGE_POINTS
 
-Pas:
-default_card.uid              String:   Het interne pasnummer van de pas die default voor transacties gebruikt wordt  -- bijvoorbeeld: 046C8CCA8C1D90
-default_card.id               String:   Het visuele pasnummer van de pas die default voor transacties gebruikt wordt  -- bijvoorbeeld: NL-ANW-CZPYJFFML-3
-default_card.name             String:   De naam die de eigenaar aan de pas gegeven heeft                              -- bijvoorbeeld: Mijn laadpas
-default_card.customer_name    String:   De naam van de eigenaar                                                       -- Bijvoorbeeld: Samen BlueCurrent
+### General Fields
 
-Tarief:
-tariff.tariff_id              String:   Het tariefID zoals dit wordt gedeeld met pasleveranciers  -- bijvoorbeeld NLBCUT994
-tariff.price_ex_vat           Float:    Het tarief exclusief BTW per kW                           -- bijvoorbeeld 0.2347
-tariff.start_price_ex_vat     Float:    Het start tarief exclusief BTW voor 1 transactie          -- bijvoorbeeld 1.50
-tariff.price_in_vat           Float:    Het tarief inclusief BTW per kW                           -- bijvoorbeeld 0.2613
-tariff.start_price_in_vat     Float:    Het start tarief inclusief BTW voor 1 transactie          -- bijvoorbeeld 1.815
-tariff.currency               String:   De valuta voor het tarief                                 -- bijvoorbeeld EUR
-tariff.permission             String:   Mag de gebruiker het tarief inzien en/of wijzigen         -- bijvoorbeeld read
+| Field                        | Type    | Description                                                                      | Example                     |
+|------------------------------|---------|----------------------------------------------------------------------------------|-----------------------------|
+| `evse_id`                     | String  | Identifier of the charge point                                                   | `BCU100186`                 |
+| `name`                        | String  | Name given by the owner                                                          | `My Charge Point`           |
+| `model_type`                  | String  | Model name of the charge point                                                   | `U:MOVE22`                  |
+| `chargepoint_type`            | String  | Type name of the charge point                                                    | `UMOVE`                     |
+| `activity`                    | String  | Status of the charge point (`available`, `charging`, `offline`, `error`)         |                             |
+| `x_coord`                     | Float   | GPS x-coordinate                                                                  | `50.824811`                 |
+| `y_coord`                     | Float   | GPS y-coordinate                                                                  | `4.342838`                  |
+| `linked_charge_cards_only`    | Boolean | Only linked cards can charge here (`True`) or all public cards allowed (`False`) |                             |
+| `plug_and_charge_notification`| Boolean | Send push notification to the app when the charge point starts charging with plug-and-charge enabled |                             |
+| `plug_and_charge`             | Boolean | Start charging when the cable is inserted, or requires a card first              |                             |
+| `smart_charging`              | Boolean | Whether smart charging is enabled                                                |                             |
 
-Publiceren:
-publish_location.value        Boolean:  Is het laadpunt gepubliceerd op externe sites  
-publish_location.permission   String:   Mag de gebruiker het laadpunt publiceren                  -- bijvoorbeeld write (ja)
+### Card
 
+| Field                        | Type    | Description                                                   | Example                        |
+|------------------------------|---------|---------------------------------------------------------------|--------------------------------|
+| `default_card.uid`            | String  | Internal card number used for transactions                    | `046C8CCA8C1D90`               |
+| `default_card.id`             | String  | Visual card number                                            | `NL-ANW-CZPYJFFML-3`           |
+| `default_card.name`           | String  | Name given to the card by the owner                           | `My Charge Card`              |
+| `default_card.customer_name`  | String  | Owner's name                                                   | `BlueCurrent Together`         |
 
-Object CH_STATUS
-================
-actual_p1                 Integer:  Hoeveel ampere wordt er op dit moment op fase 1 geladen?
-actual_p2                 Integer:  Hoeveel ampere wordt er op dit moment op fase 2 geladen?
-actual_p3                 Integer:  Hoeveel ampere wordt er op dit moment op fase 3 geladen?
-activity                  String:   Status van het laadpunt (available, charging, offline, error)
-actual_v1                 Float:    Hoeveel spanning staat er op dit moment op fase 1?
-actual_v2                 Float:    Hoeveel spanning staat er op dit moment op fase 2?
-actual_v3                 Float:    Hoeveel spanning staat er op dit moment op fase 3?
-actual_kwh                Float:    Hoeveel kWh is er op dit moment, sinds de start van de transactie, geladen?
-max_usage                 Integer:  Hoeveel ampere mag er maximaal geladen worden (per fase)?
-smartcharging_max_usage   Integer:  Hoeveel ampere mag het smart charging algoritme maximaal geven aan het laadpunt (per fase)?  
-max_offline               Integer:  Met hoeveel ampere wordt er geladen als het laadpunt geen verbinding heeft met de backoffice?  
-offline_since             String:   Indien offline, sinds wanneer is het laadpunt offline?
-start_datetime            String:   Tijdstip waarop de laatste transactie gestart is. Deze staat op dit moment uit.
-start_datetime            String:   Tijdstip waarop de laatste transactie gestopt is. Deze staat op dit moment uit.
-total_cost                Float:    De totale kosten in Euro van de laatste transactie. Deze staat op dit moment uit.
-vehicle_status            String:   Status van de auto. (A, B or C of ready/charging)
-evse_id                   String:   De identifier van het laadpunt                   
-avg_voltage               Float:    Gemiddelde spanning van de drie fases op dit moment.  
-avg_current               Integer:  Hoeveel ampere wordt er op dit moment op fase 1 geladen?
+### Tariff
 
-Object CH_SETTINGS
-==================
-evse_id                       String:   De identifier van het laadpunt                    -- bijvoorbeeld BCU100186
-model_type                    String:   De model naam van het laadpunt                    -- bijvoorveeld U:MOVE22
-chargepoint_type              String:   De type naam van het laadpunt                     -- bijvoorbeeld UMOVE
-plug_and_charge               Boolean:  Start het laadpunt zodra er een kabel ingestoken wordt, of moet er eerst een pas voor gehouden worden?
-linked_charge_cards_only      Boolean:  Mag hier alleen maar met toegevoegde passen geladen worden (True) of met alle publieke passen (False)
-smart_charging                Boolean:  Wordt er gebruik gemaakt van slim laden
-plug_and_charge_notification  Boolean:  Wordt er een pushnotificatie naar de mobile app gestuurd als het laadpunt start met laden als plug en charge aanstaat?
+| Field                        | Type    | Description                                                   | Example      |
+|------------------------------|---------|---------------------------------------------------------------|--------------|
+| `tariff.tariff_id`            | String  | Tariff ID shared with card providers                          | `NLBCUT994`  |
+| `tariff.price_ex_vat`         | Float   | Price per kW excluding VAT                                    | `0.2347`     |
+| `tariff.start_price_ex_vat`   | Float   | Start fee excluding VAT for a transaction                     | `1.50`       |
+| `tariff.price_in_vat`         | Float   | Price per kW including VAT                                    | `0.2613`     |
+| `tariff.start_price_in_vat`   | Float   | Start fee including VAT for a transaction                     | `1.815`      |
+| `tariff.currency`             | String  | Currency for the tariff                                       | `EUR`        |
+| `tariff.permission`           | String  | Permission to view/edit the tariff (`read`, `write`, etc.)    | `read`       |
 
-Led:
-led_intensity.value           Integer  Intensiteit van de leds
-led_intensity.permission      String:   Mag de gebruiker de led intensiteit aanpassen
-led_interaction.value         Boolean:  Kan de interactie van de leds aan of uit. Leds gaan dan alleen branden al je een actie uitvoert
-led_interaction.permission    String:   Mag de gebruiker de led interactie aanpassen
+### Publishing
 
-Pas:
-default_card.uid              String:   Het interne pasnummer van de pas die default voor transacties gebruikt wordt  -- bijvoorbeeld: 046C8CCA8C1D90
-default_card.id               String:   Het visuele pasnummer van de pas die default voor transacties gebruikt wordt  -- bijvoorbeeld: NL-ANW-CZPYJFFML-3
-default_card.name             String:   De naam die de eigenaar aan de pas gegeven heeft                              -- bijvoorbeeld: Mijn laadpas
-default_card.customer_name    String:   De naam van de eigenaar                                                       -- Bijvoorbeeld: Samen BlueCurrent
+| Field                        | Type    | Description                                                   |
+|------------------------------|---------|---------------------------------------------------------------|
+| `publish_location.value`     | Boolean | Is the charge point published on external sites               |
+| `publish_location.permission`| String  | Permission to publish the location (`write`, etc.)            |
 
-Object GRID_CURRENT
-===================
-evse_id                       String:   De identifier van het laadpunt                    -- bijvoorbeeld BCU100186
-grid_actual_p1                Integer:  Hoeveel ampere wordt er op dit moment op fase 1 verbruikt in het gebouw?
-grid_actual_p2                Integer:  Hoeveel ampere wordt er op dit moment op fase 2 verbruikt in het gebouw?
-grid_actual_p3                Integer:  Hoeveel ampere wordt er op dit moment op fase 3 verbruikt in het gebouw?
+---
 
+# CH_STATUS
 
+| Field                       | Type    | Description                                                             |
+|-----------------------------|---------|-------------------------------------------------------------------------|
+| `actual_p1`, `actual_p2`, `actual_p3` | Integer | Current (Amps) being drawn on phase 1/2/3                               |
+| `activity`                  | String  | Status (`available`, `charging`, `offline`, `error`)                    |
+| `actual_v1`, `actual_v2`, `actual_v3` | Float   | Voltage on phase 1/2/3                                                  |
+| `actual_kwh`                | Float   | kWh charged since the start of the transaction                          |
+| `max_usage`                 | Integer | Maximum current allowed per phase                                       |
+| `smartcharging_max_usage`   | Integer | Max current allowed by smart charging per phase                        |
+| `max_offline`               | Integer | Amps used when offline                                                  |
+| `offline_since`             | String  | Timestamp when the charger went offline                                |
+| `start_datetime`            | String  | Start/stop time of last transaction (currently disabled)               |
+| `total_cost`                | Float   | Total cost of last transaction in euros (currently disabled)           |
+| `vehicle_status`            | String  | Status of the vehicle (`A`, `B`, `C`, or `ready`, `charging`)           |
+| `evse_id`                   | String  | Identifier of the charge point                                         |
+| `avg_voltage`               | Float   | Average voltage over 3 phases                                          |
+| `avg_current`               | Integer | Average current on phase 1 (or total?)                                 |
+
+---
+
+# CH_SETTINGS
+
+| Field                         | Type    | Description                                                    |
+|-------------------------------|---------|----------------------------------------------------------------|
+| `evse_id`                     | String  | Identifier of the charge point                                 |
+| `model_type`                  | String  | Model name of the charge point                                 |
+| `chargepoint_type`            | String  | Type name of the charge point                                  |
+| `plug_and_charge`             | Boolean | Whether the charger starts automatically                       |
+| `linked_charge_cards_only`    | Boolean | Only allow linked cards                                        |
+| `smart_charging`              | Boolean | Is smart charging enabled                                      |
+| `plug_and_charge_notification`| Boolean | Notify via app when plug-and-charge activates                 |
+
+### LED Settings
+
+| Field                        | Type    | Description                                                       |
+|------------------------------|---------|-------------------------------------------------------------------|
+| `led_intensity.value`        | Integer | Intensity of the LEDs                                             |
+| `led_intensity.permission`   | String  | Permission to modify LED intensity                                |
+| `led_interaction.value`      | Boolean | Enable/disable LED interaction (lights only on action)            |
+| `led_interaction.permission` | String  | Permission to modify LED interaction                              |
+
+### Card Info
+
+(Same structure as in CHARGE_POINTS)
+
+---
+
+# GRID_CURRENT
+
+| Field              | Type    | Description                                         |
+|--------------------|---------|-----------------------------------------------------|
+| `evse_id`          | String  | Identifier of the charge point                      |
+| `grid_actual_p1`   | Integer | Building load on phase 1                            |
+| `grid_actual_p2`   | Integer | Building load on phase 2                            |
+| `grid_actual_p3`   | Integer | Building load on phase 3                            |
 
 ### get_charge_points
 
-```python
+```bash
 {
     'object': 'CHARGE_POINTS',
     'data': [
