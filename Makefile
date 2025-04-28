@@ -14,7 +14,7 @@ black:
 	black src tests
 
 ruff:
-	ruff --fix src tests && ruff format src tests
+	ruff check --fix src tests && ruff format src tests
 
 test:
 	python -m pytest

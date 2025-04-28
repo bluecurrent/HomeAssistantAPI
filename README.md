@@ -43,16 +43,13 @@ async def main():
     await client.validate_api_token(api_token)
 
     # example requests
-    async def requests():
+    async def on_open():
         await client.get_charge_points()
         await asyncio.sleep(10)
         await client.disconnect()
 
     # connect and send requests
-    await asyncio.gather(
-        client.connect(on_data),
-        requests()
-    )
+    await client.connect(on_data, on_open)
 
 asyncio.run(main())
 ```

@@ -1,14 +1,15 @@
 """Define an object that handles the connection to the Websocket"""
+
 import json
 from asyncio import Event, timeout
 import logging
 from typing import Any, cast
 from collections.abc import Callable, Coroutine
 
-from websockets.client import connect, WebSocketClientProtocol
+from websockets.asyncio.client import ClientConnection, connect
 from websockets.exceptions import (
     ConnectionClosedError,
-    InvalidStatusCode,
+    InvalidStatus,
     WebSocketException,
 )
 
@@ -37,7 +38,7 @@ class Websocket:
     """Class for handling requests and responses for the BlueCurrent Websocket Api."""
 
     def __init__(self) -> None:
-        self.conn: WebSocketClientProtocol | None = None
+        self.conn: ClientConnection | None = None
         self.auth_token: str | None = None
         self.connected = Event()
         self.received_charge_points = Event()
@@ -62,7 +63,7 @@ class Websocket:
         receiver: Callable[[dict[str, Any]], Coroutine[Any, Any, None]],
         on_open: Callable[[], Coroutine[Any, Any, None]],
     ) -> None:
-        """listens for incomming messages"""
+        """listens for incoming messages"""
         async with connect(URL) as websocket:
             try:
                 LOGGER.debug("connected")
@@ -153,7 +154,7 @@ class Websocket:
         if object_name == "ERROR":
             raise get_exception(message)
 
-        # if object other than ERROR has an error key it will be send to the receiver.
+        # if object other than ERROR has an error key it will be sent to the receiver.
         error = message.get("error")
 
         # ignored objects
@@ -204,17 +205,19 @@ class Websocket:
             raise WebsocketError("Connection is already closed.")
         await self.conn.close()
 
-    def raise_correct_exception(self, err: Exception) -> None:
+    @staticmethod
+    def raise_correct_exception(err: Exception) -> None:
         """Check if the client was rejected by the server"""
 
-        if isinstance(err, InvalidStatusCode):
-            reason = err.headers.get("x-websocket-reject-reason")
+        if isinstance(err, InvalidStatus):
+            reason = err.response.headers.get("x-websocket-reject-reason")
             if reason is not None:
                 if "Request limit reached" in reason:
                     raise RequestLimitReached("Request limit reached") from err
                 if "Already connected" in reason:
                     raise AlreadyConnected("Already connected")
-        if isinstance(err, ConnectionClosedError) and err.code == 4001:
-            raise RequestLimitReached("Request limit reached") from err
+        if isinstance(err, ConnectionClosedError):
+            if err.rcvd and err.rcvd.code == 4001:
+                raise RequestLimitReached("Request limit reached") from err
 
         raise WebsocketError from err
