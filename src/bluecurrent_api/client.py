@@ -126,6 +126,17 @@ class Client:
         request = self._create_request("STOP_SESSION", evse_id)
         await self.websocket.send_request(request)
 
+    async def set_delayed_charging(self, evse_id: str, value: bool) -> None:
+        """Turn smart charging profile on/off and set the profile to delayed charging."""
+        request = self._create_request("SET_DELAYED_CHARGING", evse_id, value)
+        await self.websocket.send_request(request)
+
+    async def set_price_based_charging(self, evse_id: str, value: bool) -> None:
+        """Turn smart charging profile on/off and set the profile to delayed charging."""
+        request = self._create_request("SET_PRICE_BASED_CHARGING", evse_id, value)
+        await self.websocket.send_request(request)
+
+
     def _create_request(
         self,
         command: str,
