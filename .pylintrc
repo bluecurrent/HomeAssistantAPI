@@ -1,3 +1,4 @@
 [MASTER]
 ignore-patterns=test_*.py
 disable=useless-import-alias
+disable=too-many-public-methods
