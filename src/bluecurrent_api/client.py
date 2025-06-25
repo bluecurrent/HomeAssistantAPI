@@ -169,35 +169,7 @@ class Client:
         )
         await self.websocket.send_request(request)
 
-    def _create_request(
-        self,
-        command: str,
-        evse_id: Optional[str] = None,
-        value: Optional[bool] = None,
-        card_uid: Optional[str] = None,
-        days: Optional[list[int]] = None,
-        start_time: Optional[str] = None,
-        end_time: Optional[str] = None,
-        expected_departure_time: Optional[str] = None,
-        expected_charging_session_size: Optional[float] = None,
-        immediately_charge: Optional[float] = None,
-
-    ) -> dict[str, Any]:
-        """Create a request."""
-        request: dict[str, Any] = {"command": command}
-
-        optional_fields = {
-            "evse_id": evse_id,
-            "value": value,
-            "session_token": card_uid,
-            "days": days,
-            "start_time": start_time,
-            "end_time": end_time,
-            "expected_departure_time": expected_departure_time,
-            "expected_charging_session_size": expected_charging_session_size,
-            "immediately_charge": immediately_charge,
-        }
-
-        request.update({k: v for k, v in optional_fields.items() if v is not None})
-
+    def _create_request(self, command: str, **kwargs) -> dict[str, Any]:
+        request = {"command": command}
+        request.update({k: v for k, v in kwargs.items() if v is not None})
         return request
