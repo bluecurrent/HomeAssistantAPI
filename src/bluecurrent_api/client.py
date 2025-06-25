@@ -5,7 +5,7 @@ from datetime import timedelta
 from typing import Any
 from collections.abc import Callable, Coroutine
 
-from .utils import get_next_reset_delta
+from .utils import get_next_reset_delta, join_numbers_with_commas
 from .websocket import Websocket
 
 LOGGER = logging.getLogger(__package__)
@@ -143,10 +143,11 @@ class Client:
             start_time: str,
             end_time: str) -> None:
         """Send the selected settings in order to schedule delayed charging."""
+        days_str = join_numbers_with_commas(days)
         request = self._create_request(
             "SAVE_SCHEDULE_DELAYED_CHARGING",
             evse_id=evse_id,
-            days=days,
+            days=days_str,
             start_time=start_time,
             end_time=end_time
         )
