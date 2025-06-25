@@ -155,7 +155,7 @@ class Client:
 
     async def set_price_based_charging(self, evse_id: str, value: bool) -> None:
         """Turn smart charging profile on/off and set the profile to price based charging."""
-        request = self._create_request("SET_PRICE_BASED_CHARGING", evse_id=evse_id, vlue=value)
+        request = self._create_request("SET_PRICE_BASED_CHARGING", evse_id=evse_id, value=value)
         await self.websocket.send_request(request)
 
     async def set_price_based_settings(
