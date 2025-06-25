@@ -90,7 +90,7 @@ class Client:
 
     async def set_linked_charge_cards_only(self, evse_id: str, value: bool) -> None:
         """Set public_charging of a charge point to a value."""
-        request = self._create_request("SET_PUBLIC_CHARGING", evse_id=evse_id, valuue=not value)
+        request = self._create_request("SET_PUBLIC_CHARGING", evse_id=evse_id, value=not value)
         await self.websocket.send_request(request)
 
     async def set_plug_and_charge(self, evse_id: str, value: bool) -> None:
@@ -116,9 +116,10 @@ class Client:
         request = self._create_request("REBOOT", evse_id=evse_id)
         await self.websocket.send_request(request)
 
-    async def start_session(self, evse_id: str, card_uid: str) -> None:
-        """Start a charge session at a charge point."""
-        request = self._create_request("START_SESSION", evse_id=evse_id, card_uid=card_uid)
+    async def start_session(self, evse_id: str, session_token: str) -> None:
+        """Start a charge session at a charge point.
+        session_token = card_uuid """
+        request = self._create_request("START_SESSION", evse_id=evse_id, session_token=session_token)
         await self.websocket.send_request(request)
 
     async def stop_session(self, evse_id: str) -> None:

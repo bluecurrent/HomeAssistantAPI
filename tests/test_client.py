@@ -11,11 +11,11 @@ def test_create_request():
     assert request == {"command": "GET_CHARGE_POINTS"}
 
     # evse_id
-    request = client._create_request("GET_STATUS", "101")
+    request = client._create_request("GET_STATUS", evse_id="101")
     assert request == {"command": "GET_STATUS", "evse_id": "101"}
 
     # value
-    request = client._create_request("SET_PLUG_AND_CHARGE", "101", True)
+    request = client._create_request("SET_PLUG_AND_CHARGE", evse_id="101", value=True)
     assert request == {
         "command": "SET_PLUG_AND_CHARGE",
         "evse_id": "101",
@@ -23,7 +23,7 @@ def test_create_request():
     }
 
     # card_uid / session_token
-    request = client._create_request("START_SESSION", "101", card_uid="1234")
+    request = client._create_request("START_SESSION", evse_id="101", session_token="1234")
     assert request == {
         "command": "START_SESSION",
         "evse_id": "101",
