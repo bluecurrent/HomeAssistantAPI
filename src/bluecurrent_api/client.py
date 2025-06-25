@@ -131,11 +131,43 @@ class Client:
         request = self._create_request("SET_DELAYED_CHARGING", evse_id, value)
         await self.websocket.send_request(request)
 
+    async def save_scheduled_delayed_charging(
+            self,
+            evse_id: str,
+            days: list[int],
+            start_time: str,
+            end_time: str) -> None:
+        """Send the selected settings in order to schedule delayed charging."""
+        request = self._create_request(
+            "SAVE_SCHEDULE_DELAYED_CHARGING",
+            evse_id,
+            days=days,
+            start_time=start_time,
+            end_time=end_time
+        )
+        await self.websocket.send_request(request)
+
     async def set_price_based_charging(self, evse_id: str, value: bool) -> None:
         """Turn smart charging profile on/off and set the profile to price based charging."""
         request = self._create_request("SET_PRICE_BASED_CHARGING", evse_id, value)
         await self.websocket.send_request(request)
 
+    async def set_price_based_settings(
+            self,
+            evse_id: str,
+            expected_departure_time: str,
+            expected_charging_session_size: float,
+            immediately_charge: float
+    ) -> None:
+        """Set the price based charging settings."""
+        request = self._create_request(
+            "SET_PRICE_BASED_SETTINGS",
+            evse_id,
+            expected_departure_time=expected_departure_time,
+            expected_charging_session_size=expected_charging_session_size,
+            immediately_charge=immediately_charge
+        )
+        await self.websocket.send_request(request)
 
     def _create_request(
         self,
@@ -143,17 +175,29 @@ class Client:
         evse_id: Optional[str] = None,
         value: Optional[bool] = None,
         card_uid: Optional[str] = None,
+        days: Optional[list[int]] = None,
+        start_time: Optional[str] = None,
+        end_time: Optional[str] = None,
+        expected_departure_time: Optional[str] = None,
+        expected_charging_session_size: Optional[float] = None,
+        immediately_charge: Optional[float] = None,
+
     ) -> dict[str, Any]:
         """Create a request."""
         request: dict[str, Any] = {"command": command}
 
-        if evse_id:
-            request["evse_id"] = evse_id
+        optional_fields = {
+            "evse_id": evse_id,
+            "value": value,
+            "session_token": card_uid,
+            "days": days,
+            "start_time": start_time,
+            "end_time": end_time,
+            "expected_departure_time": expected_departure_time,
+            "expected_charging_session_size": expected_charging_session_size,
+            "immediately_charge": immediately_charge,
+        }
 
-        if value is not None:
-            request["value"] = value
-
-        if card_uid:
-            request["session_token"] = card_uid
+        request.update({k: v for k, v in optional_fields.items() if v is not None})
 
         return request
