@@ -170,8 +170,8 @@ class Client:
             "SET_PRICE_BASED_SETTINGS",
             evse_id=evse_id,
             expected_departure_time=expected_departure_time,
-            expected_charging_session_size=expected_charging_session_size,
-            immediately_charge=immediately_charge
+            expected_charging_session_size=str(expected_charging_session_size),
+            immediately_charge=str(immediately_charge)
         )
         await self.websocket.send_request(request)
 
