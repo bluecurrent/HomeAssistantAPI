@@ -162,16 +162,16 @@ class Client:
             self,
             evse_id: str,
             expected_departure_time: str,
-            expected_charging_session_size: float,
-            immediately_charge: float
+            expected_kwh: float,
+            minimum_kwh: float
     ) -> None:
         """Set the price based charging settings."""
         request = self._create_request(
             "SET_PRICE_BASED_SETTINGS",
             evse_id=evse_id,
             expected_departure_time=expected_departure_time,
-            expected_charging_session_size=str(expected_charging_session_size),
-            immediately_charge=str(immediately_charge)
+            expected_kwh=str(expected_kwh),
+            minimum_kwh=str(minimum_kwh)
         )
         await self.websocket.send_request(request)
 
