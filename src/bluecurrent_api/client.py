@@ -174,7 +174,7 @@ class Client:
         )
         await self.websocket.send_request(request)
 
-    def _create_request(self, command: str, **kwargs) -> dict[str, Any]:
+    def _create_request(self, command: str, **kwargs: Any) -> dict[str, Any]:
         request = {"command": command}
         request.update({k: v for k, v in kwargs.items() if v is not None})
         return request
