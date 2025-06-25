@@ -119,7 +119,11 @@ class Client:
     async def start_session(self, evse_id: str, session_token: str) -> None:
         """Start a charge session at a charge point.
         session_token = card_uuid """
-        request = self._create_request("START_SESSION", evse_id=evse_id, session_token=session_token)
+        request = self._create_request(
+            "START_SESSION",
+            evse_id=evse_id,
+            session_token=session_token
+        )
         await self.websocket.send_request(request)
 
     async def stop_session(self, evse_id: str) -> None:
