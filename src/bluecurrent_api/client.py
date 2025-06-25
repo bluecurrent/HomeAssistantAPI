@@ -2,7 +2,7 @@
 
 import logging
 from datetime import timedelta
-from typing import Any, Optional
+from typing import Any
 from collections.abc import Callable, Coroutine
 
 from .utils import get_next_reset_delta
