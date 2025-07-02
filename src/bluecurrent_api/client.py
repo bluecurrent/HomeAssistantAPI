@@ -176,6 +176,7 @@ class Client:
         await self.websocket.send_request(request)
 
     async def override_charging_profiles(self, evse_id: str, value: bool) -> None:
+        """Override price based charging profiles."""
         request = self._create_request(
             "OVERRIDE_CHARGING_PROFILES",
             evse_id=evse_id,
@@ -184,6 +185,7 @@ class Client:
         await self.websocket.send_request(request)
 
     async def override_delayed_charging_timeout(self, evse_id: str, value: bool) -> None:
+        """Override delayed charging profile timeout."""
         request = self._create_request(
             "OVERRIDE_DELAYED_CHARGING_TIMEOUT",
             evse_id=evse_id,
