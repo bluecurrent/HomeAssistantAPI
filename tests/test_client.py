@@ -89,6 +89,36 @@ async def test_requests(mocker: MockerFixture):
     await client.stop_session("101")
     test_send_request.assert_called_with({"command": "STOP_SESSION", "evse_id": "101"})
 
+    await client.set_delayed_charging("101", True)
+    test_send_request.assert_called_with({"command": "SET_DELAYED_CHARGING", "evse_id": "101", "value": True})
+
+    await client.save_scheduled_delayed_charging("101", [1, 2], "13:00", "20:00")
+    test_send_request.assert_called_with(
+        {
+            "command": "SAVE_SCHEDULE_DELAYED_CHARGING",
+            "evse_id": "101",
+            "days": "[1,2]",
+            "start_time": "13:00",
+            "end_time": "20:00"
+        }
+    )
+
+    await client.set_price_based_charging("101", True)
+    test_send_request.assert_called_with({"command": "SET_PRICE_BASED_CHARGING", "evse_id": "101", "value": True})
+
+    await client.set_price_based_settings("101", "10:00", 6.0, 2.0)
+    test_send_request.assert_called_with(
+        {
+            "command": "SET_PRICE_BASED_SETTINGS",
+            "evse_id": "101",
+            "expected_departure_time": "10:00",
+            "expected_kwh": "6.0",
+            "minimum_kwh": "2.0"
+        }
+    )
+
+
+
 
 @pytest.mark.asyncio
 async def test_on_open(mocker: MockerFixture):
