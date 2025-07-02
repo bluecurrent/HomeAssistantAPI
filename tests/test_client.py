@@ -117,6 +117,24 @@ async def test_requests(mocker: MockerFixture):
         }
     )
 
+    await client.override_charging_profiles("101", True)
+    test_send_request.assert_called_with(
+        {
+            "command": "OVERRIDE_CHARGING_PROFILES",
+            "evse_id": "101",
+            "value": True
+        }
+    )
+
+    await client.override_delayed_charging_timeout("101", True)
+    test_send_request.assert_called_with(
+        {
+            "command": "OVERRIDE_DELAYED_CHARGING_TIMEOUT",
+            "evse_id": "101",
+            "value": True
+        }
+    )
+
 
 
 
