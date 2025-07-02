@@ -28,6 +28,11 @@ def calculate_average_usage_from_phases(phases: list[float | None]) -> float:
     return 0
 
 
+def join_numbers_with_commas(numbers: list[int]) -> str:
+    """Convert a list of numbers to a string with commas."""
+    return "[" + ",".join(str(num) for num in numbers) + "]"
+
+
 def calculate_total_kw(c_avg: float, v_avg: float) -> float:
     """Calculate the total kW."""
     return round((c_avg * v_avg * 1.732 / 1000), 2)

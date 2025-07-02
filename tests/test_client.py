@@ -11,11 +11,11 @@ def test_create_request():
     assert request == {"command": "GET_CHARGE_POINTS"}
 
     # evse_id
-    request = client._create_request("GET_STATUS", "101")
+    request = client._create_request("GET_STATUS", evse_id="101")
     assert request == {"command": "GET_STATUS", "evse_id": "101"}
 
     # value
-    request = client._create_request("SET_PLUG_AND_CHARGE", "101", True)
+    request = client._create_request("SET_PLUG_AND_CHARGE", evse_id="101", value=True)
     assert request == {
         "command": "SET_PLUG_AND_CHARGE",
         "evse_id": "101",
@@ -23,7 +23,7 @@ def test_create_request():
     }
 
     # card_uid / session_token
-    request = client._create_request("START_SESSION", "101", card_uid="1234")
+    request = client._create_request("START_SESSION", evse_id="101", session_token="1234")
     assert request == {
         "command": "START_SESSION",
         "evse_id": "101",
@@ -88,6 +88,36 @@ async def test_requests(mocker: MockerFixture):
 
     await client.stop_session("101")
     test_send_request.assert_called_with({"command": "STOP_SESSION", "evse_id": "101"})
+
+    await client.set_delayed_charging("101", True)
+    test_send_request.assert_called_with({"command": "SET_DELAYED_CHARGING", "evse_id": "101", "value": True})
+
+    await client.save_scheduled_delayed_charging("101", [1, 2], "13:00", "20:00")
+    test_send_request.assert_called_with(
+        {
+            "command": "SAVE_SCHEDULE_DELAYED_CHARGING",
+            "evse_id": "101",
+            "days": "[1,2]",
+            "start_time": "13:00",
+            "end_time": "20:00"
+        }
+    )
+
+    await client.set_price_based_charging("101", True)
+    test_send_request.assert_called_with({"command": "SET_PRICE_BASED_CHARGING", "evse_id": "101", "value": True})
+
+    await client.set_price_based_settings("101", "10:00", 6.0, 2.0)
+    test_send_request.assert_called_with(
+        {
+            "command": "SET_PRICE_BASED_SETTINGS",
+            "evse_id": "101",
+            "expected_departure_time": "10:00",
+            "expected_kwh": "6.0",
+            "minimum_kwh": "2.0"
+        }
+    )
+
+
 
 
 @pytest.mark.asyncio
