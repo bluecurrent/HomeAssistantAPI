@@ -193,6 +193,43 @@ class Client:
         )
         await self.websocket.send_request(request)
 
+    async def get_list_user_override_current(self):
+        """Get a list with current overwrite values and scheduling data."""
+        request = self._create_request("LIST_OVERRIDE_CURRENT")
+        await self.websocket.send_request(request)
+
+    async def set_user_override_current(
+            self,
+            evse_ids: list[str],
+            start_time: str,
+            start_days: list[str],
+            stop_time: str,
+            stop_days: list[str],
+            override_value: float
+    ) -> None:
+        """
+        Schedules an override of the electricity current that chargepoints are allowed to use when charging.
+
+        Args:
+            evse_ids (list[str]): List of chargepoint IDs to apply the override to.
+            start_time (str): Time when the override should start, in HH24:MI format.
+            start_days (list[str]): Days of the week when the override should start.
+                Use 2-letter weekday codes (e.g., 'MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU').
+            stop_time (str): Time when the override should stop, in HH24:MI format.
+            stop_days (list[str]): Days of the week when the override should stop.
+                Use 2-letter weekday codes (e.g., 'MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU').
+            override_value (float): The current (in amperes) to override the chargepoints with.
+        """
+        request = self._create_request(
+            "POST_SET_OVERRIDE_CURRENT",
+            chargepoints=evse_ids,
+            overridestarttime=start_time,
+            overridestartdays=start_days,
+            overridestoptime=stop_time,
+            overridestopdays=stop_days,
+            overridevalue=override_value
+        )
+        await self.websocket.send_request(request)
 
     def _create_request(self, command: str, **kwargs: Any) -> dict[str, Any]:
         request = {"command": command}
