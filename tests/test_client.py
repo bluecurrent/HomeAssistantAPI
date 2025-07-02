@@ -135,7 +135,62 @@ async def test_requests(mocker: MockerFixture):
         }
     )
 
+    await client.get_list_user_override_current()
+    test_send_request.assert_called_with(
+        {
+            "command": "LIST_OVERRIDE_CURRENT"
+        }
+    )
 
+    await client.set_user_override_current(
+        evse_ids=["101", "102"],
+        start_time="08:00",
+        start_days=["MO", "TU"],
+        stop_time="18:00",
+        stop_days=["MO", "TU"],
+        override_value=16.0
+    )
+    test_send_request.assert_called_with(
+        {
+            "command": "POST_SET_OVERRIDE_CURRENT",
+            "chargepoints": ["101", "102"],
+            "overridestarttime": "08:00",
+            "overridestartdays": ["MO", "TU"],
+            "overridestoptime": "18:00",
+            "overridestopdays": ["MO", "TU"],
+            "overridevalue": 16.0
+        }
+    )
+
+    await client.clear_user_override_current("123")
+    test_send_request.assert_called_with(
+        {
+            "command": "POST_CLEAR_OVERRIDE_CURRENT",
+            "schedule_id": 123
+        }
+    )
+
+    await client.edit_user_override_current(
+        schedule_id="456",
+        evse_ids=["101", "102"],
+        start_time="07:00",
+        start_days=["WE", "TH"],
+        stop_time="19:00",
+        stop_days=["WE", "TH"],
+        override_value=10.0
+    )
+    test_send_request.assert_called_with(
+        {
+            "command": "POST_EDIT_OVERRIDE_CURRENT",
+            "schedule_id": "456",
+            "chargepoints": ["101", "102"],
+            "overridestarttime": "07:00",
+            "overridestartdays": ["WE", "TH"],
+            "overridestoptime": "19:00",
+            "overridestopdays": ["WE", "TH"],
+            "overridevalue": 10.0
+        }
+    )
 
 
 @pytest.mark.asyncio
