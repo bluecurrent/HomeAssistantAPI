@@ -231,7 +231,50 @@ class Client:
         )
         await self.websocket.send_request(request)
 
+    async def clear_user_override_current(self, schedule_id: str) -> None:
+        """Clears a previously set user override using the given schedule ID."""
+        request = self._create_request("POST_CLEAR_OVERRIDE_CURRENT", schedule_id=int(schedule_id))
+        await self.websocket.send_request(request)
+
+    async def edit_user_override_current(
+            self,
+            schedule_id: str,
+            evse_ids: list[str],
+            start_time: str,
+            start_days: list[str],
+            stop_time: str,
+            stop_days: list[str],
+            override_value: float
+    ) -> None:
+        """
+        Schedules an override of the electricity current that chargepoints are allowed to use when charging.
+
+        Args:
+            schedule_id (str): The schedule's ID which is it be edited.
+            evse_ids (list[str]): List of chargepoint IDs to apply the override to.
+            start_time (str): Time when the override should start, in HH24:MI format.
+            start_days (list[str]): Days of the week when the override should start.
+                Use 2-letter weekday codes (e.g., 'MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU').
+            stop_time (str): Time when the override should stop, in HH24:MI format.
+            stop_days (list[str]): Days of the week when the override should stop.
+                Use 2-letter weekday codes (e.g., 'MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU').
+            override_value (float): The current (in amperes) to override the chargepoints with.
+        """
+        request = self._create_request(
+            "POST_EDIT_OVERRIDE_CURRENT",
+            schedule_id=schedule_id,
+            chargepoints=evse_ids,
+            overridestarttime=start_time,
+            overridestartdays=start_days,
+            overridestoptime=stop_time,
+            overridestopdays=stop_days,
+            overridevalue=override_value
+        )
+        await self.websocket.send_request(request)
+
+
     def _create_request(self, command: str, **kwargs: Any) -> dict[str, Any]:
+        """Creates the JSON for the websocket request."""
         request = {"command": command}
         request.update({k: v for k, v in kwargs.items() if v is not None})
         return request
