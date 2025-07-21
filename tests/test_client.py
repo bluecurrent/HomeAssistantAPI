@@ -1,6 +1,7 @@
 from src.bluecurrent_api.client import Client
 import pytest
 from pytest_mock import MockerFixture
+from src.bluecurrent_api.types import OverrideCurrentPayload
 
 
 def test_create_request():
@@ -104,7 +105,9 @@ async def test_requests(mocker: MockerFixture):
     )
 
     await client.set_price_based_charging("101", True)
-    test_send_request.assert_called_with({"command": "SET_PRICE_BASED_CHARGING", "evse_id": "101", "value": True})
+    test_send_request.assert_called_with(
+        {"command": "SET_PRICE_BASED_CHARGING", "evse_id": "101", "value": True}
+    )
 
     await client.set_price_based_settings("101", "10:00", 6.0, 2.0)
     test_send_request.assert_called_with(
@@ -143,12 +146,14 @@ async def test_requests(mocker: MockerFixture):
     )
 
     await client.set_user_override_current(
-        evse_ids=["101", "102"],
-        start_time="08:00",
-        start_days=["MO", "TU"],
-        stop_time="18:00",
-        stop_days=["MO", "TU"],
-        override_value=16.0
+        payload=OverrideCurrentPayload(
+            chargepoints=["101", "102"],
+            overridestarttime="08:00",
+            overridestartdays=["MO", "TU"],
+            overridestoptime="18:00",
+            overridestopdays=["MO", "TU"],
+            overridevalue=16.0
+        )
     )
     test_send_request.assert_called_with(
         {
@@ -172,12 +177,14 @@ async def test_requests(mocker: MockerFixture):
 
     await client.edit_user_override_current(
         schedule_id="456",
-        evse_ids=["101", "102"],
-        start_time="07:00",
-        start_days=["WE", "TH"],
-        stop_time="19:00",
-        stop_days=["WE", "TH"],
-        override_value=10.0
+        payload=OverrideCurrentPayload(
+            chargepoints=["101", "102"],
+            overridestarttime="08:00",
+            overridestartdays=["WE", "TH"],
+            overridestoptime="18:00",
+            overridestopdays=["WE", "TH"],
+            overridevalue=16.0
+        )
     )
     test_send_request.assert_called_with(
         {
@@ -192,6 +199,7 @@ async def test_requests(mocker: MockerFixture):
         }
     )
 
+# TODO fix pylint issues (possibly by intoducing data classes for the functions with too many arguments.
 
 @pytest.mark.asyncio
 async def test_on_open(mocker: MockerFixture):
