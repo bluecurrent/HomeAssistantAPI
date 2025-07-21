@@ -137,7 +137,7 @@ class Client:
         request = self._create_request("SET_DELAYED_CHARGING", evse_id=evse_id, value=value)
         await self.websocket.send_request(request)
 
-    async def save_scheduled_delayed_charging(
+    async def set_delayed_charging_settings(
             self,
             evse_id: str,
             days: list[int],

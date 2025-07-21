@@ -93,7 +93,7 @@ async def test_requests(mocker: MockerFixture):
     await client.set_delayed_charging("101", True)
     test_send_request.assert_called_with({"command": "SET_DELAYED_CHARGING", "evse_id": "101", "value": True})
 
-    await client.save_scheduled_delayed_charging("101", [1, 2], "13:00", "20:00")
+    await client.set_delayed_charging_settings("101", [1, 2], "13:00", "20:00")
     test_send_request.assert_called_with(
         {
             "command": "SAVE_SCHEDULE_DELAYED_CHARGING",
