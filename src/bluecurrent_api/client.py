@@ -199,7 +199,7 @@ class Client:
         await self.websocket.send_request(request)
 
     async def get_user_override_currents_list(self) -> None:
-        """Get a list with current overwrite values and scheduling data set by the user."""
+        """Get a list with current override values and scheduling data set by the user."""
         request = self._create_request("LIST_OVERRIDE_CURRENT")
         await self.websocket.send_request(request)
 

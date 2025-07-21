@@ -118,6 +118,10 @@ asyncio.run(main())
 
 - Gets the grid status from a chargepoint.
 
+#### await get_user_override_currents_list()
+
+- Returns a list with current override values set by the user and the related scheduling data.
+
 <br>
 
 ### Settings
@@ -157,3 +161,42 @@ asyncio.run(main())
 #### await stop_session(evse_id)
 
 - Stops a charge session.
+
+#### await set_delayed_charging(evse_id, value)
+
+- Turns smart charging profile on/off and sets the profile to delayed charging.
+
+#### await set_delayed_charging_settings(evse_id, days, start_time, end_time)
+
+- Sends the settings for the scheduling of the delayed charging profile.
+
+#### await set_price_based_charging(evse_id, value)
+
+- Turns smart charging profile on/off and sets the profile to price based charging.
+
+#### await set_price_based_settings(evse_id, expected_departure_time, expected_kwh, minimum_kwh)
+
+- Sends the settings for the price based charging profile.
+
+#### await override_price_based_charging_profile(evse_id: str, value)
+
+- Overrides the settings set up by the price based charging profile and starts charging immediately.
+
+#### await override_delayed_charging_profile(evse_id, value)
+
+- Overrides the timeout set by the delayed charging profile and starts charging immediately.
+
+#### await set_user_override_current(payload)
+
+- Schedules an override of the electricity current that chargepoints are allowed
+         to use when charging.
+
+#### await clear_user_override_current(schedule_id)
+
+- Clears a previously set user override using the given schedule ID.
+
+#### edit_user_override_current(schedule_id, payload)
+
+- Lets the user edit a scheduled override of the electricity current that chargepoints
+         are allowed to use when charging.
+
