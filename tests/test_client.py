@@ -179,11 +179,11 @@ async def test_requests(mocker: MockerFixture):
         schedule_id="456",
         payload=OverrideCurrentPayload(
             chargepoints=["101", "102"],
-            overridestarttime="08:00",
+            overridestarttime="07:00",
             overridestartdays=["WE", "TH"],
-            overridestoptime="18:00",
+            overridestoptime="19:00",
             overridestopdays=["WE", "TH"],
-            overridevalue=16.0
+            overridevalue=10.0
         )
     )
     test_send_request.assert_called_with(
