@@ -195,7 +195,7 @@ asyncio.run(main())
 
 - Clears a previously set user override using the given schedule ID.
 
-#### edit_user_override_current(schedule_id, payload)
+#### await edit_user_override_current(schedule_id, payload)
 
 - Lets the user edit a scheduled override of the electricity current that chargepoints
          are allowed to use when charging.
