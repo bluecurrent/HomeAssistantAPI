@@ -199,7 +199,6 @@ async def test_requests(mocker: MockerFixture):
         }
     )
 
-# TODO fix pylint issues (possibly by intoducing data classes for the functions with too many arguments.
 
 @pytest.mark.asyncio
 async def test_on_open(mocker: MockerFixture):
