@@ -1,11 +1,12 @@
 """Define an object to interact with the BlueCurrent websocket api."""
-
 import logging
 from datetime import timedelta
 from typing import Any
 from collections.abc import Callable, Coroutine
+from dataclasses import asdict
 
 from .utils import get_next_reset_delta, join_numbers_with_commas
+from .types import OverrideCurrentPayload
 from .websocket import Websocket
 
 LOGGER = logging.getLogger(__package__)
@@ -155,7 +156,11 @@ class Client:
 
     async def set_price_based_charging(self, evse_id: str, value: bool) -> None:
         """Turn smart charging profile on/off and set the profile to price based charging."""
-        request = self._create_request("SET_PRICE_BASED_CHARGING", evse_id=evse_id, value=value)
+        request = self._create_request(
+            "SET_PRICE_BASED_CHARGING",
+            evse_id=evse_id,
+            value=value
+        )
         await self.websocket.send_request(request)
 
     async def set_price_based_settings(
@@ -193,8 +198,68 @@ class Client:
         )
         await self.websocket.send_request(request)
 
+    async def get_list_user_override_current(self) -> None:
+        """Get a list with current overwrite values and scheduling data."""
+        request = self._create_request("LIST_OVERRIDE_CURRENT")
+        await self.websocket.send_request(request)
+
+    async def set_user_override_current(
+            self,
+            payload: OverrideCurrentPayload
+    ) -> None:
+        """
+        Schedules an override of the electricity current that chargepoints are allowed
+         to use when charging.
+
+        Args:
+            payload (OverrideCurrentPayload): The override configuration.
+             See dataclass fields for details.
+
+        Note: day fields in the payload(`overridestartdays`, `overridestopdays`) must use
+        2-letter weekday codes:
+        'MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'.
+        """
+        request = self._create_request(
+            "POST_SET_OVERRIDE_CURRENT",
+            **asdict(payload)
+        )
+        await self.websocket.send_request(request)
+
+    async def clear_user_override_current(self, schedule_id: str) -> None:
+        """Clears a previously set user override using the given schedule ID."""
+        request = self._create_request(
+            "POST_CLEAR_OVERRIDE_CURRENT",
+            schedule_id=int(schedule_id)
+        )
+        await self.websocket.send_request(request)
+
+    async def edit_user_override_current(
+            self,
+            schedule_id: str,
+            payload: OverrideCurrentPayload
+    ) -> None:
+        """
+        Lets the user edit a scheduled override of the electricity current that chargepoints
+         are allowed to use when charging.
+
+        Args:
+            schedule_id (str): The schedule's ID which is it be edited.
+            payload (OverrideCurrentPayload): The override configuration.
+            See dataclass fields for details.
+
+        Note: day fields in the payload (`overridestartdays`, `overridestopdays`) must use
+        2-letter weekday codes:
+        'MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'.
+        """
+        request = self._create_request(
+            "POST_EDIT_OVERRIDE_CURRENT",
+            schedule_id=schedule_id,
+            **asdict(payload)
+        )
+        await self.websocket.send_request(request)
 
     def _create_request(self, command: str, **kwargs: Any) -> dict[str, Any]:
+        """Creates the JSON for the websocket request."""
         request = {"command": command}
         request.update({k: v for k, v in kwargs.items() if v is not None})
         return request

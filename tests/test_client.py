@@ -1,6 +1,7 @@
 from src.bluecurrent_api.client import Client
 import pytest
 from pytest_mock import MockerFixture
+from src.bluecurrent_api.types import OverrideCurrentPayload
 
 
 def test_create_request():
@@ -104,7 +105,9 @@ async def test_requests(mocker: MockerFixture):
     )
 
     await client.set_price_based_charging("101", True)
-    test_send_request.assert_called_with({"command": "SET_PRICE_BASED_CHARGING", "evse_id": "101", "value": True})
+    test_send_request.assert_called_with(
+        {"command": "SET_PRICE_BASED_CHARGING", "evse_id": "101", "value": True}
+    )
 
     await client.set_price_based_settings("101", "10:00", 6.0, 2.0)
     test_send_request.assert_called_with(
@@ -135,7 +138,66 @@ async def test_requests(mocker: MockerFixture):
         }
     )
 
+    await client.get_list_user_override_current()
+    test_send_request.assert_called_with(
+        {
+            "command": "LIST_OVERRIDE_CURRENT"
+        }
+    )
 
+    await client.set_user_override_current(
+        payload=OverrideCurrentPayload(
+            chargepoints=["101", "102"],
+            overridestarttime="08:00",
+            overridestartdays=["MO", "TU"],
+            overridestoptime="18:00",
+            overridestopdays=["MO", "TU"],
+            overridevalue=16.0
+        )
+    )
+    test_send_request.assert_called_with(
+        {
+            "command": "POST_SET_OVERRIDE_CURRENT",
+            "chargepoints": ["101", "102"],
+            "overridestarttime": "08:00",
+            "overridestartdays": ["MO", "TU"],
+            "overridestoptime": "18:00",
+            "overridestopdays": ["MO", "TU"],
+            "overridevalue": 16.0
+        }
+    )
+
+    await client.clear_user_override_current("123")
+    test_send_request.assert_called_with(
+        {
+            "command": "POST_CLEAR_OVERRIDE_CURRENT",
+            "schedule_id": 123
+        }
+    )
+
+    await client.edit_user_override_current(
+        schedule_id="456",
+        payload=OverrideCurrentPayload(
+            chargepoints=["101", "102"],
+            overridestarttime="07:00",
+            overridestartdays=["WE", "TH"],
+            overridestoptime="19:00",
+            overridestopdays=["WE", "TH"],
+            overridevalue=10.0
+        )
+    )
+    test_send_request.assert_called_with(
+        {
+            "command": "POST_EDIT_OVERRIDE_CURRENT",
+            "schedule_id": "456",
+            "chargepoints": ["101", "102"],
+            "overridestarttime": "07:00",
+            "overridestartdays": ["WE", "TH"],
+            "overridestoptime": "19:00",
+            "overridestopdays": ["WE", "TH"],
+            "overridevalue": 10.0
+        }
+    )
 
 
 @pytest.mark.asyncio
