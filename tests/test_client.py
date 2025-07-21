@@ -120,7 +120,7 @@ async def test_requests(mocker: MockerFixture):
         }
     )
 
-    await client.override_charging_profiles("101", True)
+    await client.override_price_based_charging_profile("101", True)
     test_send_request.assert_called_with(
         {
             "command": "OVERRIDE_CHARGING_PROFILES",
@@ -129,7 +129,7 @@ async def test_requests(mocker: MockerFixture):
         }
     )
 
-    await client.override_delayed_charging_timeout("101", True)
+    await client.override_delayed_charging_profile("101", True)
     test_send_request.assert_called_with(
         {
             "command": "OVERRIDE_DELAYED_CHARGING_TIMEOUT",
@@ -138,7 +138,7 @@ async def test_requests(mocker: MockerFixture):
         }
     )
 
-    await client.get_list_user_override_current()
+    await client.get_user_override_currents_list()
     test_send_request.assert_called_with(
         {
             "command": "LIST_OVERRIDE_CURRENT"

@@ -180,8 +180,8 @@ class Client:
         )
         await self.websocket.send_request(request)
 
-    async def override_charging_profiles(self, evse_id: str, value: bool) -> None:
-        """Override price based charging profiles."""
+    async def override_price_based_charging_profile(self, evse_id: str, value: bool) -> None:
+        """Override the settings set up by the price based charging profile."""
         request = self._create_request(
             "OVERRIDE_CHARGING_PROFILES",
             evse_id=evse_id,
@@ -189,8 +189,8 @@ class Client:
         )
         await self.websocket.send_request(request)
 
-    async def override_delayed_charging_timeout(self, evse_id: str, value: bool) -> None:
-        """Override delayed charging profile timeout."""
+    async def override_delayed_charging_profile(self, evse_id: str, value: bool) -> None:
+        """Override the timeout set by the delayed charging profile."""
         request = self._create_request(
             "OVERRIDE_DELAYED_CHARGING_TIMEOUT",
             evse_id=evse_id,
@@ -198,8 +198,8 @@ class Client:
         )
         await self.websocket.send_request(request)
 
-    async def get_list_user_override_current(self) -> None:
-        """Get a list with current overwrite values and scheduling data."""
+    async def get_user_override_currents_list(self) -> None:
+        """Get a list with current overwrite values and scheduling data set by the user."""
         request = self._create_request("LIST_OVERRIDE_CURRENT")
         await self.websocket.send_request(request)
 
