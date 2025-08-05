@@ -2,12 +2,11 @@
 
 from datetime import datetime, timedelta
 from typing import Any, Optional, Union
-
-import pytz
+from zoneinfo import ZoneInfo
 
 from .exceptions import BlueCurrentException, RequestLimitReached, WebsocketError
 
-TZ = pytz.timezone("Europe/Amsterdam")
+TZ = ZoneInfo("Europe/Amsterdam")
 
 ERRORS: dict[int, BlueCurrentException] = {
     0: WebsocketError("Unknown command"),
@@ -48,7 +47,7 @@ def create_datetime(timestamp: str) -> Optional[datetime]:
         return datetime.strptime(timestamp, "%Y%m%d %H:%M:%S%z")
 
     time = datetime.strptime(timestamp, "%Y%m%d %H:%M:%S")
-    time = TZ.localize(time)
+    time = time.replace(tzinfo=TZ)
     return time
 
 

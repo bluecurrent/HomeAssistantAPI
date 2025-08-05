@@ -1,5 +1,4 @@
 websockets
-pytz
 types-pytz
 
 # dev dependencies
