@@ -1,4 +1,5 @@
 """Define an object to interact with the BlueCurrent websocket api."""
+
 import logging
 from datetime import timedelta
 from typing import Any
@@ -91,12 +92,16 @@ class Client:
 
     async def set_linked_charge_cards_only(self, evse_id: str, value: bool) -> None:
         """Set public_charging of a charge point to a value."""
-        request = self._create_request("SET_PUBLIC_CHARGING", evse_id=evse_id, value=not value)
+        request = self._create_request(
+            "SET_PUBLIC_CHARGING", evse_id=evse_id, value=not value
+        )
         await self.websocket.send_request(request)
 
     async def set_plug_and_charge(self, evse_id: str, value: bool) -> None:
         """Set plug_and_charge of a charge point to a value."""
-        request = self._create_request("SET_PLUG_AND_CHARGE", evse_id=evse_id, value=value)
+        request = self._create_request(
+            "SET_PLUG_AND_CHARGE", evse_id=evse_id, value=value
+        )
         await self.websocket.send_request(request)
 
     async def block(self, evse_id: str, value: bool) -> None:
@@ -119,11 +124,9 @@ class Client:
 
     async def start_session(self, evse_id: str, session_token: str) -> None:
         """Start a charge session at a charge point.
-        session_token = card_uuid """
+        session_token = card_uuid"""
         request = self._create_request(
-            "START_SESSION",
-            evse_id=evse_id,
-            session_token=session_token
+            "START_SESSION", evse_id=evse_id, session_token=session_token
         )
         await self.websocket.send_request(request)
 
@@ -134,15 +137,14 @@ class Client:
 
     async def set_delayed_charging(self, evse_id: str, value: bool) -> None:
         """Turn smart charging profile on/off and set the profile to delayed charging."""
-        request = self._create_request("SET_DELAYED_CHARGING", evse_id=evse_id, value=value)
+        request = self._create_request(
+            "SET_DELAYED_CHARGING", evse_id=evse_id, value=value
+        )
         await self.websocket.send_request(request)
 
     async def set_delayed_charging_settings(
-            self,
-            evse_id: str,
-            days: list[int],
-            start_time: str,
-            end_time: str) -> None:
+        self, evse_id: str, days: list[int], start_time: str, end_time: str
+    ) -> None:
         """Send the selected settings in order to schedule delayed charging."""
         days_str = join_numbers_with_commas(days)
         request = self._create_request(
@@ -150,25 +152,23 @@ class Client:
             evse_id=evse_id,
             days=days_str,
             start_time=start_time,
-            end_time=end_time
+            end_time=end_time,
         )
         await self.websocket.send_request(request)
 
     async def set_price_based_charging(self, evse_id: str, value: bool) -> None:
         """Turn smart charging profile on/off and set the profile to price based charging."""
         request = self._create_request(
-            "SET_PRICE_BASED_CHARGING",
-            evse_id=evse_id,
-            value=value
+            "SET_PRICE_BASED_CHARGING", evse_id=evse_id, value=value
         )
         await self.websocket.send_request(request)
 
     async def set_price_based_settings(
-            self,
-            evse_id: str,
-            expected_departure_time: str,
-            expected_kwh: float,
-            minimum_kwh: float
+        self,
+        evse_id: str,
+        expected_departure_time: str,
+        expected_kwh: float,
+        minimum_kwh: float,
     ) -> None:
         """Set the price based charging settings."""
         request = self._create_request(
@@ -176,25 +176,25 @@ class Client:
             evse_id=evse_id,
             expected_departure_time=expected_departure_time,
             expected_kwh=str(expected_kwh),
-            minimum_kwh=str(minimum_kwh)
+            minimum_kwh=str(minimum_kwh),
         )
         await self.websocket.send_request(request)
 
-    async def override_price_based_charging_profile(self, evse_id: str, value: bool) -> None:
+    async def override_price_based_charging_profile(
+        self, evse_id: str, value: bool
+    ) -> None:
         """Override the settings set up by the price based charging profile."""
         request = self._create_request(
-            "OVERRIDE_CHARGING_PROFILES",
-            evse_id=evse_id,
-            value=value
+            "OVERRIDE_CHARGING_PROFILES", evse_id=evse_id, value=value
         )
         await self.websocket.send_request(request)
 
-    async def override_delayed_charging_profile(self, evse_id: str, value: bool) -> None:
+    async def override_delayed_charging_profile(
+        self, evse_id: str, value: bool
+    ) -> None:
         """Override the timeout set by the delayed charging profile."""
         request = self._create_request(
-            "OVERRIDE_DELAYED_CHARGING_TIMEOUT",
-            evse_id=evse_id,
-            value=value
+            "OVERRIDE_DELAYED_CHARGING_TIMEOUT", evse_id=evse_id, value=value
         )
         await self.websocket.send_request(request)
 
@@ -203,10 +203,7 @@ class Client:
         request = self._create_request("LIST_OVERRIDE_CURRENT")
         await self.websocket.send_request(request)
 
-    async def set_user_override_current(
-            self,
-            payload: OverrideCurrentPayload
-    ) -> None:
+    async def set_user_override_current(self, payload: OverrideCurrentPayload) -> None:
         """
         Schedules an override of the electricity current that chargepoints are allowed
          to use when charging.
@@ -219,24 +216,18 @@ class Client:
         2-letter weekday codes:
         'MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'.
         """
-        request = self._create_request(
-            "POST_SET_OVERRIDE_CURRENT",
-            **asdict(payload)
-        )
+        request = self._create_request("POST_SET_OVERRIDE_CURRENT", **asdict(payload))
         await self.websocket.send_request(request)
 
     async def clear_user_override_current(self, schedule_id: str) -> None:
         """Clears a previously set user override using the given schedule ID."""
         request = self._create_request(
-            "POST_CLEAR_OVERRIDE_CURRENT",
-            schedule_id=int(schedule_id)
+            "POST_CLEAR_OVERRIDE_CURRENT", schedule_id=int(schedule_id)
         )
         await self.websocket.send_request(request)
 
     async def edit_user_override_current(
-            self,
-            schedule_id: str,
-            payload: OverrideCurrentPayload
+        self, schedule_id: str, payload: OverrideCurrentPayload
     ) -> None:
         """
         Lets the user edit a scheduled override of the electricity current that chargepoints
@@ -252,9 +243,7 @@ class Client:
         'MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'.
         """
         request = self._create_request(
-            "POST_EDIT_OVERRIDE_CURRENT",
-            schedule_id=schedule_id,
-            **asdict(payload)
+            "POST_EDIT_OVERRIDE_CURRENT", schedule_id=schedule_id, **asdict(payload)
         )
         await self.websocket.send_request(request)
 

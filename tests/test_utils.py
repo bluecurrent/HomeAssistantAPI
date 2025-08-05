@@ -20,7 +20,7 @@ from src.bluecurrent_api.utils import (
 from datetime import datetime, timezone, timedelta
 from src.bluecurrent_api.exceptions import WebsocketError, RequestLimitReached
 from pytest_mock import MockerFixture
-import pytz
+from zoneinfo import ZoneInfo
 
 
 def test_calculate_total_from_phases():
@@ -74,9 +74,9 @@ def test_get_vehicle_status():
 
 
 def test_create_datetime():
-    TZ = pytz.timezone("Europe/Amsterdam")
+    TZ = ZoneInfo("Europe/Amsterdam")
 
-    test_time = TZ.localize(datetime(2001, 1, 1, 0, 0, 0))
+    test_time = datetime(2001, 1, 1, 0, 0, 0, tzinfo=TZ)
 
     assert create_datetime("20010101 00:00:00") == test_time
 
@@ -141,21 +141,21 @@ def test_handle_status():
         "evse_id": "BCU101",
     }
 
-    TZ = pytz.timezone("Europe/Amsterdam")
+    TZ = ZoneInfo("Europe/Amsterdam")
 
     handle_status(message)
 
     assert message["data"]["avg_voltage"] == 220.0
     assert message["data"]["avg_current"] == 8.0
     assert message["data"]["total_kw"] == 3.05
-    assert message["data"]["start_datetime"] == TZ.localize(
-        datetime(2021, 11, 18, 14, 12, 23)
+    assert message["data"]["start_datetime"] == (
+        datetime(2021, 11, 18, 14, 12, 23, tzinfo=TZ)
     )
-    assert message["data"]["stop_datetime"] == TZ.localize(
-        datetime(2021, 11, 18, 14, 32, 23)
+    assert message["data"]["stop_datetime"] == (
+        datetime(2021, 11, 18, 14, 32, 23, tzinfo=TZ)
     )
-    assert message["data"]["offline_since"] == TZ.localize(
-        datetime(2021, 11, 18, 14, 32, 23)
+    assert message["data"]["offline_since"] == (
+        datetime(2021, 11, 18, 14, 32, 23, tzinfo=TZ)
     )
     assert message["data"]["vehicle_status"] == "standby"
     assert message["data"]["current_left"] == 2.0
