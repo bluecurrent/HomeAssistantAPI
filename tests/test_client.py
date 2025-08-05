@@ -24,7 +24,9 @@ def test_create_request():
     }
 
     # card_uid / session_token
-    request = client._create_request("START_SESSION", evse_id="101", session_token="1234")
+    request = client._create_request(
+        "START_SESSION", evse_id="101", session_token="1234"
+    )
     assert request == {
         "command": "START_SESSION",
         "evse_id": "101",
@@ -91,7 +93,9 @@ async def test_requests(mocker: MockerFixture):
     test_send_request.assert_called_with({"command": "STOP_SESSION", "evse_id": "101"})
 
     await client.set_delayed_charging("101", True)
-    test_send_request.assert_called_with({"command": "SET_DELAYED_CHARGING", "evse_id": "101", "value": True})
+    test_send_request.assert_called_with(
+        {"command": "SET_DELAYED_CHARGING", "evse_id": "101", "value": True}
+    )
 
     await client.set_delayed_charging_settings("101", [1, 2], "13:00", "20:00")
     test_send_request.assert_called_with(
@@ -100,7 +104,7 @@ async def test_requests(mocker: MockerFixture):
             "evse_id": "101",
             "days": "[1,2]",
             "start_time": "13:00",
-            "end_time": "20:00"
+            "end_time": "20:00",
         }
     )
 
@@ -116,17 +120,13 @@ async def test_requests(mocker: MockerFixture):
             "evse_id": "101",
             "expected_departure_time": "10:00",
             "expected_kwh": "6.0",
-            "minimum_kwh": "2.0"
+            "minimum_kwh": "2.0",
         }
     )
 
     await client.override_price_based_charging_profile("101", True)
     test_send_request.assert_called_with(
-        {
-            "command": "OVERRIDE_CHARGING_PROFILES",
-            "evse_id": "101",
-            "value": True
-        }
+        {"command": "OVERRIDE_CHARGING_PROFILES", "evse_id": "101", "value": True}
     )
 
     await client.override_delayed_charging_profile("101", True)
@@ -134,16 +134,12 @@ async def test_requests(mocker: MockerFixture):
         {
             "command": "OVERRIDE_DELAYED_CHARGING_TIMEOUT",
             "evse_id": "101",
-            "value": True
+            "value": True,
         }
     )
 
     await client.get_user_override_currents_list()
-    test_send_request.assert_called_with(
-        {
-            "command": "LIST_OVERRIDE_CURRENT"
-        }
-    )
+    test_send_request.assert_called_with({"command": "LIST_OVERRIDE_CURRENT"})
 
     await client.set_user_override_current(
         payload=OverrideCurrentPayload(
@@ -152,7 +148,7 @@ async def test_requests(mocker: MockerFixture):
             overridestartdays=["MO", "TU"],
             overridestoptime="18:00",
             overridestopdays=["MO", "TU"],
-            overridevalue=16.0
+            overridevalue=16.0,
         )
     )
     test_send_request.assert_called_with(
@@ -163,16 +159,13 @@ async def test_requests(mocker: MockerFixture):
             "overridestartdays": ["MO", "TU"],
             "overridestoptime": "18:00",
             "overridestopdays": ["MO", "TU"],
-            "overridevalue": 16.0
+            "overridevalue": 16.0,
         }
     )
 
     await client.clear_user_override_current("123")
     test_send_request.assert_called_with(
-        {
-            "command": "POST_CLEAR_OVERRIDE_CURRENT",
-            "schedule_id": 123
-        }
+        {"command": "POST_CLEAR_OVERRIDE_CURRENT", "schedule_id": 123}
     )
 
     await client.edit_user_override_current(
@@ -183,8 +176,8 @@ async def test_requests(mocker: MockerFixture):
             overridestartdays=["WE", "TH"],
             overridestoptime="19:00",
             overridestopdays=["WE", "TH"],
-            overridevalue=10.0
-        )
+            overridevalue=10.0,
+        ),
     )
     test_send_request.assert_called_with(
         {
@@ -195,7 +188,7 @@ async def test_requests(mocker: MockerFixture):
             "overridestartdays": ["WE", "TH"],
             "overridestoptime": "19:00",
             "overridestopdays": ["WE", "TH"],
-            "overridevalue": 10.0
+            "overridevalue": 10.0,
         }
     )
 
