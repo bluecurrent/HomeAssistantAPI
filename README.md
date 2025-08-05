@@ -12,7 +12,6 @@ The library is an asyncio-driven library that interfaces with the Websocket API 
 
 - Python 3.11 or newer
 - websockets
-- pytz
 
 ### Installation
 
