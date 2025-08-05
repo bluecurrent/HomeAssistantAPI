@@ -314,3 +314,123 @@
     'error': ''
 }
 ```
+
+### await set_delayed_charging(evse_id, value)
+```python
+{
+    "evse_id": "BCU100186",
+    "value": true
+}
+```
+### await set_delayed_charging_settings(evse_id, days, start_time, end_time)
+
+```python
+{
+  "action": "SAVE_SCHEDULE_DELAYED_CHARGING",
+  "evse_id": "BCU100186",
+  "days": "0,1,2,3,4,5,6",
+  "start_time": "22:00",
+  "end_time": "06:00"
+}
+```
+
+### await set_price_based_charging(evse_id, value)
+
+```python
+{
+    "evse_id": "BCU100186",
+    "value": true
+}
+```
+
+### await set_price_based_settings(evse_id, expected_departure_time, expected_kwh, minimum_kwh)
+
+```python
+{
+  "evse_id": "BCU100266",
+  "expected_departure_time": "13:00",
+  "expected_kwh": "12",
+  "minimum_kwh": "6"
+}
+```
+
+### await override_price_based_charging_profile(evse_id: str, value)
+
+```python
+{
+    "evse_id": "BCU100186",
+    "value": true
+}
+```
+
+### await override_delayed_charging_profile(evse_id, value)
+
+```python
+{
+    "evse_id": "BCU100186",
+    "value": true
+}
+```
+
+### await set_user_override_current(payload)
+
+```python
+{
+    "chargepoints": ["BCU100266"],
+    "overridestarttime": "15:00",
+    "overridestartdays": ["SA", "MO"],
+    "overridestoptime": "13:00",
+    "overridestopdays": [ "SU" ],
+    "overridevalue": 12.0
+}
+```
+
+### await clear_user_override_current(schedule_id)
+
+```python
+{
+    "schedule_id": 81
+}
+```
+
+### edit_user_override_current(schedule_id, payload)
+
+```python
+{   
+    "schedule_id": 2,
+    "chargepoints": ["BCU100266", "BCU100186"],
+    "overridestarttime": "10:00",
+    "overridestartdays": ["WE", "TH"],
+    "overridestoptime": "12:00",
+    "overridestopdays": [ "TU" ],
+    "overridevalue": 6.0
+}
+```
+
+### await get_user_override_currents_list()
+
+```python
+{
+    "command": "LIST_OVERRIDE_CURRENT",
+    "success": true,
+    "error": null,
+    "result": [
+        {
+            "schedule_id": "122",
+            "schedule_type": "OVERRIDE",
+            "start_time": "15:00",
+            "stop_time": "13:00",
+            "days_of_week": "SA",
+            "chargepoint_id": "BCU100266"
+        },
+        {
+            "schedule_id": "102",
+            "schedule_type": "OVERRIDE",
+            "start_time": "10:00",
+            "stop_time": "14:00",
+            "days_of_week": "MO,TU",
+            "chargepoint_id": "BCU100186"
+        }
+    ]
+}
+```
