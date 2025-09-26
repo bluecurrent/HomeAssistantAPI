@@ -23,6 +23,8 @@ from .utils import (
     get_exception,
     handle_charge_points,
     handle_grid,
+    handle_override_schedule,
+    handle_override_schedules,
     handle_session_messages,
     handle_setting_change,
     handle_settings,
@@ -180,6 +182,10 @@ class Websocket:
             "STATUS_SET_PLUG_AND_CHARGE",
         ):
             handle_setting_change(message)
+        elif object_name == "LIST_OVERRIDE_CURRENT":
+            handle_override_schedules(message)
+        elif object_name in ("POST_SET_OVERRIDE_CURRENT", "POST_EDIT_OVERRIDE_CURRENT"):
+            handle_override_schedule(message)
         elif any(button in object_name for button in BUTTONS):
             handle_session_messages(message)
         else:
