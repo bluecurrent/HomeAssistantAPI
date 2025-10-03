@@ -7,12 +7,9 @@ This method then routes the message to the correct function based on the object_
 
 If the object name is `CHARGE_POINTS` the method `handle_charge_points` will be called. This method adds all evse_ids to the charge_points dict, sends status requests for all evse_ids and sends a grid status request.
 
-## CHARGE_CARDS
-If the object name is `CHARGE_CARDS` the cards will be stored in the connector to be used in selects such as start session.
-
 ## VALUE_TYPES
 
-If the object name is `CH_STATUS` or `CH_SETTINGS` the key value pairs in the data will be added / updated in the charge_points dict for the evse_id. Then the `value_update` signal is dispatched with the evse_id.
+If the object name is `CHARGEPOINT_STATUS` or `CHARGEPOINT_SETTINGS` the key value pairs in the data will be added / updated in the charge_points dict for the evse_id. Then the `value_update` signal is dispatched with the evse_id.
 
 ## GRID_STATUS
 

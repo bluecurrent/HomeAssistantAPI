@@ -3,13 +3,13 @@ homeassistant>=2024.2.0
 bluecurrent-api
 
 # readthedocs dependencies
-alabaster==0.7.12
+alabaster>=0.7.14
 attrs
-Babel==2.9.1
+Babel>=2.13
 certifi==2021.10.8
 charset-normalizer==2.0.7
 colorama
-docutils==0.17.1
+docutils==0.21.2
 idna==3.3
 imagesize==1.3.0
 Jinja2
@@ -17,20 +17,20 @@ markdown-it-py
 MarkupSafe==2.1.4
 matplotlib==3.8.2
 mdit-py-plugins>=0.3.4
-myst-parser==1
+myst-parser>=4.0.1
 packaging
-Pygments==2.10.0
+Pygments>=2.14
 pyparsing==3.0.6
 pytz==2021.3
 PyYAML
 requests
 snowballstemmer==2.2.0
-Sphinx>=5
-sphinx-rtd-theme==1.0.0
-sphinxcontrib-applehelp==1.0.2
-sphinxcontrib-devhelp==1.0.2
-sphinxcontrib-htmlhelp==2.0.0
+Sphinx>=8.2.3
+sphinx-rtd-theme>=1.3.0
+sphinxcontrib-applehelp>=1.0.7
+sphinxcontrib-devhelp>=1.0.6
+sphinxcontrib-htmlhelp>=2.0.6
 sphinxcontrib-jsmath==1.0.1
-sphinxcontrib-qthelp==1.0.3
-sphinxcontrib-serializinghtml==1.1.5
+sphinxcontrib-qthelp>=1.0.6
+sphinxcontrib-serializinghtml>=1.1.9
 urllib3==1.26.7
