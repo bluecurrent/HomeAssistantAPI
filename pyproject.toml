@@ -22,7 +22,6 @@ classifiers = [
 ]
 dependencies = [
     "websockets >= 15.0, <16.0.0",
-    "pytz >= 2023.4"
 ]
 
 [project.urls]
