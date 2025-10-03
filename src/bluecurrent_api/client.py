@@ -27,6 +27,14 @@ class Client:
         """Wait for next response."""
         await self.websocket.received_charge_points.wait()
 
+    async def wait_for_clear_override_current(self) -> None:
+        """Wait for next response for clear override."""
+        await self.websocket.clear_override_current.wait()
+
+    async def wait_for_update_override_current(self) -> None:
+        """Wait for next response for update override."""
+        await self.websocket.update_override_current.wait()
+
     async def validate_api_token(self, api_token: str) -> str:
         """Validate an api_token and return customer id."""
         return await self.websocket.validate_api_token(api_token)
@@ -90,12 +98,16 @@ class Client:
 
     async def set_linked_charge_cards_only(self, evse_id: str, value: bool) -> None:
         """Set public_charging of a charge point to a value."""
-        request = self._create_request("SET_PUBLIC_CHARGING", evse_id=evse_id, value=not value)
+        request = self._create_request(
+            "SET_PUBLIC_CHARGING", evse_id=evse_id, value=not value
+        )
         await self.websocket.send_request(request)
 
     async def set_plug_and_charge(self, evse_id: str, value: bool) -> None:
         """Set plug_and_charge of a charge point to a value."""
-        request = self._create_request("SET_PLUG_AND_CHARGE", evse_id=evse_id, value=value)
+        request = self._create_request(
+            "SET_PLUG_AND_CHARGE", evse_id=evse_id, value=value
+        )
         await self.websocket.send_request(request)
 
     async def block(self, evse_id: str, value: bool) -> None:
@@ -118,11 +130,9 @@ class Client:
 
     async def start_session(self, evse_id: str, session_token: str) -> None:
         """Start a charge session at a charge point.
-        session_token = card_uuid """
+        session_token = card_uuid"""
         request = self._create_request(
-            "START_SESSION",
-            evse_id=evse_id,
-            session_token=session_token
+            "START_SESSION", evse_id=evse_id, session_token=session_token
         )
         await self.websocket.send_request(request)
 
@@ -133,15 +143,14 @@ class Client:
 
     async def set_delayed_charging(self, evse_id: str, value: bool) -> None:
         """Turn smart charging profile on/off and set the profile to delayed charging."""
-        request = self._create_request("SET_DELAYED_CHARGING", evse_id=evse_id, value=value)
+        request = self._create_request(
+            "SET_DELAYED_CHARGING", evse_id=evse_id, value=value
+        )
         await self.websocket.send_request(request)
 
     async def save_scheduled_delayed_charging(
-            self,
-            evse_id: str,
-            days: list[int],
-            start_time: str,
-            end_time: str) -> None:
+        self, evse_id: str, days: list[int], start_time: str, end_time: str
+    ) -> None:
         """Send the selected settings in order to schedule delayed charging."""
         days_str = join_numbers_with_commas(days)
         request = self._create_request(
@@ -149,21 +158,23 @@ class Client:
             evse_id=evse_id,
             days=days_str,
             start_time=start_time,
-            end_time=end_time
+            end_time=end_time,
         )
         await self.websocket.send_request(request)
 
     async def set_price_based_charging(self, evse_id: str, value: bool) -> None:
         """Turn smart charging profile on/off and set the profile to price based charging."""
-        request = self._create_request("SET_PRICE_BASED_CHARGING", evse_id=evse_id, value=value)
+        request = self._create_request(
+            "SET_PRICE_BASED_CHARGING", evse_id=evse_id, value=value
+        )
         await self.websocket.send_request(request)
 
     async def set_price_based_settings(
-            self,
-            evse_id: str,
-            expected_departure_time: str,
-            expected_kwh: float,
-            minimum_kwh: float
+        self,
+        evse_id: str,
+        expected_departure_time: str,
+        expected_kwh: float,
+        minimum_kwh: float,
     ) -> None:
         """Set the price based charging settings."""
         request = self._create_request(
@@ -171,7 +182,7 @@ class Client:
             evse_id=evse_id,
             expected_departure_time=expected_departure_time,
             expected_kwh=str(expected_kwh),
-            minimum_kwh=str(minimum_kwh)
+            minimum_kwh=str(minimum_kwh),
         )
         await self.websocket.send_request(request)
 

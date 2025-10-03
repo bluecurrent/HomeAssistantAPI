@@ -46,6 +46,9 @@ class Websocket:
         self.connected = Event()
         self.received_charge_points = Event()
 
+        self.clear_override_current = Event()
+        self.update_override_current = Event()
+
     async def start(
         self,
         receiver: Callable[[dict[str, Any]], Coroutine[Any, Any, None]],
@@ -80,6 +83,13 @@ class Websocket:
                 self.connected.clear()
                 self.received_charge_points.set()
                 self.received_charge_points.clear()
+
+                self.clear_override_current.set()
+                self.clear_override_current.clear()
+
+                self.update_override_current.set()
+                self.update_override_current.clear()
+
                 self.raise_correct_exception(err)
 
     async def _send_recv_single_message(self, message_object: dict) -> dict:
@@ -187,6 +197,15 @@ class Websocket:
             handle_override_schedules(message)
         elif object_name in ("POST_SET_OVERRIDE_CURRENT", "POST_EDIT_OVERRIDE_CURRENT"):
             handle_override_schedule(message)
+
+            if object_name == "POST_EDIT_OVERRIDE_CURRENT":
+                self.update_override_current.set()
+                self.update_override_current.clear()
+
+        elif object_name == "POST_CLEAR_OVERRIDE_CURRENT":
+            self.clear_override_current.set()
+            self.clear_override_current.clear()
+
         elif any(button in object_name for button in BUTTONS):
             handle_session_messages(message)
         else:
@@ -196,6 +215,14 @@ class Websocket:
 
         if object_name == "CHARGE_POINTS":
             self.received_charge_points.set()
+
+        if object_name == "POST_CLEAR_OVERRIDE_CURRENT":
+            self.clear_override_current.set()
+            self.clear_override_current.clear()
+
+        if object_name == "POST_EDIT_OVERRIDE_CURRENT":
+            self.update_override_current.set()
+            self.update_override_current.clear()
 
     async def _send(self, data: dict[str, Any]) -> None:
         """Send data to the websocket."""
