@@ -1,4 +1,5 @@
 """Define an object that handles the connection to the Websocket"""
+# pylint: disable=too-many-branches
 
 import json
 from asyncio import Event, timeout
@@ -23,6 +24,8 @@ from .utils import (
     get_exception,
     handle_charge_points,
     handle_grid,
+    handle_override_schedule,
+    handle_override_schedules,
     handle_session_messages,
     handle_setting_change,
     handle_settings,
@@ -42,6 +45,9 @@ class Websocket:
         self.auth_token: str | None = None
         self.connected = Event()
         self.received_charge_points = Event()
+
+        self.clear_override_current = Event()
+        self.update_override_current = Event()
 
     async def start(
         self,
@@ -77,6 +83,13 @@ class Websocket:
                 self.connected.clear()
                 self.received_charge_points.set()
                 self.received_charge_points.clear()
+
+                self.clear_override_current.set()
+                self.clear_override_current.clear()
+
+                self.update_override_current.set()
+                self.update_override_current.clear()
+
                 self.raise_correct_exception(err)
 
     async def _send_recv_single_message(self, message_object: dict) -> dict:
@@ -180,6 +193,19 @@ class Websocket:
             "STATUS_SET_PLUG_AND_CHARGE",
         ):
             handle_setting_change(message)
+        elif object_name == "LIST_OVERRIDE_CURRENT":
+            handle_override_schedules(message)
+        elif object_name in ("POST_SET_OVERRIDE_CURRENT", "POST_EDIT_OVERRIDE_CURRENT"):
+            handle_override_schedule(message)
+
+            if object_name == "POST_EDIT_OVERRIDE_CURRENT":
+                self.update_override_current.set()
+                self.update_override_current.clear()
+
+        elif object_name == "POST_CLEAR_OVERRIDE_CURRENT":
+            self.clear_override_current.set()
+            self.clear_override_current.clear()
+
         elif any(button in object_name for button in BUTTONS):
             handle_session_messages(message)
         else:
@@ -189,6 +215,14 @@ class Websocket:
 
         if object_name == "CHARGE_POINTS":
             self.received_charge_points.set()
+
+        if object_name == "POST_CLEAR_OVERRIDE_CURRENT":
+            self.clear_override_current.set()
+            self.clear_override_current.clear()
+
+        if object_name == "POST_EDIT_OVERRIDE_CURRENT":
+            self.update_override_current.set()
+            self.update_override_current.clear()
 
     async def _send(self, data: dict[str, Any]) -> None:
         """Send data to the websocket."""

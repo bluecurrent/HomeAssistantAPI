@@ -189,6 +189,21 @@ def handle_session_messages(message: dict[str, Any]) -> None:
     message["object"] = object_name
 
 
+def handle_override_schedules(message: dict[str, Any]) -> None:
+    """Handle override schedules."""
+    for schedule in message["data"]:
+        print(message)
+        schedule["override_start_days"] = schedule["override_start_days"].split(",")
+        schedule["override_end_days"] = schedule["override_end_days"].split(",")
+
+
+def handle_override_schedule(message: dict[str, Any]) -> None:
+    """Handle override schedule."""
+    schedule = message["data"]
+    schedule["override_start_days"] = schedule["override_start_days"].split(",")
+    schedule["override_end_days"] = schedule["override_end_days"].split(",")
+
+
 def get_dummy_message(evse_id: str) -> dict[str, Union[str, dict[str, Any]]]:
     """Return a CH_STATUS message with the current time as start_datetime"""
     return {
