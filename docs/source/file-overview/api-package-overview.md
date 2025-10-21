@@ -7,6 +7,7 @@ HomeAssistantAPI
  ┃ ┃ ┣ client.py
  ┃ ┃ ┣ exceptions.py
  ┃ ┃ ┣ py.typed
+ ┃ ┃ ┣ types.py
  ┃ ┃ ┣ utils.py
  ┃ ┃ ┣ websocket.py
  ┃ ┃ ┗ __init__.py
@@ -36,6 +37,10 @@ Contains the Client class that has all the 'public' methods of the API package.
 ### websockets.py
 
 Defines the Websocket Class that handles the connection to the Websocket.
+
+### types.py
+
+Defines dataclasses to improve readability and maintainability of API handling functions that have many parameters.
 
 ### utils.py
 

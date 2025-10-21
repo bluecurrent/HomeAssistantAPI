@@ -72,3 +72,7 @@ suppress_warnings = ["myst.header", '']
 myst_heading_anchors = 3
 
 autodoc_member_order = 'bysource'
+
+autodoc_mock_imports = [
+    "homeassistant.components.blue_current.switch",
+]

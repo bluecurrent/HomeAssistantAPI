@@ -15,7 +15,6 @@ For examples of objects received from the api package see [](data-models)
 - [Home Assistant](https://developers.home-assistant.io/)
 - [Websockets](https://websockets.readthedocs.io/en/stable/)
 - [Asyncio](https://docs.python.org/3/library/asyncio.html)
-- [Pyzt](https://pypi.org/project/pytz/)
 
 ```{toctree}
 ---

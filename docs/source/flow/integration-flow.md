@@ -6,7 +6,7 @@ The config flow gets started when a user adds the integration in Home Assistant 
 
 
 ## Setup
-After the config flow in completed the method `async_setup_entry` in \_\_init\_\_.py gets called by Home Assistant.
+After the config flow is completed the method `async_setup_entry` in \_\_init\_\_.py gets called by Home Assistant.
 Here it retrieves the API token from the config_entry. And validates it. If the validation is successful a background task to connect and listen to the websocket is started, then the function waits until `CHARGE_POINTS` is received from the API and tells Home Assistant to start the platform setups with `async_setup_platforms`.
 
 ## Platforms

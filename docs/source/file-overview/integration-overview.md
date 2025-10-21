@@ -11,8 +11,10 @@ homeassistant/components/bluecurrent
  ┣ manifest.json
  ┣ sensor.py
  ┣ strings.json
+ ┣ switch.py
 
 tests/components/bluecurrent
+ ┣ snapshots
  ┣ __init__.py
  ┣ conftest.py
  ┣ test_button.py
@@ -66,6 +68,9 @@ Contains the BlueCurrentEntity class that all the platforms inherit. It also add
 
 ## Tests
 
+### snapshots folder
+Contains snapshot files, which save expected entity registry and state data used in tests. 
+
 ### \_\_init\_\_.py
 
 Contains the method `init_integration` which starts the BlueCurrent integration with a single platform (sensor, switch or button), test data, and a mocked client.
@@ -76,5 +81,5 @@ Used to store test fixtures.
 ### test_config_flow
 Tests for form and reauth
 
-### test_sensor, test_button
+### test_sensor, test_button, test_switch
 tests for the specific platforms.

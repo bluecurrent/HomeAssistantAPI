@@ -29,6 +29,14 @@ class Client:
         """Wait for next response."""
         await self.websocket.received_charge_points.wait()
 
+    async def wait_for_clear_override_current(self) -> None:
+        """Wait for next response for clear override."""
+        await self.websocket.clear_override_current.wait()
+
+    async def wait_for_update_override_current(self) -> None:
+        """Wait for next response for update override."""
+        await self.websocket.update_override_current.wait()
+
     async def validate_api_token(self, api_token: str) -> str:
         """Validate an api_token and return customer id."""
         return await self.websocket.validate_api_token(api_token)

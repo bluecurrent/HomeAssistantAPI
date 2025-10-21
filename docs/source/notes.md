@@ -14,6 +14,10 @@ In the dev docs Home Assistant uses the word 'platform' for different things.
 
 Device info is added to entities and not the other way around.
 
+## Device ID
+
+In Home Assistant, each device is assigned a unique device ID that acts as its identifier within the system. The device ID itself is managed internally by Home Assistant and is stable across restarts.
+
 ## Error handling
 
 If something goes wrong server side an `ERROR` object is sent and an `WebsocketError` is raised in the api package. Setting and Action request can also have an error in their `RECEIVED_` or `STATUS_` messages, but this is sent to HA and logged.
