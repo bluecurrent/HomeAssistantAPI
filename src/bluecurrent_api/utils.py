@@ -192,7 +192,6 @@ def handle_session_messages(message: dict[str, Any]) -> None:
 def handle_override_schedules(message: dict[str, Any]) -> None:
     """Handle override schedules."""
     for schedule in message["data"]:
-        print(message)
         schedule["override_start_days"] = schedule["override_start_days"].split(",")
         schedule["override_end_days"] = schedule["override_end_days"].split(",")
 
