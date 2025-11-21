@@ -1,13 +1,13 @@
 """Define an object to interact with the BlueCurrent websocket api."""
 
 import logging
-from datetime import timedelta
-from typing import Any
 from collections.abc import Callable, Coroutine
 from dataclasses import asdict
+from datetime import timedelta
+from typing import Any
 
-from .utils import get_next_reset_delta, join_numbers_with_commas
 from .types import OverrideCurrentPayload
+from .utils import get_next_reset_delta, join_numbers_with_commas
 from .websocket import Websocket
 
 LOGGER = logging.getLogger(__package__)
@@ -171,20 +171,23 @@ class Client:
         )
         await self.websocket.send_request(request)
 
-    async def set_price_based_settings(
+    async def update_price_based_charging_settings(
         self,
         evse_id: str,
-        expected_departure_time: str,
-        expected_kwh: float,
-        minimum_kwh: float,
-    ) -> None:
-        """Set the price based charging settings."""
+        expected_departure_time: str | None = None,
+        current_battery_percentage: int | None = None,
+        minimum_percentage: int | None = None,
+        battery_size_kwh: int | None = None,
+    ):
+        """Update the price based charging settings."""
+
         request = self._create_request(
-            "SET_PRICE_BASED_SETTINGS",
+            "PATCH_PRICE_BASED_CHARGING_SETTINGS",
             evse_id=evse_id,
             expected_departure_time=expected_departure_time,
-            expected_kwh=str(expected_kwh),
-            minimum_kwh=str(minimum_kwh),
+            current_battery_pct=current_battery_percentage,
+            minimum_pct=minimum_percentage,
+            battery_size_kwh=battery_size_kwh,
         )
         await self.websocket.send_request(request)
 
