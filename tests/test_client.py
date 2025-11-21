@@ -1,7 +1,11 @@
-from src.bluecurrent_api.client import Client
 import pytest
 from pytest_mock import MockerFixture
-from src.bluecurrent_api.types import OverrideCurrentPayload
+
+from src.bluecurrent_api.client import Client
+from src.bluecurrent_api.types import (
+    OverrideCurrentPayload,
+    UpdatePriceBasedSettingsPayload,
+)
 
 
 def test_create_request():
@@ -113,14 +117,17 @@ async def test_requests(mocker: MockerFixture):
         {"command": "SET_PRICE_BASED_CHARGING", "evse_id": "101", "value": True}
     )
 
-    await client.set_price_based_settings("101", "10:00", 6.0, 2.0)
+    await client.update_price_based_charging_settings(
+        "101", UpdatePriceBasedSettingsPayload("14:00", 20, 10, 60)
+    )
     test_send_request.assert_called_with(
         {
             "command": "SET_PRICE_BASED_SETTINGS",
             "evse_id": "101",
-            "expected_departure_time": "10:00",
-            "expected_kwh": "6.0",
-            "minimum_kwh": "2.0",
+            "expected_departure_time": "14:00",
+            "current_battery_pct": 20,
+            "minimum_pct": 10,
+            "battery_size_kwh": 60,
         }
     )
 
