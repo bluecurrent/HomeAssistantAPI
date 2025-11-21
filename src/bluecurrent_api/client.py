@@ -6,7 +6,7 @@ from dataclasses import asdict
 from datetime import timedelta
 from typing import Any
 
-from .types import OverrideCurrentPayload
+from .types import OverrideCurrentPayload, UpdatePriceBasedSettingsPayload
 from .utils import get_next_reset_delta, join_numbers_with_commas
 from .websocket import Websocket
 
@@ -172,22 +172,17 @@ class Client:
         await self.websocket.send_request(request)
 
     async def update_price_based_charging_settings(
-        self,
-        evse_id: str,
-        expected_departure_time: str | None = None,
-        current_battery_percentage: int | None = None,
-        minimum_percentage: int | None = None,
-        battery_size_kwh: int | None = None,
+        self, evse_id: str, payload: UpdatePriceBasedSettingsPayload
     ):
         """Update the price based charging settings."""
 
         request = self._create_request(
             "PATCH_PRICE_BASED_CHARGING_SETTINGS",
             evse_id=evse_id,
-            expected_departure_time=expected_departure_time,
-            current_battery_pct=current_battery_percentage,
-            minimum_pct=minimum_percentage,
-            battery_size_kwh=battery_size_kwh,
+            expected_departure_time=payload.expected_departure_time,
+            current_battery_pct=payload.current_battery_percentage,
+            minimum_pct=payload.minimum_percentage,
+            battery_size_kwh=payload.battery_size_kwh,
         )
         await self.websocket.send_request(request)
 
