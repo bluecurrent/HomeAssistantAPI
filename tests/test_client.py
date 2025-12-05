@@ -122,7 +122,7 @@ async def test_requests(mocker: MockerFixture):
     )
     test_send_request.assert_called_with(
         {
-            "command": "SET_PRICE_BASED_SETTINGS",
+            "command": "PATCH_PRICE_BASED_CHARGING_SETTINGS",
             "evse_id": "101",
             "expected_departure_time": "14:00",
             "current_battery_pct": 20,
