@@ -29,7 +29,7 @@ class OverrideCurrentPayload:
 @dataclass
 class UpdatePriceBasedSettingsPayload:
     """
-    Payload for updating the price based settings.
+    Payload for updating the price based smart charging profile settings.
 
     Attributes:
         expected_departure_time (str | None): Expected vehicle departure time in HH24:MI format.
