@@ -173,7 +173,7 @@ class Client:
 
     async def update_price_based_charging_settings(
         self, evse_id: str, payload: UpdatePriceBasedSettingsPayload
-    ):
+    ) -> None:
         """Update the price based charging settings."""
 
         request = self._create_request(
