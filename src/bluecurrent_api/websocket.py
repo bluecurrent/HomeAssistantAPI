@@ -1,4 +1,5 @@
 """Define an object that handles the connection to the Websocket"""
+
 # pylint: disable=too-many-branches
 
 import json
