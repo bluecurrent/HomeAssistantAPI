@@ -253,6 +253,40 @@ class Client:
         )
         await self.websocket.send_request(request)
 
+    async def get_transactions(
+        self,
+        charge_point_ids: list[str],
+        page: int,
+        end_date: str,
+        start_date: str | None,
+        sort_field: str = "stoppedtimestamp",
+        search_field: str = "",
+        sort_field_order: str = "DESC",
+    ) -> dict[str, Any]:
+        path_parameters = {
+            "page": str(page),
+            "end_date": end_date,
+            "sort_field_order": sort_field_order,
+            "sort_field": sort_field,
+            "search_field": search_field,
+        }
+
+        if start_date:
+            path_parameters["start_date"] = start_date
+
+        response = await self.websocket.send_rest_request(
+            path="gettransactions",
+            path_parameters=path_parameters,
+            body={
+                "chargecards": [],
+                "chargepoints": [
+                    {"chargepoint_id": charge_point_id}
+                    for charge_point_id in charge_point_ids
+                ],
+            },
+        )
+        return response
+
     def _create_request(self, command: str, **kwargs: Any) -> dict[str, Any]:
         """Creates the JSON for the websocket request."""
         request = {"command": command}

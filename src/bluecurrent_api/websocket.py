@@ -3,11 +3,13 @@
 # pylint: disable=too-many-branches
 
 import json
-from asyncio import Event, timeout
 import logging
-from typing import Any, cast
+import urllib.parse
+from asyncio import Event, timeout
 from collections.abc import Callable, Coroutine
+from typing import Any, cast
 
+import httpx
 from websockets.asyncio.client import ClientConnection, connect
 from websockets.exceptions import (
     ConnectionClosedError,
@@ -34,6 +36,7 @@ from .utils import (
 )
 
 URL = "wss://motown.bluecurrent.nl/haserver"
+REST_API_URL = "https://bo.bluecurrent.nl/app/bc_api/api/v2.0"
 BUTTONS = ("START_SESSION", "STOP_SESSION", "SOFT_RESET", "REBOOT")
 LOGGER = logging.getLogger(__package__)
 
@@ -149,6 +152,31 @@ class Websocket:
 
         request["Authorization"] = self.auth_token
         await self._send(request)
+
+    async def send_rest_request(
+        self,
+        path: str,
+        path_parameters: dict[str, str] | None = None,
+        body: dict[str, Any] | None = None,
+        method: str = "POST",
+    ):
+        path_params = (
+            ""
+            if path_parameters is None
+            else f"?{urllib.parse.urlencode(path_parameters)}"
+        )
+
+        async with httpx.AsyncClient() as client:
+            response = await client.request(
+                method=method,
+                url=f"{REST_API_URL}/{path}{path_params}",
+                json=body,
+                headers={"Authorization": f"Token {self.auth_token}"},
+            )
+
+        print(f"{REST_API_URL}/{path}{path_params}")
+
+        return response.json()
 
     async def _message_handler(
         self,
